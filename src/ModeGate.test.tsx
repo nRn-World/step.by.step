@@ -33,11 +33,15 @@ describe('privacy-first mode selection', () => {
   it('converts steps to an explicitly estimated distance',()=>{
     expect(estimatedMeters(1000)).toBe(750);
   });
-  it('does not pretend the OAuth integration works without configuration',()=>{
-    render(<ModeGate />);fireEvent.click(screen.getByText('Tillsammans · live'));
+  it('does not pretend the OAuth integration works without configuration',async()=>{
+    vi.resetModules();
+    vi.stubEnv('VITE_SUPABASE_URL','');vi.stubEnv('VITE_SUPABASE_ANON_KEY','');
+    const { default: UnconfiguredModeGate } = await import('./ModeGate');
+    render(<UnconfiguredModeGate />);fireEvent.click(screen.getByText('Tillsammans · live'));
     expect(screen.getByText('Fortsätt med Google').closest('button')?.disabled).toBe(true);
     expect(screen.getByText('Fortsätt med Apple').closest('button')?.disabled).toBe(true);
     expect(screen.getByText(/Inloggning väntar på konfiguration/)).toBeDefined();
+    vi.unstubAllEnvs();
   });
   it('lets the tester open the app without Google or Apple, using sample data only',()=>{
     render(<ModeGate />);fireEvent.click(screen.getByText('Tillsammans · live'));
