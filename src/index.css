@@ -292,7 +292,9 @@ h1,h2,h3,h4,.person-info strong{overflow-wrap:break-word}
 @keyframes cSpark{0%{opacity:0;margin-top:-16px}35%{opacity:1;margin-top:0}100%{opacity:0;margin-top:6px}}
 @keyframes cMarch{0%,100%{transform:translateX(0)}50%{transform:translateX(9px)}}
 @media (prefers-reduced-motion:reduce){.celebration-backdrop *,.celebration-card{animation:none!important}}
-.side-logout{margin-top:8px;width:100%;padding:8px;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--muted);font:inherit;font-size:.85rem;cursor:pointer}
+.side-account{display:flex;gap:8px;margin:2px 0 14px}
+.side-logout,.side-delete{flex:1;padding:7px 8px;border-radius:8px;font:inherit;font-size:.8rem;font-weight:600;cursor:pointer;background:var(--surface)}
+.side-logout{border:1px solid var(--border);color:var(--muted)}
 .side-logout:hover{color:#7c60bb;background:var(--soft)}
-.side-delete{margin-top:6px;width:100%;padding:6px;border:0;background:transparent;color:#b4503f;font:inherit;font-size:.78rem;text-decoration:underline;cursor:pointer}
-.side-delete:hover{color:#8f3524}
+.side-delete{border:1px solid #d9a79d;color:#b4503f}
+.side-delete:hover{color:#8f3524;background:#b4503f14}
