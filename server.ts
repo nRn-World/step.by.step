@@ -36,12 +36,34 @@ const PAIR_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 const nextPairCode = () => { for (;;) { let out = ''; const bytes = randomBytes(6); for (let i = 0; i < 6; i++) out += PAIR_ALPHABET[bytes[i] % PAIR_ALPHABET.length]; if (!db.groups.some(g => g.pairCode === out)) return out; } };
 const METERS_PER_STEP = 0.75;
 let db: DB = { people: [], groups: [] };
-// A damaged file must stop the server, otherwise the next save would overwrite every account and group with an empty database.
-if (existsSync(DATA)) {
+// With a service key the data lives in Supabase and survives restarts; only the server holds this key, never the browser.
+const store = process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_KEY
+  ? createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY, {auth:{persistSession:false}}) : null;
+// A failed read must stop the server, otherwise the next save would overwrite every account and group with an empty database.
+if (store) {
+  const { data, error } = await store.from('app_state').select('data').eq('id', 1).maybeSingle();
+  if (error) { console.error('Kunde inte läsa databasen från Supabase. Servern startar inte för att data inte ska skrivas över.', error.message); process.exit(1); }
+  if (data) db = data.data as DB;
+} else if (existsSync(DATA)) {
   try { db = JSON.parse(readFileSync(DATA, 'utf8')); } catch (err) { console.error(`${DATA} kunde inte läsas. Servern startar inte för att data inte ska skrivas över.`, err); process.exit(1); }
 }
+// Saves are coalesced: one write at a time, and a change made mid-write triggers another write right after.
+// shortcut: the whole database is one row, fine for a small user base, move to one row per group when it grows.
+let pending: Promise<void> | null = null; let dirty = false;
+const writeRemote = async () => {
+  while (dirty) {
+    dirty = false;
+    const { error } = await store!.from('app_state').upsert({ id: 1, data: db, updated_at: new Date().toISOString() });
+    if (error) { dirty = true; console.error('Kunde inte spara till Supabase, försöker igen:', error.message); await new Promise(r => setTimeout(r, 2000)); }
+  }
+};
 // Write to a temp file first, so a crash mid-write never leaves a half-written database behind.
-const save = () => { mkdirSync(dirname(DATA), { recursive: true }); const tmp = `${DATA}.tmp`; writeFileSync(tmp, JSON.stringify(db)); renameSync(tmp, DATA); };
+const save = () => {
+  if (store) { dirty = true; pending ??= writeRemote().finally(() => { pending = null; }); return; }
+  mkdirSync(dirname(DATA), { recursive: true }); const tmp = `${DATA}.tmp`; writeFileSync(tmp, JSON.stringify(db)); renameSync(tmp, DATA);
+};
+// Render stops the server with SIGTERM on every deploy; finish the last write first.
+for (const sig of ['SIGTERM', 'SIGINT'] as const) process.on(sig, () => { void (pending ?? Promise.resolve()).finally(() => process.exit(0)); });
 // Migrate old records: the server must never retain historic GPS coordinates.
 if (db.people.some(p => 'lastFix' in p)) {
   for (const p of db.people) delete (p as Person & {lastFix?:unknown}).lastFix;
