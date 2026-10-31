@@ -37,8 +37,10 @@ const nextPairCode = () => { for (;;) { let out = ''; const bytes = randomBytes(
 const METERS_PER_STEP = 0.75;
 let db: DB = { people: [], groups: [] };
 // With a service key the data lives in Supabase and survives restarts; only the server holds this key, never the browser.
-const store = process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_KEY
-  ? createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY, {auth:{persistSession:false}}) : null;
+// A key copied from the dashboard can carry a line break or space, which is an invalid header value, so strip all whitespace.
+const serviceKey = process.env.SUPABASE_SERVICE_KEY?.replace(/\s+/g, '');
+const store = process.env.SUPABASE_URL && serviceKey
+  ? createClient(process.env.SUPABASE_URL.trim(), serviceKey, {auth:{persistSession:false}}) : null;
 // A failed read must stop the server, otherwise the next save would overwrite every account and group with an empty database.
 if (store) {
   const { data, error } = await store.from('app_state').select('data').eq('id', 1).maybeSingle();
