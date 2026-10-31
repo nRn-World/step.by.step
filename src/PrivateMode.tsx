@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Capacitor } from '@capacitor/core';
+import { App as NativeApp } from '@capacitor/app';
 import { Health } from '@capgo/capacitor-health';
 import { Footprints, ArrowRight, Target, ShieldCheck } from './components/PlayfulIcons';
 import LanguagePicker from './components/LanguagePicker';
@@ -27,13 +28,18 @@ export default function PrivateMode({ onBack, language, onLanguageChange, accoun
   const [message, setMessage] = useState('');
   const [period, setPeriod] = useState<keyof Totals>('day');
   const [goal, setGoal] = useState(8000); // Memory only; never saved to disk or server.
+  // Android: true once Health Connect has granted history access (read by refresh, shown in the UI).
+  const [fullHistory, setFullHistoryState] = useState(false);
+  const fullHistoryRef = useRef(false);
+  const setFullHistory = (value: boolean) => { fullHistoryRef.current = value; setFullHistoryState(value); };
   const refresh = useCallback(async () => {
     try {
       const endDate = new Date().toISOString();
       const periods: (keyof Totals)[] = ['day', 'week', 'month', 'year'];
       const values = await Promise.allSettled(periods.map(async key => {
-        // Health Connect normally permits only recent history; never label a partial year as complete.
-        const availableFrom = Capacitor.getPlatform()==='android'
+        // Without history access Health Connect gives about 30 days; never label a partial year as complete.
+        const limited = Capacitor.getPlatform()==='android' && !fullHistoryRef.current;
+        const availableFrom = limited
           ? new Date(Math.max(new Date(startOf(key)).getTime(), Date.now()-29*86400000)).toISOString()
           : startOf(key);
         const { samples } = await Health.queryAggregated({ dataType: 'steps', startDate: availableFrom, endDate, bucket: 'day', aggregation: 'sum' });
@@ -48,13 +54,31 @@ export default function PrivateMode({ onBack, language, onLanguageChange, accoun
     try {
       const availability = await Health.isAvailable();
       if (!availability.available) { setMessage(t.noHealth); return; }
-      await Health.requestAuthorization({ read: ['steps'], write: [] });
-      const permission = await Health.checkAuthorization({ read: ['steps'], write: [] });
+      await Health.requestAuthorization({ read: ['steps'], write: [], requestHistoryAccess: true });
+      const permission = await Health.checkAuthorization({ read: ['steps'], write: [], requestHistoryAccess: true });
       if (!permission.readAuthorized.includes('steps')) { setMessage(t.noPermission); return; }
+      setFullHistory(permission.historyAccessAuthorized === true);
       setReady(true); await refresh();
     } catch { setMessage(t.healthError); }
   };
-  useEffect(() => { if (!ready) return; const timer = window.setInterval(refresh, 15000); return () => clearInterval(timer); }, [ready, refresh]);
+  // Permission already given earlier: continue straight away instead of asking again.
+  useEffect(() => {
+    if (!Capacitor.isNativePlatform()) return;
+    Health.checkAuthorization({ read: ['steps'], write: [], requestHistoryAccess: true })
+      .then(permission => {
+        if (!permission.readAuthorized.includes('steps')) return;
+        setFullHistory(permission.historyAccessAuthorized === true);
+        setReady(true); void refresh();
+      })
+      .catch(() => {});
+  }, [refresh]);
+  // Refresh every 15 s, and at once when the app comes back from the background.
+  useEffect(() => {
+    if (!ready) return;
+    const timer = window.setInterval(refresh, 15000);
+    const resume = NativeApp.addListener('appStateChange', ({ isActive }) => { if (isActive) void refresh(); });
+    return () => { clearInterval(timer); void resume.then(handle => handle.remove()); };
+  }, [ready, refresh]);
   const steps = totals[period];
   return <div className="mode-page private-page"><div className="mode-inner">
     <button className="mode-back" onClick={onBack}>← {t.back}</button><LanguagePicker value={language} onChange={onLanguageChange}/>
@@ -64,7 +88,7 @@ export default function PrivateMode({ onBack, language, onLanguageChange, accoun
     <p className="mode-intro">{t.privateIntro}</p>
     {!ready ? <div className="mode-panel"><h2>{t.privateReady}</h2><p>{t.privateReadyNote}</p><button className="mode-primary" onClick={connect}>{t.privateStart} <ArrowRight size={18}/></button></div> : <>
       <div className="private-tabs">{(['day','week','month','year'] as const).map(key=><button key={key} className={period===key?'chosen':''} onClick={()=>setPeriod(key)}>{t[key]}</button>)}</div>
-      {Capacitor.getPlatform()==='android'&&<p className="private-history-note">{t.historyNote}</p>}
+      {Capacitor.getPlatform()==='android'&&!fullHistory&&<p className="private-history-note">{t.historyNote}</p>}
       <div className="private-stats"><article><Footprints size={25}/><span>{t.steps}</span><strong>{formatSteps(steps,language)}</strong></article><article><Target size={25}/><span>{t.distance}</span><strong>{(estimatedMeters(steps)/1000).toLocaleString(numberLocale(language),{maximumFractionDigits:2})} km</strong></article></div>
       <OfflineGroup steps={totals.day} language={language} accountName={accountName}/>
       <div className="mode-panel"><h2>{t.goal}</h2><label htmlFor="private-goal">{t.goalSteps}</label><input id="private-goal" type="number" min="100" max="100000" value={goal} onChange={e=>setGoal(Number(e.target.value))}/><p>{Math.min(100, Math.round(totals.day / Math.max(1,goal) * 100))}{t.goalEnd}</p></div>

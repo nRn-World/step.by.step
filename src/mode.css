@@ -47,7 +47,7 @@
 /* Brand icon: the supplied step.by.step artwork, shown in the header and on the mode pages. */
 .landing-brand-mark .brand-mark-image{width:100%;height:100%;object-fit:cover;display:block}
 .landing-brand:hover .landing-brand-mark,.landing-brand:focus-visible .landing-brand-mark{transform:rotate(2deg) scale(1.05)}
-.mode-mark.logo-mark{width:78px;height:78px;background:#21212b url('/brand-mark.png') center/cover no-repeat;border-radius:19px;overflow:hidden;margin-bottom:26px;box-shadow:0 8px 20px #241f2b1f}
+.mode-mark.logo-mark{width:78px;height:78px;background:#21212b url('/brand-mark.png') center/cover no-repeat;border-radius:19px;overflow:hidden;margin:0 auto 26px;box-shadow:0 8px 20px #241f2b1f}
 .mode-mark.logo-mark .brand-mark-image{width:100%;height:100%;object-fit:cover;display:block}
 
 /* Demo: the little dog trots up to each friend, says hello, and comes back to its spot. */

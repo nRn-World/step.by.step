@@ -59,7 +59,7 @@ describe('name to group creation', () => {
       throw new Error(`Unexpected request: ${input}`);
     });
     render(<App />);
-    fireEvent.click(screen.getByRole('button', { name: 'Skapa grupp' }));
+    fireEvent.click(screen.getAllByRole('button', { name: 'Skapa grupp' })[0]);
     fireEvent.change(screen.getByPlaceholderText('Lunchpromenaden'), { target: { value: 'Team Sara' } });
     expect((screen.getByLabelText('Vad vill du bli kallad i den här gruppen?') as HTMLInputElement).value).toBe('');
     fireEvent.change(screen.getByLabelText('Vad vill du bli kallad i den här gruppen?'), { target: { value: 'Sara Test' } });
@@ -522,6 +522,19 @@ describe('name to group creation', () => {
     expect(title(5)).toBe(6);   // Saturday
     expect(title(6)).toBe(0);   // Sunday
     expect(days[6].textContent).toBe(new Intl.DateTimeFormat('sv',{weekday:'narrow'}).format(new Date(`${days[6].getAttribute('title')!.split(':')[0]}T12:00:00Z`)));
+  });
+
+  it('shows the signed-in person\'s own steps even without a group', async () => {
+    const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Stockholm', year: 'numeric', month: '2-digit', day: '2-digit' }).format(Date.now());
+    localStorage.setItem('stride-token', 'session');
+    vi.spyOn(globalThis, 'fetch').mockImplementation(async input => {
+      if (input === '/api/state') return reply({ me: { id: 'me', name: 'Jag', distances: { [today]: 750 } }, groups: [] });
+      throw new Error(`Unexpected request: ${input}`);
+    });
+    render(<App />);
+    await waitFor(() => expect(document.querySelector('.personal-steps-value')?.textContent?.replace(/\s/g, '')).toBe('1000steg'));
+    expect(document.querySelector('.steps-card')).toBeNull();
+    expect(document.querySelector('.personal-day.today .personal-bar')).not.toBeNull();
   });
 
 });

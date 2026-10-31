@@ -1,0 +1,20 @@
+/* The signed-in person's own steps, shown above the groups. Colours come from the app's theme variables. */
+.personal-steps{background:var(--surface);border:1px solid var(--border);box-shadow:var(--shadow);border-radius:17px;padding:22px 24px;margin-bottom:18px}
+.personal-steps-top{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;margin-bottom:16px}
+.personal-steps .eyebrow{margin-bottom:0}
+.personal-steps-value{font-family:Outfit,sans-serif;font-size:clamp(32px,3.4vw,46px);font-weight:700;letter-spacing:-2px;line-height:1;margin-top:12px}
+.personal-steps-goal{text-align:right;font-size:11px;color:var(--muted);font-weight:700}
+.personal-steps-goal strong{display:block;font-family:Outfit,sans-serif;font-size:24px;letter-spacing:-.5px;color:#f77e53;line-height:1.1}
+.personal-steps .progress-track{background:var(--soft)}
+.personal-week{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:10px;height:132px;margin-top:22px}
+.personal-day{display:flex;flex-direction:column;align-items:center;gap:7px;min-width:0;height:100%}
+.personal-day small{font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase}
+.personal-day.today small{color:var(--ink)}
+.personal-bar-track{flex:1;width:100%;display:flex;align-items:flex-end;justify-content:center}
+.personal-bar{display:block;width:100%;max-width:38px;min-height:4px;border-radius:9px 9px 4px 4px;background:var(--soft);transition:height .6s}
+.personal-bar.met{background:#85bd6d}
+.personal-day.today .personal-bar{background:#f77e53}
+.personal-day.today .personal-bar.met{background:#85bd6d;box-shadow:0 0 0 3px #f77e5340}
+/* Without the steps card in the stats grid, the distance card takes the full row. */
+.stats-grid>:only-child{grid-column:1/-1}
+@media(max-width:540px){.personal-steps{padding:18px 16px}.personal-week{gap:6px;height:112px}}
