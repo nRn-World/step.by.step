@@ -298,3 +298,13 @@ h1,h2,h3,h4,.person-info strong{overflow-wrap:break-word}
 .side-logout:hover{color:#7c60bb;background:var(--soft)}
 .side-delete{border:1px solid #d9a79d;color:#b4503f}
 .side-delete:hover{color:#8f3524;background:#b4503f14}
+
+/* Signed-in shell: the banner stays on top and the sidebar gets exactly the height below it,
+   so the profile row at the bottom is never cut off, on the web or in the app (safe areas included). */
+.connected-shell{--banner-h:calc(37px + env(safe-area-inset-top))}
+.connected-shell>.connected-banner{position:sticky;top:0;z-index:70;box-sizing:border-box;height:var(--banner-h);padding-top:env(safe-area-inset-top)}
+.connected-shell .app-shell{min-height:calc(100vh - var(--banner-h));min-height:calc(100dvh - var(--banner-h))}
+.connected-shell .sidebar{top:var(--banner-h);height:calc(100vh - var(--banner-h));height:calc(100dvh - var(--banner-h));min-height:0;padding-top:22px}
+.side-bottom{position:sticky;bottom:0;background:var(--surface);padding-top:10px;padding-bottom:env(safe-area-inset-bottom)}
+@media (max-height:860px){.side-cheer{display:none}}
+@media (max-width:700px){.connected-shell .sidebar{top:0;height:100vh;height:100dvh;z-index:80;padding-top:calc(30px + env(safe-area-inset-top))}}
