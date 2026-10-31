@@ -4,6 +4,7 @@ import { randomBytes } from 'node:crypto';
 import { existsSync, readFileSync, writeFileSync, mkdirSync, renameSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { countActivities, recordWalk, type Walk } from './activity';
+import { cleanUsername, usernameToEmail } from './src/username';
 
 const app = express();
 const authClient = process.env.SUPABASE_URL && process.env.SUPABASE_ANON_KEY
@@ -81,7 +82,7 @@ app.use('/api', async (req, res, next) => {
     const { data, error } = await authClient.auth.getUser(bearer);
     if (error || !data.user || !['email','google','apple'].includes(data.user.app_metadata?.provider)) return fail(res, 401, 'Logga in med e-post, Google eller Apple.');
     let p = db.people.find(item => item.oauthSubject === data.user.id);
-    if (!p) { p = makePerson('Vandrare'); p.oauthSubject = data.user.id; save(); }
+    if (!p) { const named = data.user.user_metadata?.username; p = makePerson(typeof named === 'string' && cleanUsername(named) ? named : 'Vandrare'); p.oauthSubject = data.user.id; save(); }
     (req as express.Request & { verifiedPerson?: Person }).verifiedPerson = p;
     next();
   } catch { return fail(res, 401, 'Inloggningen kunde inte verifieras.'); }
@@ -150,11 +151,32 @@ const removePerson = (p: Person) => {
 // Nickname accounts (smeknamn + kod) were removed. Their people are deleted once, so no old login can remain.
 for (const p of db.people.filter(item => 'account' in item)) removePerson(p);
 // Deleting the account erases the person, every membership and every like in one go.
-app.delete('/api/accounts', (req, res) => {
+app.delete('/api/accounts', async (req, res) => {
   const p = person(req);
   if (!p) return fail(res, 401, 'Sessionen hittades inte.');
+  const subject = p.oauthSubject;
   removePerson(p);
+  // Remove the sign-in user too, so a name-only account frees its name. A failure is logged and does not undo the deletion.
+  // Express 4 does not catch errors thrown in async handlers, and an uncaught one would stop the whole server.
+  if (store && subject) { try { const { error } = await store.auth.admin.deleteUser(subject); if (error) console.error('Kunde inte radera inloggningsanvändaren i Supabase:', error.message); } catch (err) { console.error('Kunde inte radera inloggningsanvändaren i Supabase:', err); } }
   res.json({ deleted: true });
+});
+// A name-only account: no email, so the server creates it already confirmed. The made-up address is unique per name,
+// which is what stops a second person from taking a name that exists. There is no password reset for these accounts.
+app.post('/api/username-signup', limit(10, 60 * 60 * 1000), async (req, res) => {
+  if (!store) return fail(res, 503, 'Konton med användarnamn är inte påslagna på servern.');
+  const username = cleanUsername(String(req.body?.username ?? ''));
+  const password = String(req.body?.password ?? '');
+  if (!username) return fail(res, 400, 'Användarnamnet måste vara 3 till 20 tecken: bokstäver, siffror, punkt, understreck eller bindestreck.');
+  if (password.length < 8 || password.length > 72) return fail(res, 400, 'Lösenordet måste vara 8 till 72 tecken.');
+  let error: { message: string; code?: string; status?: number } | null;
+  try { ({ error } = await store.auth.admin.createUser({ email: usernameToEmail(username), password, email_confirm: true, user_metadata: { username } })); } catch (err) { error = { message: String(err) }; }
+  if (error) {
+    if (error.code === 'email_exists' || error.status === 422 || /already|registered|exists/i.test(error.message)) return fail(res, 409, 'Användarnamnet är upptaget.');
+    console.error('Kunde inte skapa konto med användarnamn:', error.message);
+    return fail(res, 500, 'Kunde inte skapa kontot. Försök igen.');
+  }
+  res.json({ created: true });
 });
 app.post('/api/profile', limit(20, 60 * 60 * 1000), (req, res) => { const name = validName(req.body.name); if (name.length < 3 || name.length > 32) return fail(res, 400, 'Namnet måste vara 3 till 32 tecken.'); const p = makePerson(name); save(); res.json({ token: p.token }); });
 app.get('/api/invite/:code', (req, res) => { const g = db.groups.find(g => g.code === req.params.code); if (!g) return fail(res, 404, 'Länken är ogiltig.'); res.json({ id: g.id, name: g.name, members: g.members.length }); });

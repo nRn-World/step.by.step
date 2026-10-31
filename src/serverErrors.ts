@@ -37,6 +37,11 @@ const translations: Record<string, Record<Exclude<Lang, 'sv'>, string>> = {
   'Sessionen hittades inte.': { da: 'Sessionen blev ikke fundet.', en: 'The session was not found.' },
   'Välj ett namn i gruppen på 3 till 32 tecken.': { da: 'Vælg et navn i gruppen på 3 til 32 tegn.', en: 'Choose a name for the group, 3 to 32 characters.' },
   'Välj minst ett giltigt gruppmål.': { da: 'Vælg mindst ét gyldigt gruppemål.', en: 'Choose at least one valid group goal.' },
+  'Användarnamnet är upptaget.': { da: 'Brugernavnet er optaget.', en: 'That username is already taken.' },
+  'Användarnamnet måste vara 3 till 20 tecken: bokstäver, siffror, punkt, understreck eller bindestreck.': { da: 'Brugernavnet skal være 3 til 20 tegn: bogstaver, tal, punktum, understreg eller bindestreg.', en: 'The username must be 3 to 20 characters: letters, digits, dot, underscore or hyphen.' },
+  'Lösenordet måste vara 8 till 72 tecken.': { da: 'Adgangskoden skal være 8 til 72 tegn.', en: 'The password must be 8 to 72 characters.' },
+  'Kunde inte skapa kontot. Försök igen.': { da: 'Kontoen kunne ikke oprettes. Prøv igen.', en: 'The account could not be created. Try again.' },
+  'Konton med användarnamn är inte påslagna på servern.': { da: 'Konti med brugernavn er ikke slået til på serveren.', en: 'Accounts with a username are not enabled on the server.' },
   'Vänta på nästa mätning.': { da: 'Vent på næste måling.', en: 'Wait for the next measurement.' },
 };
 

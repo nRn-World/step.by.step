@@ -10,6 +10,7 @@ import WalkingScene from './components/WalkingScene';
 import LanguagePicker from './components/LanguagePicker';
 import {modeText,type ModeLanguage} from './modeText';
 import { translateServerError } from './serverErrors';
+import { cleanUsername, usernameToEmail } from './username';
 import { Footprints, Users, MapPin, ArrowRight, Star } from './components/PlayfulIcons';
 import BrandMark from './components/BrandMark';
 import { GoogleIcon, AppleIcon } from './components/AuthIcons';
@@ -74,15 +75,28 @@ export default function ModeGate({ initialMode, initialLanguage }: { initialMode
     const address = email.trim();
     setAccountBusy(true); setAccountError(''); setNotice(''); setError('');
     try {
-      if (!address.includes('@')) throw new Error(m.accountNeedEmail);
+      if (!address) throw new Error(m.accountNeedEmail);
       if (password.length < 8) throw new Error(m.accountPasswordShort);
-      if (kind === 'create') {
-        const {data, error: reason} = await auth.auth.signUp({email: address, password, options: {emailRedirectTo: window.location.origin + window.location.pathname}});
-        if (reason) throw new Error(m.accountFailed);
-        if (!data.session) { setPassword(''); setNotice(m.accountCheckMail); return; }
+      if (address.includes('@')) {
+        if (kind === 'create') {
+          const {data, error: reason} = await auth.auth.signUp({email: address, password, options: {emailRedirectTo: window.location.origin + window.location.pathname}});
+          if (reason) throw new Error(m.accountFailed);
+          if (!data.session) { setPassword(''); setNotice(m.accountCheckMail); return; }
+        } else {
+          const {error: reason} = await auth.auth.signInWithPassword({email: address, password});
+          if (reason) throw new Error(m.accountWrong);
+        }
       } else {
-        const {error: reason} = await auth.auth.signInWithPassword({email: address, password});
-        if (reason) throw new Error(m.accountWrong);
+        // A name-only account: the server creates it without an email, then the browser signs in with the made-up address.
+        const username = cleanUsername(address);
+        if (!username) throw new Error(m.usernameInvalid);
+        if (kind === 'create') {
+          const res = await fetch(apiBase + '/username-signup', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({username, password})}).catch(() => null);
+          const body = res ? await res.json().catch(() => ({})) as {error?: string} : {};
+          if (!res || !res.ok) throw new Error(translateServerError(body.error, language) || m.accountFailed);
+        }
+        const {error: reason} = await auth.auth.signInWithPassword({email: usernameToEmail(username), password});
+        if (reason) throw new Error(kind === 'create' ? m.accountFailed : m.accountWrong);
       }
       setPassword(''); finishSignIn();
     } catch (e) { setAccountError(e instanceof Error && e.message ? e.message : m.accountFailed); }
@@ -93,7 +107,8 @@ export default function ModeGate({ initialMode, initialLanguage }: { initialMode
     if (!auth || accountBusy) return;
     const address = email.trim();
     setAccountError(''); setNotice('');
-    if (!address.includes('@')) { setAccountError(m.accountNeedEmail); return; }
+    if (!address) { setAccountError(m.accountNeedEmail); return; }
+    if (!address.includes('@')) { setNotice(m.usernameNoReset); return; }
     setAccountBusy(true);
     try {
       await auth.auth.resetPasswordForEmail(address, {redirectTo: window.location.origin + window.location.pathname});
@@ -169,8 +184,8 @@ export default function ModeGate({ initialMode, initialLanguage }: { initialMode
     <footer className="landing-footer"><span className="landing-tag"><span className="landing-tag-star" aria-hidden="true"><Star size={11}/></span><span className="landing-tag-lines"><span>{m.footerLead}</span><span>{m.footerTail}</span></span></span><span className="landing-credit">{m.createdBy} <a href="https://nrnworld.one" target="_blank" rel="noopener noreferrer">nrnworld.one</a><span aria-hidden="true" className="credit-slash">/</span><a href="mailto:bynrnworld@gmail.com">bynrnworld@gmail.com</a></span><span>{m.footerEnd}</span></footer>
   </div></div>;
   if (mode === 'private') return <PrivateMode language={language} onLanguageChange={setLanguage} onBack={()=>setMode('choose')}/>;
-  if (session && mode === 'connected') return <div className="connected-shell"><div className="connected-banner"><span><MapPin size={15}/> {m.liveBanner}</span><div className="banner-actions"><button onClick={() => void signOutAccount()}>{m.logout}</button><button onClick={() => void deleteAccount()}>{m.deleteAccount}</button></div></div>{accountError&&<p role="alert" className="mode-warning">{accountError}</p>}<App key={session.user.id} accessToken={session.access_token} initialLang={language} onSignOut={() => void signOutAccount()}/></div>;
+  if (session && mode === 'connected') return <div className="connected-shell"><div className="connected-banner"><span><MapPin size={15}/> {m.liveBanner}</span><div className="banner-actions"><button onClick={() => void signOutAccount()}>{m.logout}</button><button onClick={() => void deleteAccount()}>{m.deleteAccount}</button></div></div>{accountError&&<p role="alert" className="mode-warning">{accountError}</p>}<App key={session.user.id} accessToken={session.access_token} initialLang={language} onSignOut={() => void signOutAccount()} onDeleteAccount={() => void deleteAccount()}/></div>;
   if (testMode && !session) return <div className="connected-shell"><div className="connected-banner test-banner"><span><MapPin size={15}/> {m.testBanner}</span><button onClick={endTest}>{m.testExit}</button></div><App key="test-mode" initialLang={language} onRequireLogin={()=>{sessionStorage.removeItem('stride-test-mode');setTestMode(false);setMode('connected');}}/></div>;
-  if (session && auth) return <div className="connected-shell"><div className="connected-banner"><span><MapPin size={15}/> {m.liveBanner}</span><button onClick={async()=>{await auth.auth.signOut({scope:'local'});setAuth(null);setSession(null);sessionStorage.removeItem('pending-connected');setMode('choose')}}>{m.logout}</button></div><App key={session.user.id} accessToken={session.access_token} initialLang={language} onSignOut={() => void signOutAccount()}/></div>;
-  return <div className="mode-page"><div className="mode-inner"><button className="mode-back" onClick={()=>{sessionStorage.removeItem('pending-connected');setMode('choose')}}>← {m.back}</button><LanguagePicker value={language} onChange={setLanguage}/><div className="mode-mark logo-mark"><BrandMark size={72}/></div><p className="mode-eyebrow">{m.loginEyebrow}</p><h1>{m.loginTitle}</h1><p className="mode-intro">{m.loginIntro}</p><div className="mode-panel"><h2>{m.accountTitle}</h2><p>{m.accountNote}</p><form className="account-form" onSubmit={e=>{e.preventDefault();void emailSignIn('login');}}><label htmlFor="account-email">{m.accountEmail}</label><input id="account-email" type="email" autoComplete="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="du@example.com" required/><label htmlFor="account-password">{m.accountPassword}</label><input id="account-password" type="password" autoComplete="current-password" value={password} onChange={e=>setPassword(e.target.value)} minLength={8} maxLength={72} required/><p className="account-hint">{m.accountPasswordHint}</p><div className="account-actions"><button type="submit" disabled={accountBusy||!auth}>{m.accountLogin}</button><button type="button" className="secondary" disabled={accountBusy||!auth} onClick={()=>void emailSignIn('create')}>{m.accountCreate}</button></div><button type="button" className="account-forgot" disabled={accountBusy||!auth} onClick={()=>void requestReset()}>{m.accountForgot}</button></form>{notice&&<p role="status" className="account-notice">{notice}</p>}{accountError&&<p role="alert" className="mode-warning">{accountError}</p>}<div className="auth-divider">{m.accountDivider}</div><div className="auth-actions"><button onClick={()=>signIn('google')} disabled={!auth}><GoogleIcon/>{m.google}</button><button onClick={()=>signIn('apple')} disabled={!auth}><AppleIcon/>{m.apple}</button></div>{!auth&&<p className="mode-warning">{m.oauthWait}</p>}{error&&<p role="alert" className="mode-warning">{error}</p>}</div><div className="test-entry"><button onClick={startTest}>{m.testEntry}<ArrowRight size={16}/></button><p>{m.testEntryHint}</p></div><a className="mode-policy" href={"/privacypolicy.html?lang="+language} target="_blank" rel="noopener noreferrer">{m.dataLink}</a></div></div>;
+  if (session && auth) return <div className="connected-shell"><div className="connected-banner"><span><MapPin size={15}/> {m.liveBanner}</span><div className="banner-actions"><button onClick={() => void signOutAccount()}>{m.logout}</button><button onClick={() => void deleteAccount()}>{m.deleteAccount}</button></div></div><App key={session.user.id} accessToken={session.access_token} initialLang={language} onSignOut={() => void signOutAccount()} onDeleteAccount={() => void deleteAccount()}/></div>;
+  return <div className="mode-page"><div className="mode-inner"><button className="mode-back" onClick={()=>{sessionStorage.removeItem('pending-connected');setMode('choose')}}>← {m.back}</button><LanguagePicker value={language} onChange={setLanguage}/><div className="mode-mark logo-mark"><BrandMark size={72}/></div><p className="mode-eyebrow">{m.loginEyebrow}</p><h1>{m.loginTitle}</h1><p className="mode-intro">{m.loginIntro}</p><div className="mode-panel"><h2>{m.accountTitle}</h2><p>{m.accountNote}</p><form className="account-form" onSubmit={e=>{e.preventDefault();void emailSignIn('login');}}><label htmlFor="account-email">{m.accountEmail}</label><input id="account-email" type="text" autoComplete="username" autoCapitalize="none" spellCheck={false} value={email} onChange={e=>setEmail(e.target.value)} placeholder={m.accountIdPlaceholder} required/><label htmlFor="account-password">{m.accountPassword}</label><input id="account-password" type="password" autoComplete="current-password" value={password} onChange={e=>setPassword(e.target.value)} minLength={8} maxLength={72} required/><p className="account-hint">{m.accountPasswordHint}</p><div className="account-actions"><button type="submit" disabled={accountBusy||!auth}>{m.accountLogin}</button><button type="button" className="secondary" disabled={accountBusy||!auth} onClick={()=>void emailSignIn('create')}>{m.accountCreate}</button></div><button type="button" className="account-forgot" disabled={accountBusy||!auth} onClick={()=>void requestReset()}>{m.accountForgot}</button></form>{notice&&<p role="status" className="account-notice">{notice}</p>}{accountError&&<p role="alert" className="mode-warning">{accountError}</p>}<div className="auth-divider">{m.accountDivider}</div><div className="auth-actions"><button onClick={()=>signIn('google')} disabled={!auth}><GoogleIcon/>{m.google}</button><button onClick={()=>signIn('apple')} disabled={!auth}><AppleIcon/>{m.apple}</button></div>{!auth&&<p className="mode-warning">{m.oauthWait}</p>}{error&&<p role="alert" className="mode-warning">{error}</p>}</div><div className="test-entry"><button onClick={startTest}>{m.testEntry}<ArrowRight size={16}/></button><p>{m.testEntryHint}</p></div><a className="mode-policy" href={"/privacypolicy.html?lang="+language} target="_blank" rel="noopener noreferrer">{m.dataLink}</a></div></div>;
 }

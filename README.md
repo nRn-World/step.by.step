@@ -59,6 +59,7 @@ Both modes use the same logo, the same typefaces, the same colours and the same 
 | **Pair two groups** | Share a code or a link. The other group only sees the shared goal and the member count, never personal goals, names or per person steps. |
 | **Analysis map** | When two groups are paired, an animated map ranks the groups for day, week or month, with a crown on the leader and a line saying how many steps you are ahead or behind. |
 | **Email account** | Create an account with email and password, then sign in right away. Forgot your password? A reset link is sent by email. Google and Apple sign-in is also supported. |
+| **Username account** | Create an account with just a username and a password, no email. The name must be unique (3 to 20 letters, digits, dot, underscore or hyphen, not case sensitive). Supabase stores it under a made-up address, so there is no password reset. The server creates these accounts (`POST /api/username-signup`, needs `SUPABASE_SERVICE_KEY`). |
 | **Test mode** | **Try the app without an account** opens the screens with sample data in a clearly marked test mode. No fake sign-in, no calls, nothing is saved. |
 | **Light and dark** | Two complete themes with the same colour scale, plus mobile adaptation down to 320 px. |
 
@@ -91,7 +92,7 @@ A web browser cannot read the phone's steps and cannot track reliably in the bac
 | Server | Express with TypeScript, data in `data/steps.json` |
 | Mobile | Capacitor 8 for Android and iOS, Health Connect and HealthKit for steps |
 | Sharing close by | Bluetooth Low Energy directly between phones, custom service `e672a300-c4be-429e-89ec-df1477a51101` |
-| Sign-in | Supabase Auth: email and password, Google and Apple |
+| Sign-in | Supabase Auth: username or email with a password, Google and Apple |
 | Tests | Vitest with Testing Library, 42 tests in 7 files |
 
 ## Getting started

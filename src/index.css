@@ -294,3 +294,5 @@ h1,h2,h3,h4,.person-info strong{overflow-wrap:break-word}
 @media (prefers-reduced-motion:reduce){.celebration-backdrop *,.celebration-card{animation:none!important}}
 .side-logout{margin-top:8px;width:100%;padding:8px;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--muted);font:inherit;font-size:.85rem;cursor:pointer}
 .side-logout:hover{color:#7c60bb;background:var(--soft)}
+.side-delete{margin-top:6px;width:100%;padding:6px;border:0;background:transparent;color:#b4503f;font:inherit;font-size:.78rem;text-decoration:underline;cursor:pointer}
+.side-delete:hover{color:#8f3524}
