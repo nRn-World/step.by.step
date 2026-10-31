@@ -308,3 +308,6 @@ h1,h2,h3,h4,.person-info strong{overflow-wrap:break-word}
 .side-bottom{position:sticky;bottom:0;background:var(--surface);padding-top:10px;padding-bottom:env(safe-area-inset-bottom)}
 @media (max-height:860px){.side-cheer{display:none}}
 @media (max-width:700px){.connected-shell .sidebar{top:0;height:100vh;height:100dvh;z-index:80;padding-top:calc(30px + env(safe-area-inset-top))}}
+.activity-day.goal-met .activity-bar-track{background:#4ade8026;box-shadow:0 0 0 1.5px #4ade80,0 0 12px #4ade80b3}
+.activity-day.goal-met .activity-bar-fill{background:#4ade80;box-shadow:0 0 8px #4ade80}
+.activity-day.goal-met small{color:#86efac}

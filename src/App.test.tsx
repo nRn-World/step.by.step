@@ -375,6 +375,41 @@ describe('name to group creation', () => {
     expect(digest.textContent).not.toContain('7');
   });
 
+  it('lights the weekday green when its daily goal was reached, and only that day', async () => {
+    localStorage.setItem('stride-token', 'owner-token');
+    const today = new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Stockholm',year:'numeric',month:'2-digit',day:'2-digit'}).format(Date.now());
+    const g = group('Promenader', 'Jag');
+    g.goals = [{ id:'g1', type:'day', target:8000, scope:'each' }] as typeof g.goals;
+    const walked = { [today]: 7500 }; // 10 000 steps, above the 8 000 goal
+    g.members[0] = { ...g.members[0], distances: walked } as typeof g.members[0];
+    vi.spyOn(globalThis, 'fetch').mockImplementation(async input => {
+      if(input==='/api/state')return reply({ me:{id:'member-id',name:'Jag',distances:walked},groups:[g] });
+      throw Error(`Unexpected request: ${input}`);
+    });
+    render(<App />);
+    const digest = await screen.findByLabelText('Andras aktiviteter per dag');
+    const lit = digest.querySelectorAll('.activity-day.goal-met');
+    expect(lit.length).toBe(1);
+    expect(lit[0].getAttribute('aria-current')).toBe('date');
+    expect(lit[0].getAttribute('title')).toContain('Dagens mål klarat');
+  });
+
+  it('keeps the weekdays plain when the daily goal was not reached', async () => {
+    localStorage.setItem('stride-token', 'owner-token');
+    const today = new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Stockholm',year:'numeric',month:'2-digit',day:'2-digit'}).format(Date.now());
+    const g = group('Promenader', 'Jag');
+    g.goals = [{ id:'g1', type:'day', target:8000, scope:'each' }] as typeof g.goals;
+    const walked = { [today]: 3000 }; // 4 000 steps, below the goal
+    g.members[0] = { ...g.members[0], distances: walked } as typeof g.members[0];
+    vi.spyOn(globalThis, 'fetch').mockImplementation(async input => {
+      if(input==='/api/state')return reply({ me:{id:'member-id',name:'Jag',distances:walked},groups:[g] });
+      throw Error(`Unexpected request: ${input}`);
+    });
+    render(<App />);
+    const digest = await screen.findByLabelText('Andras aktiviteter per dag');
+    expect(digest.querySelectorAll('.activity-day.goal-met').length).toBe(0);
+  });
+
   it('gives the podium gold, silver and bronze ranks', async () => {
     render(<App />);
     const ranks = Array.from(document.querySelectorAll('.leader-row .rank'));
