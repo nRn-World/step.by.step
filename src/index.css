@@ -177,7 +177,7 @@
 .activity-digest-icon{color:#bdacfa;display:grid;place-items:center}
 .activity-digest-top strong{margin-left:auto;color:#fff;font-family:Outfit,sans-serif;font-size:27px;line-height:1}
 .activity-digest p{font-size:10px;color:#b8b3d0;margin:1px 0 10px 25px}
-.activity-bars{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));align-items:end;gap:8px;height:45px}
+.activity-bars{display:grid;grid-template-columns:repeat(7,minmax(0,20px));justify-content:space-between;align-items:end;gap:8px;height:45px}
 .activity-day{display:grid;justify-items:center;gap:4px;height:100%;min-width:0}
 .activity-day small{color:#9993b5;font-size:9px;line-height:1;font-weight:700}
 .activity-day.is-today small{color:#ddd3fa}
