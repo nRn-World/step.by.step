@@ -30,7 +30,7 @@ Steps, distance, goals and a leaderboard for the whole group, without anyone hav
 
 <br />
 
-**step.by.step** is a walking app for groups. The group gathers, walks their separate ways or together, and sees how everyone is doing. No email addresses, no maps of people, no points chase that demands the phone stays open all day.
+**step.by.step** is a walking app for groups. The group gathers, walks their separate ways or together, and sees how everyone is doing. Email is only used for sign-in, no maps of people, no points chase that demands the phone stays open all day.
 
 <div align="center">
 <img src="art/illustration-4-people.png" alt="Four people and a dog out walking" width="720" />
@@ -43,7 +43,7 @@ Steps, distance, goals and a leaderboard for the whole group, without anyone hav
 | **Close by** <br /> Group walk without an account | A group nearby walks together. Steps are read from the phone's own health store in the installed app. No GPS, no server, no accounts. | Display name and step total directly between the phones. The group list lives only in memory and disappears when the view closes. |
 | **Together live** <br /> Walk further together | The group is spread out and everyone wants to see the situation. Shows the number of active people, steps and distance for the group. | Number of active people, steps and estimated distance. Never names on a map, never anyone's route. |
 
-Both modes use the same logo, the same typefaces, the same colours and the same language choice. A nickname is enough, no email address is needed.
+Both modes use the same logo, the same typefaces, the same colours and the same language choice. Sign in with an email address and a password, or with Google or Apple. Anyone can also try the app without an account.
 
 ## What the app includes
 
@@ -58,7 +58,7 @@ Both modes use the same logo, the same typefaces, the same colours and the same 
 | **Celebration when a goal is reached** | When a goal has been reached, an animated scene plays that clearly shows which goal the group achieved. A separate scene for day, week, weekend, month, year and for the shared goal. |
 | **Pair two groups** | Share a code or a link. The other group only sees the shared goal and the member count, never personal goals, names or per person steps. |
 | **Analysis map** | When two groups are paired, an animated map ranks the groups for day, week or month, with a crown on the leader and a line saying how many steps you are ahead or behind. |
-| **Nickname account** | An account with only a nickname, no email. The password is stored as a scrypt hash with a salt. |
+| **Email account** | Create an account with email and password, then sign in right away. Forgot your password? A reset link is sent by email. Google and Apple sign-in is also supported. |
 | **Test mode** | **Try the app without an account** opens the screens with sample data in a clearly marked test mode. No fake sign-in, no calls, nothing is saved. |
 | **Light and dark** | Two complete themes with the same colour scale, plus mobile adaptation down to 320 px. |
 
@@ -68,7 +68,7 @@ Both modes use the same logo, the same typefaces, the same colours and the same 
 | :--- | :--- |
 | Is my location shared? | No. The location is only used on the phone to calculate distance. The server receives the number of metres and the measurement quality, and rejects calls that contain coordinates. |
 | Is the offline group saved? | No. Names, steps and the leaderboard live only in memory while the view is open. |
-| What data exists about me? | A display name you choose yourself and your steps. No email, no phone number, no address. |
+| What data exists about me? | A display name you choose yourself, your steps and, for an account, your email address. No phone number, no address. |
 | Can I disappear? | Yes. Leave the group, or delete the account, and your data is removed. |
 
 ## How the steps are measured
@@ -91,7 +91,7 @@ A web browser cannot read the phone's steps and cannot track reliably in the bac
 | Server | Express with TypeScript, data in `data/steps.json` |
 | Mobile | Capacitor 8 for Android and iOS, Health Connect and HealthKit for steps |
 | Sharing close by | Bluetooth Low Energy directly between phones, custom service `e672a300-c4be-429e-89ec-df1477a51101` |
-| Sign-in | Supabase Auth with Google and Apple, plus nickname accounts with scrypt |
+| Sign-in | Supabase Auth: email and password, Google and Apple |
 | Tests | Vitest with Testing Library, 42 tests in 7 files |
 
 ## Getting started
@@ -126,8 +126,7 @@ Static hosting, such as GitHub Pages, cannot run the group features because they
 
 | Method | Path | Does |
 | :--- | :--- | :--- |
-| `POST` | `/api/accounts` | Creates a nickname account |
-| `POST` | `/api/accounts/login` | Signs in with nickname and code |
+| `DELETE` | `/api/accounts` | Deletes the signed-in person and their data on the server |
 | `POST` | `/api/groups` | Creates a group |
 | `POST` | `/api/groups/:id/join` | Joins with a code |
 | `POST` | `/api/groups/:id/leave` | Leaves the group |

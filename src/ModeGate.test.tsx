@@ -51,27 +51,59 @@ describe('privacy-first mode selection', () => {
     expect(screen.getByText('Hur vill ni gå?')).toBeDefined();
     expect(sessionStorage.getItem('stride-test-mode')).toBeNull();
   });
-  it('creates a nickname account without email and opens the app with it',async()=>{
-    const sent: {url:string; body:Record<string,unknown>}[] = [];
-    vi.spyOn(globalThis,'fetch').mockImplementation(async(input,init)=>{
-      const url=String(input);
-      if(url==='/api/accounts'){sent.push({url,body:JSON.parse(String(init?.body))});return reply({token:'account-token',me:{id:'person-1',name:'Lina',distances:{}}})}
-      if(url==='/api/state')return reply({me:{id:'person-1',name:'Lina',distances:{}},groups:[]});
-      throw Error('Unexpected request: '+url);
+  it('signs in with email and password and opens the app with the session',async()=>{
+    vi.resetModules();
+    vi.stubEnv('VITE_SUPABASE_URL','https://example.supabase.co');
+    vi.stubEnv('VITE_SUPABASE_ANON_KEY','anon-key');
+    let emit: ((event:string, session:unknown)=>void)|undefined;
+    const signInWithPassword = vi.fn(async()=>({error:null}));
+    vi.doMock('@supabase/supabase-js',()=>({createClient:()=>({auth:{
+      getSession:async()=>({data:{session:null}}),
+      onAuthStateChange:(cb:(event:string,session:unknown)=>void)=>{emit=cb;return {data:{subscription:{unsubscribe(){}}}};},
+      signInWithPassword,
+    }})}));
+    vi.spyOn(globalThis,'fetch').mockImplementation(async(input)=>{
+      if(String(input)==='/api/state')return reply({me:{id:'person-1',name:'Lina',distances:{}},groups:[]});
+      throw Error('Unexpected request: '+String(input));
     });
-    render(<ModeGate />);
-    fireEvent.click(screen.getByText('Tillsammans · live'));
-    fireEvent.change(screen.getByLabelText('Smeknamn'),{target:{value:'Lina'}});
-    fireEvent.change(screen.getByLabelText('Din kod'),{target:{value:'1234'}});
-    fireEvent.click(screen.getByRole('button',{name:'Skapa konto'}));
-    await waitFor(()=>expect(localStorage.getItem('stride-account')).toContain('Lina'));
-    expect(sent).toHaveLength(1);
-    expect(sent[0].url).toBe('/api/accounts');
-    expect(sent[0].body).toEqual({nickname:'Lina',code:'1234'});
-    expect(localStorage.getItem('stride-token')).toBe('account-token');
-    await waitFor(()=>expect(screen.getByText(/LIVE · Plats visas aldrig för andra/)).toBeDefined());
+    const { default: FreshModeGate } = await import('./ModeGate');
+    render(<FreshModeGate initialMode="connected" />);
+    fireEvent.change(screen.getByLabelText('E-post'),{target:{value:'lina@example.com'}});
+    fireEvent.change(screen.getByLabelText('Lösenord'),{target:{value:'hemligt123'}});
+    fireEvent.click(screen.getByRole('button',{name:'Logga in'}));
+    await waitFor(()=>expect(signInWithPassword).toHaveBeenCalledWith({email:'lina@example.com',password:'hemligt123'}));
+    emit?.('SIGNED_IN',{access_token:'session-token',user:{id:'user-1'}});
+    await waitFor(()=>expect(screen.getByText(/Radera kontot/)).toBeDefined());
+    expect(localStorage.getItem('stride-connected')).toBe('yes');
+    vi.doUnmock('@supabase/supabase-js');
+    vi.unstubAllEnvs();
   });
-  it('deletes the account and everything on it after an explicit confirmation',async()=>{
+  it('rejects a short password before it reaches the auth service',async()=>{
+    vi.resetModules();
+    vi.stubEnv('VITE_SUPABASE_URL','https://example.supabase.co');
+    vi.stubEnv('VITE_SUPABASE_ANON_KEY','anon-key');
+    const signUp = vi.fn();
+    vi.doMock('@supabase/supabase-js',()=>({createClient:()=>({auth:{getSession:async()=>({data:{session:null}}),onAuthStateChange:()=>({data:{subscription:{unsubscribe(){}}}}),signUp}})}));
+    const { default: FreshModeGate } = await import('./ModeGate');
+    render(<FreshModeGate initialMode="connected" />);
+    fireEvent.change(screen.getByLabelText('E-post'),{target:{value:'lina@example.com'}});
+    fireEvent.change(screen.getByLabelText('Lösenord'),{target:{value:'kort'}});
+    fireEvent.click(screen.getByRole('button',{name:'Skapa konto'}));
+    await waitFor(()=>expect(screen.getByRole('alert').textContent).toContain('minst 8 tecken'));
+    expect(signUp).not.toHaveBeenCalled();
+    vi.doUnmock('@supabase/supabase-js');
+    vi.unstubAllEnvs();
+  });
+  it('signs out and deletes the account after an explicit confirmation',async()=>{
+    vi.resetModules();
+    vi.stubEnv('VITE_SUPABASE_URL','https://example.supabase.co');
+    vi.stubEnv('VITE_SUPABASE_ANON_KEY','anon-key');
+    const signOut = vi.fn(async()=>({error:null}));
+    vi.doMock('@supabase/supabase-js',()=>({createClient:()=>({auth:{
+      getSession:async()=>({data:{session:{access_token:'session-token',user:{id:'user-1'}}}}),
+      onAuthStateChange:()=>({data:{subscription:{unsubscribe(){}}}}),
+      signOut,
+    }})}));
     const calls: string[] = [];
     vi.spyOn(globalThis,'fetch').mockImplementation(async(input,init)=>{
       const url=String(input);
@@ -80,16 +112,19 @@ describe('privacy-first mode selection', () => {
       if(url==='/api/state')return reply({me:{id:'person-1',name:'Lina',distances:{}},groups:[]});
       throw Error('Unexpected request: '+url);
     });
-    localStorage.setItem('stride-account',JSON.stringify({token:'account-token',name:'Lina'}));
-    localStorage.setItem('stride-token','account-token');
+    localStorage.setItem('stride-connected','yes');
     const confirm = vi.spyOn(window,'confirm').mockReturnValue(true);
-    render(<ModeGate />);
+    const { default: FreshModeGate } = await import('./ModeGate');
+    render(<FreshModeGate initialMode="connected" />);
+    await waitFor(()=>expect(screen.getByRole('button',{name:'Radera kontot'})).toBeDefined());
     fireEvent.click(screen.getByRole('button',{name:'Radera kontot'}));
-    await waitFor(()=>expect(localStorage.getItem('stride-account')).toBeNull());
+    await waitFor(()=>expect(screen.getByText('Hur vill ni gå?')).toBeDefined());
     expect(confirm).toHaveBeenCalled();
     expect(calls).toContain('DELETE /api/accounts');
-    expect(localStorage.getItem('stride-token')).toBeNull();
-    expect(screen.getByText('Hur vill ni gå?')).toBeDefined();
+    expect(signOut).toHaveBeenCalled();
+    expect(localStorage.getItem('stride-connected')).toBeNull();
+    vi.doUnmock('@supabase/supabase-js');
+    vi.unstubAllEnvs();
   });
   it('stacks the footer tag on two centred lines instead of wrapping',()=>{
     render(<ModeGate />);

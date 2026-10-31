@@ -87,3 +87,10 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
   .landing-nav{grid-template-rows:57px 41px auto}
   .landing-nav-note{grid-column:1/-1;grid-row:3;display:block;padding:0 0 11px;border-left:0;font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#9d968e}
 }
+
+/* Sign-in brand icons: visible on the dark buttons, Google keeps its colours on a white tile. */
+.auth-icon{width:22px;height:22px;flex:none;display:block}
+.auth-icon-badge{display:grid;place-items:center;width:30px;height:30px;background:#fff;border-radius:7px;flex:none}
+.auth-icon-badge .auth-icon{width:20px;height:20px}
+.auth-icon-apple{color:#fff}
+.auth-actions button:disabled .auth-icon-badge{opacity:.8}

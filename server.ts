@@ -1,8 +1,8 @@
 import express from 'express';
 import { createClient } from '@supabase/supabase-js';
-import { randomBytes, scryptSync, timingSafeEqual } from 'node:crypto';
-import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs';
-import { join } from 'node:path';
+import { randomBytes } from 'node:crypto';
+import { existsSync, readFileSync, writeFileSync, mkdirSync, renameSync } from 'node:fs';
+import { join, dirname } from 'node:path';
 import { countActivities, recordWalk, type Walk } from './activity';
 
 const app = express();
@@ -25,10 +25,9 @@ app.use('/api',(req,res,next)=>{
 app.use(express.json({ limit: '20kb' }));
 const DATA = join(process.cwd(), 'data', 'steps.json');
 type GoalType = 'day' | 'week' | 'weekend' | 'month' | 'year';
-type Account = { nickname: string; salt: string; hash: string };
-type Person = { id: string; token: string; name: string; distances: Record<string, number>; activities?: Walk[]; lastMovementAt?: number; oauthSubject?: string; account?: Account;  };
+type Person = { id: string; token: string; name: string; distances: Record<string, number>; activities?: Walk[]; lastMovementAt?: number; oauthSubject?: string; };
 type GoalScope = 'each' | 'together';
-type Group = { mode?: 'connected'; id: string; code: string; pairCode?: string; name: string; ownerId: string; members: string[]; memberNames?: Record<string, string>; banned: string[]; goals: { id: string; type: GoalType; target: number; scope?: GoalScope }[]; partners?: string[]; likes: Record<string, string[]>; createdAt: number };
+type Group = { mode?: 'connected'; id: string; code: string; pairCode?: string; name: string; ownerId: string; members: string[]; memberNames?: Record<string, string>; banned: string[]; bannedNames?: string[]; goals: { id: string; type: GoalType; target: number; scope?: GoalScope }[]; partners?: string[]; likes: Record<string, string[]>; createdAt: number };
 type DB = { people: Person[]; groups: Group[] };
 // A goal is either for each walker ('each') or for the whole group together ('together').
 const goalKey = (g: { type: GoalType; scope?: GoalScope }) => `${g.type}:${g.scope === 'each' ? 'each' : 'together'}`;
@@ -37,8 +36,12 @@ const PAIR_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 const nextPairCode = () => { for (;;) { let out = ''; const bytes = randomBytes(6); for (let i = 0; i < 6; i++) out += PAIR_ALPHABET[bytes[i] % PAIR_ALPHABET.length]; if (!db.groups.some(g => g.pairCode === out)) return out; } };
 const METERS_PER_STEP = 0.75;
 let db: DB = { people: [], groups: [] };
-try { db = JSON.parse(readFileSync(DATA, 'utf8')); } catch { /* new instance */ }
-const save = () => { mkdirSync(join(process.cwd(), 'data'), { recursive: true }); writeFileSync(DATA, JSON.stringify(db)); };
+// A damaged file must stop the server, otherwise the next save would overwrite every account and group with an empty database.
+if (existsSync(DATA)) {
+  try { db = JSON.parse(readFileSync(DATA, 'utf8')); } catch (err) { console.error(`${DATA} kunde inte läsas. Servern startar inte för att data inte ska skrivas över.`, err); process.exit(1); }
+}
+// Write to a temp file first, so a crash mid-write never leaves a half-written database behind.
+const save = () => { mkdirSync(dirname(DATA), { recursive: true }); const tmp = `${DATA}.tmp`; writeFileSync(tmp, JSON.stringify(db)); renameSync(tmp, DATA); };
 // Migrate old records: the server must never retain historic GPS coordinates.
 if (db.people.some(p => 'lastFix' in p)) {
   for (const p of db.people) delete (p as Person & {lastFix?:unknown}).lastFix;
@@ -52,7 +55,7 @@ app.use('/api', async (req, res, next) => {
   if (!authClient) return fail(res, 503, 'Inloggning är inte konfigurerad på servern.');
   try {
     const { data, error } = await authClient.auth.getUser(bearer);
-    if (error || !data.user || !['google','apple'].includes(data.user.app_metadata?.provider)) return fail(res, 401, 'Logga in med Google eller Apple.');
+    if (error || !data.user || !['email','google','apple'].includes(data.user.app_metadata?.provider)) return fail(res, 401, 'Logga in med e-post, Google eller Apple.');
     let p = db.people.find(item => item.oauthSubject === data.user.id);
     if (!p) { p = makePerson('Vandrare'); p.oauthSubject = data.user.id; save(); }
     (req as express.Request & { verifiedPerson?: Person }).verifiedPerson = p;
@@ -85,6 +88,18 @@ const partnerSummary = (g: Group) => ({ id: g.id, name: g.name, memberCount: g.m
   steps: { day: groupSteps(g, 'day'), week: groupSteps(g, 'week'), month: groupSteps(g, 'month') } });
 const person = (req: express.Request) => (req as express.Request & {verifiedPerson?:Person}).verifiedPerson || db.people.find(p => !p.oauthSubject && (p.token === req.body?.token || p.token === req.headers.authorization?.replace(/^Bearer /, '')));
 const fail = (res: express.Response, status: number, message: string) => res.status(status).json({ error: message });
+// Simple in-memory limit per client and route. Login-related requests and profile creation are the main brute-force and spam targets.
+const hits = new Map<string, number[]>();
+const limit = (max: number, windowMs: number): express.RequestHandler => (req, res, next) => {
+  const now = Date.now();
+  if (hits.size > 10000) hits.clear();
+  const key = `${req.ip}|${req.path}`;
+  const recent = (hits.get(key) || []).filter(at => now - at < windowMs);
+  if (recent.length >= max) return fail(res, 429, 'För många försök. Vänta en stund och försök igen.');
+  recent.push(now);
+  hits.set(key, recent);
+  next();
+};
 const view = (g: Group, viewer: Person) => ({ id: g.id, viewerId: viewer.id, name: g.name, code: g.code, isAdmin: g.ownerId === viewer.id,
   partners: (g.partners || []).map(pid => db.groups.find(x => x.id === pid)).filter((x): x is Group => !!x).map(partnerSummary),
   ...(g.ownerId === viewer.id ? { pairCode: g.pairCode || null } : {}),
@@ -92,45 +107,8 @@ const view = (g: Group, viewer: Person) => ({ id: g.id, viewerId: viewer.id, nam
 app.get('/api/state', (req, res) => { const p = person(req); if (!p) return fail(res, 401, 'Sessionen hittades inte. Ange ett namn igen.'); res.json({ me: { id: p.id, name: p.name, distances: p.distances }, groups: db.groups.filter(g => g.members.includes(p.id)).map(g => view(g,p)) }); });
 const validName = (input: unknown) => typeof input === 'string' ? input.trim().replace(/\s+/g, ' ') : '';
 const makePerson = (name: string): Person => { const p: Person = { id: id(), token: id() + id(), name, distances: {} }; db.people.push(p); return p; };
-// A nickname account: no email, no OAuth provider. Only a nickname and a code the person chooses.
-const codeHash = (code: string, salt: string) => scryptSync(code.normalize('NFKC'), salt, 32).toString('hex');
-const accountByNickname = (nickname: string) => db.people.find(p => p.account && p.account.nickname.toLowerCase() === nickname.toLowerCase());
-const accountPayload = (p: Person) => ({ token: p.token, me: { id: p.id, name: p.name, distances: p.distances } });
-app.post('/api/accounts', (req, res) => {
-  const nickname = validName(req.body.nickname);
-  const code = typeof req.body.code === 'string' ? req.body.code.trim() : '';
-  if (nickname.length < 3 || nickname.length > 32) return fail(res, 400, 'Smeknamnet måste vara 3 till 32 tecken.');
-  if (code.length < 4 || code.length > 64) return fail(res, 400, 'Koden måste vara minst 4 tecken.');
-  if (accountByNickname(nickname)) return fail(res, 409, 'Det finns redan ett konto med det smeknamnet. Logga in i stället.');
-  const salt = randomBytes(16).toString('hex');
-  const p = makePerson(nickname);
-  p.account = { nickname, salt, hash: codeHash(code, salt) };
-  p.token = id() + id();
-  save();
-  res.json(accountPayload(p));
-});
-app.post('/api/accounts/login', (req, res) => {
-  const nickname = validName(req.body.nickname);
-  const code = typeof req.body.code === 'string' ? req.body.code.trim() : '';
-  const p = nickname ? accountByNickname(nickname) : undefined;
-  if (!p || !p.account) return fail(res, 401, 'Hittade inget konto med det smeknamnet.');
-  const expected = Buffer.from(p.account.hash, 'hex');
-  const given = Buffer.from(codeHash(code, p.account.salt), 'hex');
-  if (expected.length !== given.length || !timingSafeEqual(expected, given)) return fail(res, 401, 'Koden stämmer inte.');
-  save();
-  res.json(accountPayload(p));
-});
-app.post('/api/accounts/logout', (req, res) => {
-  const p = person(req);
-  if (!p) return fail(res, 401, 'Sessionen hittades inte.');
-  p.token = id() + id();
-  save();
-  res.json({ signedOut: true });
-});
-// Deleting the account erases the person, every membership and every like in one go.
-app.delete('/api/accounts', (req, res) => {
-  const p = person(req);
-  if (!p) return fail(res, 401, 'Sessionen hittades inte.');
+// Removes a person, every membership and every like on them. Used by account deletion and the legacy cleanup below.
+const removePerson = (p: Person) => {
   for (const g of db.groups) {
     if (!g.members.includes(p.id)) continue;
     g.members = g.members.filter(mid => mid !== p.id);
@@ -144,9 +122,17 @@ app.delete('/api/accounts', (req, res) => {
   db.groups = db.groups.filter(g => g.members.length > 0);
   db.people = db.people.filter(x => x.id !== p.id);
   save();
+};
+// Nickname accounts (smeknamn + kod) were removed. Their people are deleted once, so no old login can remain.
+for (const p of db.people.filter(item => 'account' in item)) removePerson(p);
+// Deleting the account erases the person, every membership and every like in one go.
+app.delete('/api/accounts', (req, res) => {
+  const p = person(req);
+  if (!p) return fail(res, 401, 'Sessionen hittades inte.');
+  removePerson(p);
   res.json({ deleted: true });
 });
-app.post('/api/profile', (req, res) => { const name = validName(req.body.name); if (name.length < 3 || name.length > 32) return fail(res, 400, 'Namnet måste vara 3 till 32 tecken.'); const p = makePerson(name); save(); res.json({ token: p.token }); });
+app.post('/api/profile', limit(20, 60 * 60 * 1000), (req, res) => { const name = validName(req.body.name); if (name.length < 3 || name.length > 32) return fail(res, 400, 'Namnet måste vara 3 till 32 tecken.'); const p = makePerson(name); save(); res.json({ token: p.token }); });
 app.get('/api/invite/:code', (req, res) => { const g = db.groups.find(g => g.code === req.params.code); if (!g) return fail(res, 404, 'Länken är ogiltig.'); res.json({ id: g.id, name: g.name, members: g.members.length }); });
 app.post('/api/groups/:id/pair-code', (req, res) => { const p = person(req); const g = db.groups.find(g => g.id === req.params.id); if (!p || !g || g.ownerId !== p.id) return fail(res, 403, 'Bara gruppens skapare kan hämta koden.'); if (!g.pairCode) { g.pairCode = nextPairCode(); save(); } res.json({ code: g.pairCode }); });
 app.get('/api/pair/:code', (req, res) => { const p = person(req); if (!p) return fail(res, 401, 'Sessionen hittades inte. Ange ett namn igen.'); const code = String(req.params.code || '').trim().toUpperCase(); const g = db.groups.find(g => !!g.pairCode && g.pairCode === code); if (!g) return fail(res, 404, 'Koden hittades inte. Be det andra teamet om en ny kod.'); res.json({ id: g.id, name: g.name, memberCount: g.members.length }); });
@@ -175,6 +161,8 @@ app.post('/api/groups/:id/join', (req, res) => {
   if (memberName.length < 3 || memberName.length > 32) return fail(res, 400, 'Välj ett namn i gruppen på 3 till 32 tecken.');
   let p = person(req);
   if (p && g.banned.includes(p.id)) return fail(res, 403, 'Du kan inte gå med i den här gruppen igen.');
+  // A new anonymous session gets a new id, so the banned display name is blocked as well.
+  if (g.bannedNames?.includes(memberName.toLowerCase())) return fail(res, 403, 'Du kan inte gå med i den här gruppen igen.');
   let recoveredToken: string | undefined;
   if (!p) { p = makePerson(memberName); recoveredToken = p.token; }
   if (!g.members.includes(p.id)) { g.members.push(p.id); g.memberNames ||= {}; g.memberNames[p.id] = memberName; }
@@ -207,7 +195,7 @@ app.post('/api/groups/:id/leave', (req, res) => {
   else if (g.ownerId === p.id) g.ownerId = g.members[0];
   save(); res.json({ left: true, deleted: g.members.length === 0 });
 });
-app.post('/api/groups/:id/remove', (req, res) => { const p = person(req); const g = db.groups.find(g => g.id === req.params.id); const mid = String(req.body.memberId); if (!p || !g || g.ownerId !== p.id || mid === p.id || !g.members.includes(mid)) return fail(res,403,'Du kan inte ta bort den här personen.'); g.members = g.members.filter(x => x !== mid); g.banned.push(mid); save(); res.json(view(g,p)); });
+app.post('/api/groups/:id/remove', (req, res) => { const p = person(req); const g = db.groups.find(g => g.id === req.params.id); const mid = String(req.body.memberId); if (!p || !g || g.ownerId !== p.id || mid === p.id || !g.members.includes(mid)) return fail(res,403,'Du kan inte ta bort den här personen.'); const removedName = g.memberNames?.[mid]?.toLowerCase(); g.members = g.members.filter(x => x !== mid); g.banned.push(mid); if (removedName) (g.bannedNames ||= []).push(removedName); if (g.memberNames) delete g.memberNames[mid]; for (const key of Object.keys(g.likes)) { if (key.endsWith(`:${mid}`)) delete g.likes[key]; else g.likes[key] = g.likes[key].filter(x => x !== mid); } save(); res.json(view(g,p)); });
 app.post('/api/groups/:id/like', (req, res) => { const p = person(req); const g = db.groups.find(g => g.id === req.params.id); const mid = String(req.body.memberId); if (!p || !g || !g.members.includes(p.id) || !g.members.includes(mid) || p.id === mid) return fail(res,403,'Det gick inte att gilla.'); const key = `${dateKey()}:${mid}`; const likes = g.likes[key] || []; g.likes[key] = likes.includes(p.id) ? likes.filter(x => x !== p.id) : [...likes,p.id]; save(); res.json(view(g,p)); });
 // Only distance and quality metadata reach this server. No lat/lon or routes are accepted.
 app.post('/api/track', (req, res) => {
@@ -228,5 +216,10 @@ app.post('/api/track', (req, res) => {
   res.json({distance:p.distances[day]});
 });
 if (existsSync(join(process.cwd(), 'dist', 'index.html'))) { app.use(express.static('dist', { setHeaders(res, file) { if (file.endsWith('index.html')) res.setHeader('Cache-Control', 'no-store'); } })); app.get('*', (_req,res) => { res.setHeader('Cache-Control', 'no-store'); res.sendFile(join(process.cwd(),'dist','index.html')); }); }
+// Keeps stack traces and server paths out of error responses; the full error is logged server-side.
+app.use((err: Error & { status?: number }, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+  if (!err.status || err.status >= 500) console.error(err);
+  res.status(err.status && err.status < 500 ? err.status : 500).json({ error: err.status && err.status < 500 ? 'Ogiltigt meddelande.' : 'Serverfel. Försök igen.' });
+});
 const port = Number(process.env.API_PORT || process.env.PORT || 3001);
 app.listen(port, '0.0.0.0', () => console.log(`API listening on ${port}`));

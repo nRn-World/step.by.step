@@ -9,8 +9,10 @@ import PrivateMode from './PrivateMode';
 import WalkingScene from './components/WalkingScene';
 import LanguagePicker from './components/LanguagePicker';
 import {modeText,type ModeLanguage} from './modeText';
+import { translateServerError } from './serverErrors';
 import { Footprints, Users, MapPin, ArrowRight, Star } from './components/PlayfulIcons';
 import BrandMark from './components/BrandMark';
+import { GoogleIcon, AppleIcon } from './components/AuthIcons';
 import './mode.css';
 
 const url = import.meta.env.VITE_SUPABASE_URL;
@@ -26,18 +28,18 @@ export default function ModeGate({ initialMode, initialLanguage }: { initialMode
   });
   const m=modeText[language]||modeText.sv;
   useEffect(()=>{document.documentElement.lang=language},[language]);
-  const [mode, setMode] = useState<'choose'|'private'|'connected'>(() => initialMode ?? (sessionStorage.getItem('pending-connected')==='yes'||localStorage.getItem('stride-account')?'connected':'choose'));
+  const [mode, setMode] = useState<'choose'|'private'|'connected'>(() => initialMode ?? (sessionStorage.getItem('pending-connected')==='yes'||localStorage.getItem('stride-connected')==='yes'?'connected':'choose'));
   const [auth, setAuth] = useState<ReturnType<typeof createClient>|null>(null);
   const [session, setSession] = useState<Session|null>(null);
   const [error, setError] = useState('');
-  // A nickname account: no email, no Google/Apple. Stored as a token the app can use like any session.
-  const [account, setAccount] = useState<{token:string;name:string}|null>(() => {
-    try { const raw = localStorage.getItem('stride-account'); return raw ? JSON.parse(raw) as {token:string;name:string} : null; } catch { return null; }
-  });
-  const [accountNickname, setAccountNickname] = useState('');
-  const [accountCode, setAccountCode] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
   const [accountBusy, setAccountBusy] = useState(false);
   const [accountError, setAccountError] = useState('');
+  const [notice, setNotice] = useState('');
+  // Set when the person opens the link from the password reset mail.
+  const [recovering, setRecovering] = useState(false);
   // A clearly labelled test mode: the connected screens open with sample data, no account and no server calls.
   const [testMode, setTestMode] = useState(() => initialMode === 'connected' ? false : sessionStorage.getItem('stride-test-mode') === 'yes');
   const startTest = () => { localStorage.removeItem('stride-token'); setError(''); sessionStorage.setItem('stride-test-mode','yes'); setTestMode(true); };
@@ -61,43 +63,72 @@ export default function ModeGate({ initialMode, initialLanguage }: { initialMode
       } else setError(m.loginCancelled);
     }).then(handle => {listener=handle});
     auth.auth.getSession().then(({data})=>{setSession(data.session);if(data.session)sessionStorage.removeItem('pending-connected')}).catch(()=>setError(m.sessionError));
-    const {data:{subscription}} = auth.auth.onAuthStateChange((_event, next)=>setSession(next));
+    const {data:{subscription}} = auth.auth.onAuthStateChange((event, next)=>{setSession(next);if(next)localStorage.setItem('stride-connected','yes');if(event==='PASSWORD_RECOVERY'){setRecovering(true);setMode('connected');}});
     return () => {subscription.unsubscribe(); void listener?.remove();};
   }, [auth]);
   useEffect(() => { setAccessToken(mode==='connected' ? session?.access_token || '' : ''); return () => setAccessToken(''); }, [mode,session]);
   const apiBase = import.meta.env.VITE_API_URL || '/api';
-  const accountRequest = async (kind: 'create'|'login') => {
-    if (accountBusy) return;
-    setAccountBusy(true); setAccountError(''); setError('');
+  const finishSignIn = () => { localStorage.setItem('stride-connected','yes'); localStorage.setItem('stride-lang', language); sessionStorage.removeItem('stride-test-mode'); setTestMode(false); setAccountError(''); setNotice(''); };
+  const emailSignIn = async (kind: 'login'|'create') => {
+    if (!auth || accountBusy) return;
+    const address = email.trim();
+    setAccountBusy(true); setAccountError(''); setNotice(''); setError('');
     try {
-      const res = await fetch(apiBase + (kind === 'create' ? '/accounts' : '/accounts/login'), { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ nickname: accountNickname.trim(), code: accountCode }) });
-      const data = await res.json().catch(() => ({})) as { token?:string; me?:{name?:string}; error?:string };
-      if (!res.ok || !data.token) throw new Error(data.error || m.accountFailed);
-      const name = data.me?.name || accountNickname.trim();
-      localStorage.setItem('stride-token', data.token);
-      localStorage.setItem('stride-account', JSON.stringify({ token:data.token, name }));
-      localStorage.setItem('stride-lang', language);
-      sessionStorage.removeItem('stride-test-mode'); setTestMode(false);
-      setAccount({ token:data.token, name }); setAccountCode(''); setError('');
+      if (!address.includes('@')) throw new Error(m.accountNeedEmail);
+      if (password.length < 8) throw new Error(m.accountPasswordShort);
+      if (kind === 'create') {
+        const {data, error: reason} = await auth.auth.signUp({email: address, password, options: {emailRedirectTo: window.location.origin + window.location.pathname}});
+        if (reason) throw new Error(m.accountFailed);
+        if (!data.session) { setPassword(''); setNotice(m.accountCheckMail); return; }
+      } else {
+        const {error: reason} = await auth.auth.signInWithPassword({email: address, password});
+        if (reason) throw new Error(m.accountWrong);
+      }
+      setPassword(''); finishSignIn();
+    } catch (e) { setAccountError(e instanceof Error && e.message ? e.message : m.accountFailed); }
+    finally { setAccountBusy(false); }
+  };
+  // The reply is the same whether or not the address exists, so the form cannot be used to find accounts.
+  const requestReset = async () => {
+    if (!auth || accountBusy) return;
+    const address = email.trim();
+    setAccountError(''); setNotice('');
+    if (!address.includes('@')) { setAccountError(m.accountNeedEmail); return; }
+    setAccountBusy(true);
+    try {
+      await auth.auth.resetPasswordForEmail(address, {redirectTo: window.location.origin + window.location.pathname});
+      setNotice(m.accountResetSent);
+    } catch { setAccountError(m.accountFailed); }
+    finally { setAccountBusy(false); }
+  };
+  const saveNewPassword = async () => {
+    if (!auth || accountBusy) return;
+    setAccountError('');
+    if (newPassword.length < 8) { setAccountError(m.accountPasswordShort); return; }
+    setAccountBusy(true);
+    try {
+      const {error: reason} = await auth.auth.updateUser({password: newPassword});
+      if (reason) throw new Error(m.accountFailed);
+      setNewPassword(''); setRecovering(false); setNotice(m.accountPasswordSaved);
+      window.history.replaceState({}, '', window.location.pathname);
     } catch (e) { setAccountError(e instanceof Error && e.message ? e.message : m.accountFailed); }
     finally { setAccountBusy(false); }
   };
   const signOutAccount = async () => {
-    if (!account) return;
-    try { await fetch(apiBase + '/accounts/logout', { method:'POST', headers:{ Authorization:'Bearer ' + account.token } }); } catch { /* the token is cleared locally anyway */ }
-    localStorage.removeItem('stride-account');
+    await auth?.auth.signOut().catch(() => undefined);
+    localStorage.removeItem('stride-connected');
     localStorage.removeItem('stride-token');
-    setAccount(null); sessionStorage.removeItem('pending-connected'); setMode('choose');
+    sessionStorage.removeItem('pending-connected');
+    setSession(null); setRecovering(false); setNotice(''); setAccountError(''); setMode('choose');
   };
+  // Removes the person and their group data on the server. The sign-in user stays in Supabase until it is deleted there.
   const deleteAccount = async () => {
-    if (!account || !window.confirm(m.deleteConfirm)) return;
+    if (!session || !window.confirm(m.deleteConfirm)) return;
     setAccountError('');
     try {
-      const res = await fetch(apiBase + '/accounts', { method:'DELETE', headers:{ Authorization:'Bearer ' + account.token } });
+      const res = await fetch(apiBase + '/accounts', { method:'DELETE', headers:{ Authorization:'Bearer ' + session.access_token } });
       if (!res.ok) throw new Error(m.accountFailed);
-      localStorage.removeItem('stride-account');
-      localStorage.removeItem('stride-token');
-      setAccount(null); setMode('choose');
+      await signOutAccount();
     } catch (e) { setAccountError(e instanceof Error && e.message ? e.message : m.accountFailed); }
   };
   const signIn = async (provider: 'google'|'apple') => {
@@ -110,6 +141,7 @@ export default function ModeGate({ initialMode, initialLanguage }: { initialMode
     if (native && data.url && !reason) await Browser.open({url:data.url});
     if (reason) {sessionStorage.removeItem('pending-connected');setError(m.loginFailed);}
   };
+  if (recovering) return <div className="mode-page"><div className="mode-inner"><div className="mode-panel"><h2>{m.accountNewPassword}</h2><form className="account-form" onSubmit={e=>{e.preventDefault();void saveNewPassword();}}><label htmlFor="new-password">{m.accountPassword}</label><input id="new-password" type="password" autoComplete="new-password" value={newPassword} onChange={e=>setNewPassword(e.target.value)} minLength={8} maxLength={72} required/><p className="account-hint">{m.accountPasswordHint}</p><div className="account-actions"><button type="submit" disabled={accountBusy}>{m.accountSavePassword}</button></div></form>{accountError&&<p role="alert" className="mode-warning">{accountError}</p>}</div></div></div>;
   if (mode === 'choose') return <div className="landing"><div className="landing-paper">
     <header className="landing-nav">
       <a className="landing-brand" href="/" aria-label="step.by.step"><span className="landing-brand-mark"><BrandMark size={40}/></span><span>step<span className="brand-period">.</span>by<span className="brand-period">.</span>step</span></a>
@@ -136,9 +168,9 @@ export default function ModeGate({ initialMode, initialLanguage }: { initialMode
     </main>
     <footer className="landing-footer"><span className="landing-tag"><span className="landing-tag-star" aria-hidden="true"><Star size={11}/></span><span className="landing-tag-lines"><span>{m.footerLead}</span><span>{m.footerTail}</span></span></span><span className="landing-credit">{m.createdBy} <a href="https://nrnworld.one" target="_blank" rel="noopener noreferrer">nrnworld.one</a><span aria-hidden="true" className="credit-slash">/</span><a href="mailto:bynrnworld@gmail.com">bynrnworld@gmail.com</a></span><span>{m.footerEnd}</span></footer>
   </div></div>;
-  if (mode === 'private') return <PrivateMode language={language} onLanguageChange={setLanguage} onBack={()=>setMode('choose')} accountName={account?.name}/>;
-  if (account && mode === 'connected') return <div className="connected-shell"><div className="connected-banner"><span><MapPin size={15}/> {m.liveBanner}</span><div className="banner-actions"><button onClick={() => void signOutAccount()}>{m.logout}</button><button onClick={() => void deleteAccount()}>{m.deleteAccount}</button></div></div><App key={account.token} accessToken={account.token} initialLang={language}/></div>;
+  if (mode === 'private') return <PrivateMode language={language} onLanguageChange={setLanguage} onBack={()=>setMode('choose')}/>;
+  if (session && mode === 'connected') return <div className="connected-shell"><div className="connected-banner"><span><MapPin size={15}/> {m.liveBanner}</span><div className="banner-actions"><button onClick={() => void signOutAccount()}>{m.logout}</button><button onClick={() => void deleteAccount()}>{m.deleteAccount}</button></div></div>{accountError&&<p role="alert" className="mode-warning">{accountError}</p>}<App key={session.user.id} accessToken={session.access_token} initialLang={language}/></div>;
   if (testMode && !session) return <div className="connected-shell"><div className="connected-banner test-banner"><span><MapPin size={15}/> {m.testBanner}</span><button onClick={endTest}>{m.testExit}</button></div><App key="test-mode" initialLang={language}/></div>;
   if (session && auth) return <div className="connected-shell"><div className="connected-banner"><span><MapPin size={15}/> {m.liveBanner}</span><button onClick={async()=>{await auth.auth.signOut({scope:'local'});setAuth(null);setSession(null);sessionStorage.removeItem('pending-connected');setMode('choose')}}>{m.logout}</button></div><App key={session.user.id} accessToken={session.access_token} initialLang={language}/></div>;
-  return <div className="mode-page"><div className="mode-inner"><button className="mode-back" onClick={()=>{sessionStorage.removeItem('pending-connected');setMode('choose')}}>← {m.back}</button><LanguagePicker value={language} onChange={setLanguage}/><div className="mode-mark logo-mark"><BrandMark size={72}/></div><p className="mode-eyebrow">{m.loginEyebrow}</p><h1>{m.loginTitle}</h1><p className="mode-intro">{m.loginIntro}</p><div className="mode-panel"><h2>{m.accountTitle}</h2><p>{m.accountNote}</p><form className="account-form" onSubmit={e=>{e.preventDefault();void accountRequest('login');}}><label htmlFor="account-nickname">{m.accountNickname}</label><input id="account-nickname" autoComplete="username" value={accountNickname} onChange={e=>setAccountNickname(e.target.value)} placeholder="Lina" minLength={3} maxLength={32} required/><label htmlFor="account-code">{m.accountCode}</label><input id="account-code" type="password" autoComplete="current-password" value={accountCode} onChange={e=>setAccountCode(e.target.value)} minLength={4} maxLength={64} required/><p className="account-hint">{m.accountCodeHint}</p><div className="account-actions"><button type="submit" disabled={accountBusy}>{m.accountLogin}</button><button type="button" className="secondary" disabled={accountBusy||accountNickname.trim().length<3||accountCode.trim().length<4} onClick={()=>void accountRequest('create')}>{m.accountCreate}</button></div></form>{accountError&&<p role="alert" className="mode-warning">{accountError}</p>}<div className="auth-divider">{m.accountDivider}</div><div className="auth-actions"><button onClick={()=>signIn('google')} disabled={!auth}>{m.google}</button><button onClick={()=>signIn('apple')} disabled={!auth}>{m.apple}</button></div>{!auth&&<p className="mode-warning">{m.oauthWait}</p>}{error&&<p role="alert" className="mode-warning">{error}</p>}</div><div className="test-entry"><button onClick={startTest}>{m.testEntry}<ArrowRight size={16}/></button><p>{m.testEntryHint}</p></div><a className="mode-policy" href={"/privacypolicy.html?lang="+language} target="_blank" rel="noopener noreferrer">{m.dataLink}</a></div></div>;
+  return <div className="mode-page"><div className="mode-inner"><button className="mode-back" onClick={()=>{sessionStorage.removeItem('pending-connected');setMode('choose')}}>← {m.back}</button><LanguagePicker value={language} onChange={setLanguage}/><div className="mode-mark logo-mark"><BrandMark size={72}/></div><p className="mode-eyebrow">{m.loginEyebrow}</p><h1>{m.loginTitle}</h1><p className="mode-intro">{m.loginIntro}</p><div className="mode-panel"><h2>{m.accountTitle}</h2><p>{m.accountNote}</p><form className="account-form" onSubmit={e=>{e.preventDefault();void emailSignIn('login');}}><label htmlFor="account-email">{m.accountEmail}</label><input id="account-email" type="email" autoComplete="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="du@example.com" required/><label htmlFor="account-password">{m.accountPassword}</label><input id="account-password" type="password" autoComplete="current-password" value={password} onChange={e=>setPassword(e.target.value)} minLength={8} maxLength={72} required/><p className="account-hint">{m.accountPasswordHint}</p><div className="account-actions"><button type="submit" disabled={accountBusy||!auth}>{m.accountLogin}</button><button type="button" className="secondary" disabled={accountBusy||!auth} onClick={()=>void emailSignIn('create')}>{m.accountCreate}</button></div><button type="button" className="account-forgot" disabled={accountBusy||!auth} onClick={()=>void requestReset()}>{m.accountForgot}</button></form>{notice&&<p role="status" className="account-notice">{notice}</p>}{accountError&&<p role="alert" className="mode-warning">{accountError}</p>}<div className="auth-divider">{m.accountDivider}</div><div className="auth-actions"><button onClick={()=>signIn('google')} disabled={!auth}><GoogleIcon/>{m.google}</button><button onClick={()=>signIn('apple')} disabled={!auth}><AppleIcon/>{m.apple}</button></div>{!auth&&<p className="mode-warning">{m.oauthWait}</p>}{error&&<p role="alert" className="mode-warning">{error}</p>}</div><div className="test-entry"><button onClick={startTest}>{m.testEntry}<ArrowRight size={16}/></button><p>{m.testEntryHint}</p></div><a className="mode-policy" href={"/privacypolicy.html?lang="+language} target="_blank" rel="noopener noreferrer">{m.dataLink}</a></div></div>;
 }
