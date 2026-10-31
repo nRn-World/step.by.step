@@ -43,6 +43,13 @@ describe('privacy-first mode selection', () => {
     expect(screen.getByText(/Inloggning väntar på konfiguration/)).toBeDefined();
     vi.unstubAllEnvs();
   });
+  it('sends the tester to the login page instead of a dead-end form when creating a group',()=>{
+    render(<ModeGate />);fireEvent.click(screen.getByText('Tillsammans · live'));
+    fireEvent.click(screen.getByText(/Testa appen utan konto/));
+    fireEvent.click(screen.getAllByText('Skapa grupp')[0]);
+    expect(screen.getByText('Skapa konto eller logga in')).toBeDefined();
+    expect(screen.queryByText(/TESTLÄGE/)).toBeNull();
+  });
   it('lets the tester open the app without Google or Apple, using sample data only',()=>{
     render(<ModeGate />);fireEvent.click(screen.getByText('Tillsammans · live'));
     fireEvent.click(screen.getByText(/Testa appen utan konto/));
