@@ -1,8 +1,10 @@
-"""Builds every logo and app icon from one source image (logo.jpg in the project root).
+"""Builds every logo and app icon from one source image.
 
-The source has a checkerboard "transparency" baked into its pixels, so the outside is cut away first.
-Run: python scripts/make-logos.py            (writes into the project)
-     python scripts/make-logos.py --dry DIR  (writes the same tree under DIR, for a look first)
+Source: the first argument that is not a flag, else logoorginal.png, else logo.jpg in the project root.
+If the source has no real transparency (a checkerboard baked into the pixels, or a flat background),
+the outside is cut away first; a source with a transparent background is used as it is.
+Run: python scripts/make-logos.py [SOURCE]           (writes into the project)
+     python scripts/make-logos.py [SOURCE] --dry DIR (writes the same tree under DIR, for a look first)
 """
 import sys
 from pathlib import Path
@@ -10,10 +12,15 @@ import numpy as np
 from PIL import Image, ImageDraw, ImageFilter
 
 root = Path(__file__).resolve().parent.parent
-out = Path(sys.argv[sys.argv.index('--dry') + 1]) if '--dry' in sys.argv else root
+dry = sys.argv.index('--dry') + 1 if '--dry' in sys.argv else None
+out = Path(sys.argv[dry]) if dry else root
+args = [a for i, a in enumerate(sys.argv[1:], 1) if not a.startswith('--') and i != dry]
+source = Path(args[0]) if args else next(p for p in (root / 'logoorginal.png', root / 'logo.jpg') if p.exists())
 
 # 1. Cut the rounded square out of the checkerboard.
-src = Image.open(root / 'logo.jpg').convert('RGB')
+opened = Image.open(source).convert('RGBA')
+has_alpha = np.asarray(opened)[..., 3].min() < 250
+src = opened.convert('RGB')
 rgb = np.asarray(src)
 light = Image.fromarray(((rgb.min(axis=2) > 120) * 255).astype('uint8')).copy()  # copy: a NumPy-backed image is read-only
 w, h = src.size
@@ -22,8 +29,9 @@ for seed in [(0, 0), (w - 1, 0), (0, h - 1), (w - 1, h - 1)]:
 inside = Image.fromarray(((np.asarray(light) != 128) * 255).astype('uint8'))
 inside = inside.filter(ImageFilter.MinFilter(5))  # shave the 2 px edge that still blends with the checkerboard
 alpha = inside.filter(ImageFilter.GaussianBlur(1.1))
-logo = src.convert('RGBA')
-logo.putalpha(alpha)
+logo = opened if has_alpha else src.convert('RGBA')
+if not has_alpha:
+    logo.putalpha(alpha)
 logo = logo.crop(logo.getchannel('A').point(lambda v: 255 if v > 8 else 0).getbbox())
 
 dark_pixels = np.asarray(logo)[..., :3][(np.asarray(logo)[..., 3] > 250) & (np.asarray(logo)[..., :3].max(axis=2) < 60)]

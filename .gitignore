@@ -11,3 +11,6 @@ data/
 
 # Generated preview animation (kept in the workspace, not in Git)
 /art/walk-loop-preview.gif
+# Logo source files stay on the computer; scripts/make-logos.py builds the icons from them
+logo.jpg
+logoorginal.png
