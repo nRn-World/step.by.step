@@ -52,18 +52,27 @@ export default function ModeGate({ initialMode, initialLanguage }: { initialMode
   useEffect(() => {
     if (!auth) return;
     let listener: {remove:()=>Promise<void>}|undefined;
-    if (Capacitor.isNativePlatform()) void NativeApp.addListener('appUrlOpen', async ({url:callback}) => {
+    // Google sign-in returns to the app through the app.stegvis.mobile://auth/callback link, with the session in the # part (or a code in the ? part).
+    const finishNative = async (callback: string) => {
       if (!callback.startsWith('app.stegvis.mobile://auth/callback')) return;
-      await Browser.close();
-      const hash = new URL(callback).hash.slice(1);
-      const params = new URLSearchParams(hash);
-      const access_token = params.get('access_token'), refresh_token = params.get('refresh_token');
-      if (access_token && refresh_token) {
-        const {error:reason} = await auth.auth.setSession({access_token, refresh_token});
+      try { await Browser.close(); } catch { /* the sign-in tab may already be closed */ }
+      try {
+        const link = new URL(callback);
+        const params = new URLSearchParams(link.hash.slice(1));
+        const access_token = params.get('access_token'), refresh_token = params.get('refresh_token'), code = link.searchParams.get('code');
+        let reason: unknown = null;
+        if (access_token && refresh_token) reason = (await auth.auth.setSession({access_token, refresh_token})).error;
+        else if (code) reason = (await auth.auth.exchangeCodeForSession(code)).error;
+        else { setError(m.loginCancelled); return; }
         if (reason) setError(m.loginFailed);
-        else {sessionStorage.removeItem('pending-connected');setMode('connected');}
-      } else setError(m.loginCancelled);
-    }).then(handle => {listener=handle});
+        else {sessionStorage.removeItem('pending-connected');localStorage.setItem('stride-connected','yes');setMode('connected');}
+      } catch { setError(m.loginFailed); }
+    };
+    if (Capacitor.isNativePlatform()) {
+      void NativeApp.addListener('appUrlOpen', ({url:callback}) => void finishNative(callback)).then(handle => {listener=handle});
+      // The link can arrive before this listener exists (the app was restarted by it), so read it from the launch too.
+      void NativeApp.getLaunchUrl().then(launch => { if (launch?.url) void finishNative(launch.url); }).catch(() => undefined);
+    }
     auth.auth.getSession().then(({data})=>{setSession(data.session);if(data.session)sessionStorage.removeItem('pending-connected')}).catch(()=>setError(m.sessionError));
     const {data:{subscription}} = auth.auth.onAuthStateChange((event, next)=>{setSession(next);if(next)localStorage.setItem('stride-connected','yes');if(event==='PASSWORD_RECOVERY'){setRecovering(true);setMode('connected');}});
     return () => {subscription.unsubscribe(); void listener?.remove();};
