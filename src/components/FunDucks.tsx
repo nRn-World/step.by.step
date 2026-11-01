@@ -20,7 +20,6 @@ function Duck({ kind }: { kind: Kind }) {
       <circle cx="29" cy="11" r="7" fill={c.head} />
       <path d="M35 10.5 L41.5 13 L35 15.5Z" fill="#f59e0b" />
       <circle cx="31" cy="9.3" r="1.4" fill="#29283b" />
-      {kind === 'mom' && <path d="M24 5 L27 2 L28 6Z M30 4 L33 2 L32 7Z" fill="#f48fb1" />}
     </svg>
   );
 }
