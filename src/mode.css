@@ -114,7 +114,7 @@ h3.mode-option-title{margin:-12px 0 6px;text-align:left}
 
 /* Phones: the illustration sits at the very top instead of below the text. */
 .mobile-hero{display:none}
-@media(max-width:680px){.mobile-hero{display:block;width:100%;height:auto}.landing-art{display:none}}
+@media(max-width:680px){.mobile-hero{display:block;width:100%;height:auto}.landing-main .landing-art{display:none}}
 @media(max-width:680px){.social-buttons{padding:10px 0 12px}.social-buttons button{font-size:11px;padding:8px 6px;min-width:0;white-space:normal;line-height:1.25;gap:5px;flex-wrap:wrap;justify-content:center;text-align:center}.social-buttons .soon-badge{font-size:8px;padding:2px 5px}}
 @media(max-width:680px){.social-buttons button{flex-direction:row;gap:7px;font-size:11px}.social-buttons .auth-icon-badge{width:22px;height:22px;border-radius:5px}.social-buttons .auth-icon{width:14px;height:14px}.social-buttons .soon-badge{margin-left:0}}
 .social-short{display:none}
@@ -159,3 +159,7 @@ h3.mode-option-title{margin:-12px 0 6px;text-align:left}
 .landing-footer{padding-top:8px;padding-bottom:8px}
 }
 @media(min-width:1100px){.social-buttons{flex-direction:row;gap:10px}.social-buttons button{flex:1}}
+
+/* The animated walking scene (dog and people) sits at the top on phones; the copy inside landing-main keeps its own for wide screens. */
+.mobile-art{display:none}
+@media(max-width:680px){.mobile-art{display:flex;height:235px;width:100%;margin:0}}

@@ -192,7 +192,7 @@ export default function ModeGate({ initialMode, initialLanguage }: { initialMode
         <p className="landing-kicker"><span className="landing-kicker-star" aria-hidden="true"><Star size={17}/></span> {m.welcome}</p>
         <h1>{m.headlineStart}<br/>{m.headlineEnd} <em>{m.headlineAccent}</em></h1>
       </div>
-      <img className="mobile-hero"src={import.meta.env.BASE_URL + 'mobile-hero.png'} alt="" />
+      <div className="landing-art mobile-art"><div className="landing-art-sun"/><WalkingScene/><span className="landing-art-stamp"><span>{m.artTop}</span><span className="stamp-star" aria-hidden="true"><Star size={26}/></span><span>{m.artBottom}</span></span><span className="landing-art-caption">{m.artCaption} <span className="caption-star" aria-hidden="true"><Star size={10}/></span></span></div>
       {fun&&<FunDucks/>}
       <div className="landing-main">
         <div className="landing-copy">
