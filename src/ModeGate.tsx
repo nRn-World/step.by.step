@@ -33,8 +33,8 @@ export default function ModeGate({ initialMode, initialLanguage }: { initialMode
     return (['sv','da','en'] as const).includes(stored as ModeLanguage)?stored as ModeLanguage:'sv';
   });
   const m=modeText[language]||modeText.sv;
-  // ?look=fun switches on the playful start page and remembers it; ?look=classic switches it off again.
-  const [fun]=useState(()=>{try{const p=new URLSearchParams(window.location.search).get('look');if(p==='fun')localStorage.setItem('landing-look','fun');if(p==='classic')localStorage.removeItem('landing-look');return localStorage.getItem('landing-look')==='fun';}catch{return false;}});
+  // The playful start page is the default; ?look=classic switches it off (and remembers it), ?look=fun brings it back.
+  const [fun]=useState(()=>{const p=new URLSearchParams(window.location.search).get('look');try{if(p==='fun')localStorage.removeItem('landing-look');if(p==='classic')localStorage.setItem('landing-look','classic');return p==='classic'?false:localStorage.getItem('landing-look')!=='classic';}catch{return p!=='classic';}});
   useEffect(()=>{document.documentElement.lang=language},[language]);
   const [mode, setMode] = useState<'choose'|'private'|'connected'>(() => initialMode ?? (sessionStorage.getItem('pending-connected')==='yes'||localStorage.getItem('stride-connected')==='yes'?'connected':'choose'));
   // An invite link is remembered right away, because signing in sends the person away and back without the ?join= part.
