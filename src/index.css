@@ -410,3 +410,8 @@ h1,h2,h3,h4,.person-info strong{overflow-wrap:break-word}
 .pair-pick-item:hover{background:var(--soft)}
 .pair-pick-item span{flex:1}
 .pair-pick-item small{color:#ed6949;font-weight:800}
+
+.account-loading{min-height:60vh;display:grid;place-content:center;justify-items:center;gap:12px;text-align:center;padding:24px;color:var(--muted);font-size:14px}
+.account-loading p{margin:0;max-width:320px}
+.account-loading-retry{border:0;border-radius:10px;padding:10px 16px;background:#29283b;color:#fff;font-weight:800;font-size:13px;cursor:pointer}
+.account-loading-out{border:0;background:none;color:var(--muted);font-size:12px;font-weight:700;text-decoration:underline;cursor:pointer}

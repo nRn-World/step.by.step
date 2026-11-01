@@ -231,6 +231,20 @@ describe('name to group creation', () => {
     expect(screen.queryByRole('button', { name: 'Ja, para ihop' })).toBeNull();
   });
 
+  it('shows a message instead of a blank screen when a signed-in account cannot be loaded', async () => {
+    let online = false;
+    vi.spyOn(globalThis, 'fetch').mockImplementation(async input => {
+      if (input === '/api/state') { if (!online) throw new Error('offline'); return reply({ me:{ id:'member-id', name:'Anna Test', distances:{} }, groups:[group('Alfa laget','Anna Test')] }); }
+      throw new Error('Unexpected request: '+input);
+    });
+    render(<App accessToken="signed-in" />);
+    expect(screen.getByText(/Laddar ditt konto/)).toBeTruthy();
+    expect(await screen.findByText('Kunde inte nå servern. Kontrollera nätet och försök igen.')).toBeTruthy();
+    online = true;
+    fireEvent.click(screen.getByRole('button', { name: 'Försök igen' }));
+    await waitFor(() => expect(screen.getAllByText('Alfa laget').length).toBeGreaterThan(0));
+  });
+
   it('celebrates a personal goal with the matching day scene', async () => {
     localStorage.setItem('stride-token', 'owner-token');
     const today = new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Stockholm',year:'numeric',month:'2-digit',day:'2-digit'}).format(Date.now());
