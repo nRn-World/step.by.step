@@ -191,8 +191,8 @@ app.post('/api/groups/:id/partners', (req, res) => {
   const targetId = typeof req.body.targetId === 'string' ? req.body.targetId : '';
   const code = String(req.body.code || '').trim().toUpperCase();
   if (!targetId && !code) return fail(res, 400, 'Ange koden från det andra teamet.');
-  // Picking by id only works for groups you created yourself, so ids of other people's groups can't be probed.
-  const other = targetId ? db.groups.find(x => x.id === targetId && x.ownerId === p.id) : db.groups.find(x => !!x.pairCode && x.pairCode === code);
+  // Picking by id only works for groups you belong to, so ids of other people's groups can't be probed. Their creator answers the request.
+  const other = targetId ? db.groups.find(x => x.id === targetId && x.members.includes(p.id)) : db.groups.find(x => !!x.pairCode && x.pairCode === code);
   if (!other) return fail(res, 404, targetId ? 'Gruppen hittades inte.' : 'Koden hittades inte. Be det andra teamet om en ny kod.');
   if (other.id === g.id) return fail(res, 400, 'Det är er egen kod. Använd koden från det andra teamet.');
   g.partners ||= []; other.partners ||= [];
