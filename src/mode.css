@@ -94,3 +94,15 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 .auth-icon-badge .auth-icon{width:20px;height:20px}
 .auth-icon-apple{color:#fff}
 .auth-actions button:disabled .auth-icon-badge{opacity:.8}
+
+/* Start page sign-in choices: the account card is one big button, the social card holds Google and Apple. */
+.social-option{cursor:default}.social-option:hover{transform:none;box-shadow:3px 5px 0 #3830440b;border-color:#e4dceb}
+h3.mode-option-title{margin:-12px 0 6px;text-align:left}
+.social-buttons{margin-top:auto;display:flex;flex-direction:column;gap:9px;padding:14px 0 18px;border-top:1px solid #29283b16}
+.social-buttons button{white-space:nowrap;display:flex;align-items:center;justify-content:center;gap:10px;min-height:46px;padding:0 16px;border:0;border-radius:10px;background:#29283b;color:#fff;font:800 13px 'DM Sans',sans-serif;cursor:pointer;transition:background .2s}
+.social-buttons button:hover:not(:disabled){background:#3b3a52}
+.social-buttons button:disabled{cursor:not-allowed;opacity:.55}
+.soon-badge{margin-left:2px;padding:3px 7px;white-space:nowrap;border-radius:999px;background:#ffffff26;font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase}
+.auth-actions .soon-badge{background:#ffffff26}
+@media(max-width:680px){.mode-options{grid-template-columns:1fr}}
+.account-forgot{margin-top:14px;border:0;background:transparent;padding:6px 0;color:#715b90;font:700 13px 'DM Sans',sans-serif;cursor:pointer;text-decoration:underline;text-underline-offset:3px}

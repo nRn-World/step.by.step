@@ -311,3 +311,32 @@ h1,h2,h3,h4,.person-info strong{overflow-wrap:break-word}
 .activity-day.goal-met .activity-bar-track{background:#4ade8026;box-shadow:0 0 0 1.5px #4ade80,0 0 12px #4ade80b3}
 .activity-day.goal-met .activity-bar-fill{background:#4ade80;box-shadow:0 0 8px #4ade80}
 .activity-day.goal-met small{color:#86efac}
+/* "Lämna grupp" was a tiny faint link; it is now an obvious outlined button under the invite button. */
+.group-leave{margin-top:12px;padding:12px 14px;min-height:44px;border:1px solid #ffad9977;border-radius:12px;color:#ffad99;font-size:13px}
+.group-leave:hover{background:#ffad9918;color:#ffc4b5}
+.membership-leave{display:block;width:100%;margin-top:14px;min-height:44px;padding:11px 14px;border:1px solid #e0745c88;border-radius:12px;background:transparent;color:#d4553a;font:700 13px 'DM Sans',sans-serif;cursor:pointer}
+.membership-leave:hover{background:#e0745c18}
+/* Signed in without any group: a plain start page instead of sample groups. */
+.empty-groups{display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px;padding:44px 24px;margin-top:20px;background:var(--surface);border:1px solid var(--line,#ffffff1f);border-radius:20px}
+.empty-groups-icon{display:grid;place-items:center;width:58px;height:58px;border-radius:16px;background:#e6dcef;color:#765e9d;transform:rotate(-6deg)}
+.empty-groups h2{margin:8px 0 0;font:700 26px Outfit,sans-serif}
+.empty-groups p{max-width:460px;margin:0;line-height:1.6;color:var(--muted)}
+.empty-groups-actions{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin-top:14px}
+.empty-groups-actions button{display:inline-flex;align-items:center;gap:8px;min-height:46px;padding:0 20px;border-radius:12px;font:800 14px 'DM Sans',sans-serif;cursor:pointer}
+.empty-primary{border:0;background:#e0745c;color:#fff}
+.empty-secondary{border:1px solid #ffffff33;background:transparent;color:inherit}
+/* Sign out sits visibly under the name; delete account lives in the profile dialog. */
+.side-profile{flex-wrap:wrap}
+.profile-logout{flex-basis:100%;margin-top:10px;min-height:38px}
+.modal-danger{display:block;width:100%;margin-top:12px;min-height:46px;border:1px solid #d9a79d;border-radius:12px;background:transparent;color:#e0745c;font:700 14px 'DM Sans',sans-serif;cursor:pointer}
+.modal-danger:hover{background:#b4503f1f}
+/* Glass effect on the leave buttons: frosted tinted pane, bright edge and a soft highlight. */
+.membership-leave,.group-leave{position:relative;overflow:hidden;color:#ff8a72;border:1px solid #ffffff2e;background:linear-gradient(135deg,#ff745c2e,#ff745c0f 60%,#ffffff12);-webkit-backdrop-filter:blur(14px) saturate(160%);backdrop-filter:blur(14px) saturate(160%);box-shadow:inset 0 1px 0 #ffffff40,0 8px 22px #00000026;transition:background .2s,box-shadow .2s,transform .2s}
+.membership-leave::before,.group-leave::before{content:'';position:absolute;inset:0 0 55%;background:linear-gradient(180deg,#ffffff24,transparent);pointer-events:none}
+.membership-leave:hover,.group-leave:hover{background:linear-gradient(135deg,#ff745c47,#ff745c1f 60%,#ffffff1a);color:#ffb3a3;transform:translateY(-1px)}
+:root:not([data-theme=dark]) .membership-leave,:root:not([data-theme=dark]) .group-leave{color:#c4452b;border-color:#ffffffb3;background:linear-gradient(135deg,#ff745c33,#ff745c14 60%,#ffffff66);box-shadow:inset 0 1px 0 #fff,0 8px 22px #c4452b1f}
+/* Same glass look on Logga ut, in a neutral tint. */
+.profile-logout{position:relative;overflow:hidden;color:inherit;border:1px solid #ffffff2e;background:linear-gradient(135deg,#ffffff24,#ffffff0d 60%,#ffffff14);-webkit-backdrop-filter:blur(14px) saturate(160%);backdrop-filter:blur(14px) saturate(160%);box-shadow:inset 0 1px 0 #ffffff40,0 8px 22px #00000026;transition:background .2s,transform .2s}
+.profile-logout::before{content:'';position:absolute;inset:0 0 55%;background:linear-gradient(180deg,#ffffff1f,transparent);pointer-events:none}
+.profile-logout:hover{background:linear-gradient(135deg,#ffffff38,#ffffff14 60%,#ffffff1c);transform:translateY(-1px)}
+:root:not([data-theme=dark]) .profile-logout{color:#4a4560;border-color:#ffffffb3;background:linear-gradient(135deg,#7c60bb26,#7c60bb0d 60%,#ffffff66);box-shadow:inset 0 1px 0 #fff,0 8px 22px #7c60bb1f}

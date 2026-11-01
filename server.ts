@@ -261,6 +261,21 @@ app.post('/api/track', (req, res) => {
   save();
   res.json({distance:p.distances[day]});
 });
+// Real step count from the phone's step sensor (Health Connect). The total for the day is idempotent: it only ever raises today's distance.
+app.post('/api/steps', (req, res) => {
+  const p = person(req);
+  if (!p) return fail(res,401,'Sessionen hittades inte.');
+  const { steps } = req.body;
+  if (typeof steps !== 'number' || !Number.isInteger(steps) || steps < 0 || steps > 100000) return fail(res,400,'Ogiltigt stegantal.');
+  const day = dateKey(), meters = Math.round(steps * 0.75), before = p.distances[day] || 0;
+  if (meters > before) {
+    p.activities ||= [];
+    recordWalk(p.activities, day, Date.now(), meters - before);
+    p.distances[day] = meters;
+    save();
+  }
+  res.json({distance: p.distances[day] || 0});
+});
 if (existsSync(join(process.cwd(), 'dist', 'index.html'))) { app.use(express.static('dist', { setHeaders(res, file) { if (file.endsWith('index.html')) res.setHeader('Cache-Control', 'no-store'); } })); app.get('*', (_req,res) => { res.setHeader('Cache-Control', 'no-store'); res.sendFile(join(process.cwd(),'dist','index.html')); }); }
 // Keeps stack traces and server paths out of error responses; the full error is logged server-side.
 app.use((err: Error & { status?: number }, _req: express.Request, res: express.Response, _next: express.NextFunction) => {

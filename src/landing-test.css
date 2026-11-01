@@ -1,0 +1,5 @@
+/* The no-account test entry in the start page hero: a clear button right under the intro text. */
+.landing-test-entry{margin-top:22px;border-top:0;padding-top:0}
+.landing-test-entry button{min-height:50px;padding:14px 24px;background:#29283b;border-color:#29283b;color:#fff;font-size:14px;box-shadow:0 8px 18px #2726401c}
+.landing-test-entry button:hover{background:#3b3a52}
+.landing-test-entry p{margin:10px 0 0;max-width:460px}

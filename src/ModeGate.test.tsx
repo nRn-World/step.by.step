@@ -10,10 +10,7 @@ describe('privacy-first mode selection', () => {
   beforeEach(()=>{localStorage.clear();sessionStorage.clear();window.history.replaceState({},'','/');vi.spyOn(globalThis,'fetch').mockImplementation(async()=>{throw Error('Private mode must never call server')});});
   afterEach(()=>{cleanup();vi.restoreAllMocks()});
   it('starts with two explicit modes and does not send requests for the private mode',()=>{
-    render(<ModeGate />);
-    expect(screen.getByText('Offline · utan GPS')).toBeDefined();
-    expect(screen.getByText('Tillsammans · live')).toBeDefined();
-    fireEvent.click(screen.getByText('Offline · utan GPS')); 
+    render(<ModeGate initialMode="private" />);
     expect(screen.getByText('Nära varandra. Bara här.')).toBeDefined();
     fireEvent.click(screen.getByText(/Läs steg från telefonen/));
     expect(screen.getByRole('status').textContent).toContain('installerad iPhone- eller Android-app');
@@ -25,9 +22,9 @@ describe('privacy-first mode selection', () => {
     expect(screen.getByRole('button',{name:/Svenska/})).toBeDefined();
     expect(screen.getByRole('button',{name:/Dansk/})).toBeDefined();
     fireEvent.click(screen.getByRole('button',{name:/English/}));
-    expect(screen.getByText('How will you walk?')).toBeDefined();
+    expect(screen.getByText('How would you like to sign in today?')).toBeDefined();
     fireEvent.click(screen.getByRole('button',{name:/Dansk/}));
-    expect(screen.getByText('Hvordan vil I gå?')).toBeDefined();
+    expect(screen.getByText('Hvordan vil du logge ind i dag?')).toBeDefined();
     expect(localStorage.getItem('stride-lang')).toBeNull();
   });
   it('converts steps to an explicitly estimated distance',()=>{
@@ -37,29 +34,29 @@ describe('privacy-first mode selection', () => {
     vi.resetModules();
     vi.stubEnv('VITE_SUPABASE_URL','');vi.stubEnv('VITE_SUPABASE_ANON_KEY','');
     const { default: UnconfiguredModeGate } = await import('./ModeGate');
-    render(<UnconfiguredModeGate />);fireEvent.click(screen.getByText('Tillsammans · live'));
+    render(<UnconfiguredModeGate />);fireEvent.click(screen.getByText('Användarnamn eller e-post'));
     expect(screen.getByText('Fortsätt med Google').closest('button')?.disabled).toBe(true);
     expect(screen.getByText('Fortsätt med Apple').closest('button')?.disabled).toBe(true);
     expect(screen.getByText(/Inloggning väntar på konfiguration/)).toBeDefined();
     vi.unstubAllEnvs();
   });
   it('sends the tester to the login page instead of a dead-end form when creating a group',()=>{
-    render(<ModeGate />);fireEvent.click(screen.getByText('Tillsammans · live'));
+    render(<ModeGate />);
     fireEvent.click(screen.getByText(/Testa appen utan konto/));
     fireEvent.click(screen.getAllByText('Skapa grupp')[0]);
     expect(screen.getByText('Skapa konto eller logga in')).toBeDefined();
     expect(screen.queryByText(/TESTLÄGE/)).toBeNull();
   });
   it('lets the tester open the app without Google or Apple, using sample data only',()=>{
-    render(<ModeGate />);fireEvent.click(screen.getByText('Tillsammans · live'));
+    render(<ModeGate />);
     fireEvent.click(screen.getByText(/Testa appen utan konto/));
     expect(screen.getByText(/TESTLÄGE/)).toBeDefined();
-    expect(screen.getAllByText('FÖRHANDSVISNING').length).toBeGreaterThan(0);
-    expect(screen.getByText(/Så här kan din grupp se ut/)).toBeDefined();
+    expect(screen.queryByText('FÖRHANDSVISNING')).toBeNull();
+    expect(screen.queryByText(/Så här kan din grupp se ut/)).toBeNull();
     expect(globalThis.fetch).not.toHaveBeenCalled();
     expect(localStorage.getItem('stride-token')).toBeNull();
     fireEvent.click(screen.getByText('Avsluta test'));
-    expect(screen.getByText('Hur vill ni gå?')).toBeDefined();
+    expect(screen.getByText('Hur vill du logga in idag?')).toBeDefined();
     expect(sessionStorage.getItem('stride-test-mode')).toBeNull();
   });
   it('signs in with email and password and opens the app with the session',async()=>{
@@ -84,7 +81,7 @@ describe('privacy-first mode selection', () => {
     fireEvent.click(screen.getByRole('button',{name:'Logga in'}));
     await waitFor(()=>expect(signInWithPassword).toHaveBeenCalledWith({email:'lina@example.com',password:'hemligt123'}));
     emit?.('SIGNED_IN',{access_token:'session-token',user:{id:'user-1'}});
-    await waitFor(()=>expect(screen.getByText(/Radera kontot/)).toBeDefined());
+    await waitFor(()=>expect(screen.getByRole('button',{name:'Logga ut'})).toBeDefined());
     expect(localStorage.getItem('stride-connected')).toBe('yes');
     vi.doUnmock('@supabase/supabase-js');
     vi.unstubAllEnvs();
@@ -127,9 +124,10 @@ describe('privacy-first mode selection', () => {
     const confirm = vi.spyOn(window,'confirm').mockReturnValue(true);
     const { default: FreshModeGate } = await import('./ModeGate');
     render(<FreshModeGate initialMode="connected" />);
-    await waitFor(()=>expect(screen.getByRole('button',{name:'Radera kontot'})).toBeDefined());
-    fireEvent.click(screen.getByRole('button',{name:'Radera kontot'}));
-    await waitFor(()=>expect(screen.getByText('Hur vill ni gå?')).toBeDefined());
+    await waitFor(()=>expect(screen.getByRole('button',{name:'Ändra mitt namn'})).toBeDefined());
+    fireEvent.click(screen.getByRole('button',{name:'Ändra mitt namn'}));
+    fireEvent.click(screen.getByRole('button',{name:'Radera konto'}));
+    await waitFor(()=>expect(screen.getByText('Hur vill du logga in idag?')).toBeDefined());
     expect(confirm).toHaveBeenCalled();
     expect(calls).toContain('DELETE /api/accounts');
     expect(signOut).toHaveBeenCalled();
@@ -148,7 +146,7 @@ describe('privacy-first mode selection', () => {
   it('draws a real star everywhere the landing uses a mark, never a wingding glyph',()=>{
     const { container } = render(<ModeGate />);
     expect(container.textContent).not.toMatch(/[✳✻✱]/);
-    for (const selector of ['.landing-kicker-star','.stamp-star','.mode-option-star','.landing-tag-star','.caption-star']) {
+    for (const selector of ['.landing-kicker-star','.stamp-star','.landing-tag-star','.caption-star']) {
       expect(container.querySelector(selector+' svg')).not.toBeNull();
     }
   });
@@ -238,7 +236,8 @@ describe('privacy-first mode selection', () => {
     vi.spyOn(window,'confirm').mockReturnValue(true);
     const { default: FreshModeGate } = await import('./ModeGate');
     render(<FreshModeGate initialMode="connected" />);
-    await waitFor(()=>expect(screen.getByRole('button',{name:'Radera konto'})).toBeDefined());
+    await waitFor(()=>expect(screen.getByRole('button',{name:'Ändra mitt namn'})).toBeDefined());
+    fireEvent.click(screen.getByRole('button',{name:'Ändra mitt namn'}));
     fireEvent.click(screen.getByRole('button',{name:'Radera konto'}));
     await waitFor(()=>expect(calls).toContain('DELETE /api/accounts'));
     vi.doUnmock('@supabase/supabase-js');

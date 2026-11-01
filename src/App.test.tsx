@@ -8,7 +8,7 @@ const reply = (body: unknown, status = 200) => ({ ok: status < 400, status, json
 const group = (name: string, memberName: string, token?: string) => ({ id: 'group-id', name, code: 'invite', isAdmin: true, goals: [], members: [{ id: 'member-id', name: memberName, distances: {}, isAdmin: true, liked: false, likes: 0, active: false }], ...(token ? { token } : {}) });
 
 function enterNameAndGroup(name: string, groupName: string) {
-  fireEvent.click(screen.getByText('Kom igång'));
+  fireEvent.click(screen.getAllByText('Skapa grupp')[0]);
   fireEvent.change(screen.getByPlaceholderText('Lunchpromenaden'), { target: { value: groupName } });
   fireEvent.change(screen.getByLabelText('Vad vill du bli kallad i den här gruppen?'), { target: { value: name } });
   fireEvent.click(screen.getByRole('dialog').querySelector('button[type=submit]')!);
@@ -31,7 +31,7 @@ describe('name to group creation', () => {
     expect(submitted?.name).toBe('Team Walk');
     expect(submitted?.goals).toEqual([{ type: 'day', target: 8000, scope: 'each' }, { type: 'week', target: 50000, scope: 'each' }]);
     expect(localStorage.getItem('stride-token')).toBe('new-session');
-    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    expect(await screen.findByText('Fler steg är roligare ihop')).toBeDefined();
     expect(screen.getAllByText('Team Walk').length).toBeGreaterThan(0);
     expect(fetchMock).not.toHaveBeenCalledWith('/api/profile', expect.anything());
   });
@@ -44,7 +44,7 @@ describe('name to group creation', () => {
     });
     render(<App />);
     enterNameAndGroup('Robin', 'Lunchlaget');
-    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    expect(await screen.findByText('Fler steg är roligare ihop')).toBeDefined();
     expect(screen.getAllByText('Lunchlaget').length).toBeGreaterThan(0);
     expect(screen.queryByText('Sessionen hittades inte. Ange ett namn igen.')).toBeNull();
   });
@@ -66,7 +66,7 @@ describe('name to group creation', () => {
     fireEvent.click(screen.getByRole('dialog').querySelector('button[type=submit]')!);
     await waitFor(() => expect(submitted?.memberName).toBe('Sara Test'));
     expect(localStorage.getItem('stride-token')).toBe('recovered-session');
-    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    expect(await screen.findByText('Fler steg är roligare ihop')).toBeDefined();
     expect(screen.getAllByText('Team Sara').length).toBeGreaterThan(0);
   });
   it('lets the creator choose monthly and yearly goals during creation', async () => {
@@ -77,7 +77,7 @@ describe('name to group creation', () => {
       throw Error(`Unexpected request: ${input}`);
     });
     render(<App />);
-    fireEvent.click(screen.getByText('Kom igång'));
+    fireEvent.click(screen.getAllByText('Skapa grupp')[0]);
     fireEvent.change(screen.getByPlaceholderText('Lunchpromenaden'),{target:{value:'Målgänget'}});
     fireEvent.change(screen.getByLabelText('Vad vill du bli kallad i den här gruppen?'),{target:{value:'Kim Walk'}});
     fireEvent.click(screen.getByRole('checkbox',{name:'Månad'}));
@@ -96,7 +96,7 @@ describe('name to group creation', () => {
       throw new Error('Unexpected request: '+input);
     });
     render(<App />);
-    fireEvent.click(screen.getByText('Kom igång'));
+    fireEvent.click(screen.getAllByText('Skapa grupp')[0]);
     fireEvent.change(screen.getByPlaceholderText('Lunchpromenaden'), { target: { value: 'Team Walk' } });
     fireEvent.change(screen.getByLabelText('Vad vill du bli kallad i den här gruppen?'), { target: { value: 'Anna Test' } });
     fireEvent.click(screen.getByRole('checkbox', { name: 'Gemensamt mål' }));
@@ -442,6 +442,32 @@ describe('name to group creation', () => {
     expect(leaderboard.textContent).not.toContain('LIVE');
   });
 
+  it('lets the person leave a sample group, but keeps the last one', async () => {
+    render(<App />);
+    const names=()=>Array.from(document.querySelectorAll('.membership-chip strong')).map(n=>n.textContent);
+    expect(names()).toEqual(['Lunchpromenaden','Kontoret Tvåan','Familjeluffen']);
+    for (const left of [2,1]) {
+      fireEvent.click(await screen.findByText(/^Lämna grupp: /));
+      fireEvent.click(screen.getByText('Ja, lämna gruppen'));
+      expect(names().length).toBe(left);
+    }
+    fireEvent.click(screen.getByText(/^Lämna grupp: /));
+    fireEvent.click(screen.getByText('Ja, lämna gruppen'));
+    expect(names().length).toBe(1);
+  });
+  it('shows an empty start page, not sample groups, to a signed-in person without groups', async () => {
+    localStorage.setItem('stride-token', 'session');
+    vi.spyOn(globalThis, 'fetch').mockImplementation(async input => {
+      if (input === '/api/state') return reply({ me: { id: 'me', name: 'Jag', distances: {} }, groups: [] });
+      throw new Error();
+    });
+    render(<App />);
+    expect(await screen.findByText('Du har inga grupper än')).toBeDefined();
+    expect(screen.queryByText('Lunchpromenaden')).toBeNull();
+    expect(screen.queryByText(/^Lämna grupp/)).toBeNull();
+    fireEvent.click(screen.getAllByText('Skapa grupp')[0]);
+    expect(screen.getByRole('dialog')).toBeDefined();
+  });
   it('lets the preview group like a walk without a server', async () => {
     render(<App />);
     const like = await screen.findByRole('button', { name: 'Gilla Alex Morgan' });
