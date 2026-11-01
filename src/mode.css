@@ -171,3 +171,4 @@ h3.mode-option-title{margin:-12px 0 6px;text-align:left}
 .landing-nav{min-height:0;padding-top:4px}
 .landing-test-entry button{padding-top:12px;padding-bottom:12px}
 }
+@media(max-width:680px){.landing-footer-end{display:block;width:100%;text-align:center;justify-self:center;align-self:center}}
