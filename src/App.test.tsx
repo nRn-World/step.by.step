@@ -468,6 +468,24 @@ describe('name to group creation', () => {
     fireEvent.click(screen.getAllByText('Skapa grupp')[0]);
     expect(screen.getByRole('dialog')).toBeDefined();
   });
+  it('joins the group from an invite link by itself once the person is signed in', async () => {
+    localStorage.setItem('stride-token', 'session');
+    localStorage.setItem('stride-pending-join', 'abc123def');
+    const g = group('Kompisgänget', 'Lina'); g.code = 'abc123def';
+    const calls: string[] = [];
+    vi.spyOn(globalThis, 'fetch').mockImplementation(async (input, init) => {
+      calls.push(((init as RequestInit | undefined)?.method || 'GET') + ' ' + String(input));
+      if (input === '/api/state') return reply({ me: { id: 'me', name: 'Jag Själv', distances: {} }, groups: [] });
+      if (input === '/api/invite/abc123def') return reply({ id: g.id, name: g.name, members: 1 });
+      if (input === '/api/groups/' + g.id + '/join') return reply(g);
+      throw new Error('Unexpected request: ' + String(input));
+    });
+    render(<App />);
+    await waitFor(() => expect(screen.getAllByText('Kompisgänget').length).toBeGreaterThan(0));
+    expect(calls).toContain('POST /api/groups/' + g.id + '/join');
+    expect(localStorage.getItem('stride-pending-join')).toBeNull();
+  });
+
   it('lets the preview group like a walk without a server', async () => {
     render(<App />);
     const like = await screen.findByRole('button', { name: 'Gilla Alex Morgan' });

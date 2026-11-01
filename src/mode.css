@@ -106,3 +106,6 @@ h3.mode-option-title{margin:-12px 0 6px;text-align:left}
 .auth-actions .soon-badge{background:#ffffff26}
 @media(max-width:680px){.mode-options{grid-template-columns:1fr}}
 .account-forgot{margin-top:14px;border:0;background:transparent;padding:6px 0;color:#715b90;font:700 13px 'DM Sans',sans-serif;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+.invite-note{display:flex;flex-direction:column;gap:3px;max-width:460px;margin:14px 0 0;padding:12px 16px;border-radius:12px;background:#e8dff5;border:1px solid #cdbde6;color:#4b3a6b;font-size:13px;line-height:1.5}
+.invite-note strong{font:700 15px Outfit,sans-serif;color:#2f2347}
+.mode-inner .invite-note{margin:0 0 20px}

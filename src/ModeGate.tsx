@@ -14,6 +14,7 @@ import { cleanUsername, usernameToEmail } from './username';
 import { Footprints, Users, MapPin, ArrowRight, Star } from './components/PlayfulIcons';
 import BrandMark from './components/BrandMark';
 import { GoogleIcon, AppleIcon } from './components/AuthIcons';
+import { pendingJoin, rememberJoin } from './pendingJoin';
 import './mode.css';
 import './landing-test.css';
 
@@ -31,6 +32,13 @@ export default function ModeGate({ initialMode, initialLanguage }: { initialMode
   const m=modeText[language]||modeText.sv;
   useEffect(()=>{document.documentElement.lang=language},[language]);
   const [mode, setMode] = useState<'choose'|'private'|'connected'>(() => initialMode ?? (sessionStorage.getItem('pending-connected')==='yes'||localStorage.getItem('stride-connected')==='yes'?'connected':'choose'));
+  // An invite link is remembered right away, because signing in sends the person away and back without the ?join= part.
+  const [inviteGroup, setInviteGroup] = useState('');
+  useEffect(() => {
+    rememberJoin(window.location.href);
+    const code = pendingJoin();
+    if (code) fetch((import.meta.env.VITE_API_URL || '/api') + '/invite/' + encodeURIComponent(code)).then(res => res.ok ? res.json() : null).then(info => { if (info?.name) setInviteGroup(info.name); }).catch(() => undefined);
+  }, []);
   const [auth, setAuth] = useState<ReturnType<typeof createClient>|null>(null);
   const [session, setSession] = useState<Session|null>(null);
   const [error, setError] = useState('');
@@ -54,6 +62,7 @@ export default function ModeGate({ initialMode, initialLanguage }: { initialMode
     let listener: {remove:()=>Promise<void>}|undefined;
     // Google sign-in returns to the app through the app.stegvis.mobile://auth/callback link, with the session in the # part (or a code in the ? part).
     const finishNative = async (callback: string) => {
+      if (callback.startsWith('http')) { rememberJoin(callback); return; } // an invite link opened in the app
       if (!callback.startsWith('app.stegvis.mobile://auth/callback')) return;
       try { await Browser.close(); } catch { /* the sign-in tab may already be closed */ }
       try {
@@ -178,7 +187,7 @@ export default function ModeGate({ initialMode, initialLanguage }: { initialMode
         <div className="landing-copy">
           <p className="landing-kicker"><span className="landing-kicker-star" aria-hidden="true"><Star size={17}/></span> {m.welcome}</p>
           <h1>{m.headlineStart}<br/>{m.headlineEnd} <em>{m.headlineAccent}</em></h1>
-          <p className="landing-lead">{m.lead}</p>
+          <p className="landing-lead">{m.lead}</p>{inviteGroup&&<p className="invite-note" role="status"><strong>{m.invitedTo} {inviteGroup}</strong><span>{m.invitedHint}</span></p>}
           <div className="test-entry landing-test-entry"><button onClick={startTest}>{m.testEntry}<ArrowRight size={16}/></button><p>{m.testEntryHint}</p></div>
           <a className="landing-jump" href="#val">{m.jump} <span aria-hidden="true">↓</span></a>
         </div>
@@ -198,5 +207,5 @@ export default function ModeGate({ initialMode, initialLanguage }: { initialMode
   if (session && mode === 'connected') return <div className="connected-shell"><div className="connected-banner"><span><MapPin size={15}/> {m.liveBanner}</span></div>{accountError&&<p role="alert" className="mode-warning">{accountError}</p>}<App key={session.user.id} accessToken={session.access_token} initialLang={language} onSignOut={() => void signOutAccount()} onDeleteAccount={() => void deleteAccount()}/></div>;
   if (testMode && !session) return <div className="connected-shell"><div className="connected-banner test-banner"><span><MapPin size={15}/> {m.testBanner}</span><button onClick={endTest}>{m.testExit}</button></div><App key="test-mode" initialLang={language} onRequireLogin={()=>{sessionStorage.removeItem('stride-test-mode');setTestMode(false);setMode('connected');}}/></div>;
   if (session && auth) return <div className="connected-shell"><div className="connected-banner"><span><MapPin size={15}/> {m.liveBanner}</span></div><App key={session.user.id} accessToken={session.access_token} initialLang={language} onSignOut={() => void signOutAccount()} onDeleteAccount={() => void deleteAccount()}/></div>;
-  return <div className="mode-page"><div className="mode-inner"><button className="mode-back" onClick={()=>{sessionStorage.removeItem('pending-connected');setMode('choose')}}>← {m.back}</button><LanguagePicker value={language} onChange={setLanguage}/><div className="mode-mark logo-mark"><BrandMark size={72}/></div><p className="mode-eyebrow">{m.loginEyebrow}</p><h1>{m.loginTitle}</h1><p className="mode-intro">{m.loginIntro}</p><div className="mode-panel"><h2>{m.accountTitle}</h2><p>{m.accountNote}</p><form className="account-form" onSubmit={e=>{e.preventDefault();void emailSignIn('login');}}><label htmlFor="account-email">{m.accountEmail}</label><input id="account-email" type="text" autoComplete="username" autoCapitalize="none" spellCheck={false} value={email} onChange={e=>setEmail(e.target.value)} placeholder={m.accountIdPlaceholder} required/><label htmlFor="account-password">{m.accountPassword}</label><input id="account-password" type="password" autoComplete="current-password" value={password} onChange={e=>setPassword(e.target.value)} minLength={8} maxLength={72} required/><p className="account-hint">{m.accountPasswordHint}</p><div className="account-actions"><button type="submit" disabled={accountBusy||!auth}>{m.accountLogin}</button><button type="button" className="secondary" disabled={accountBusy||!auth} onClick={()=>void emailSignIn('create')}>{m.accountCreate}</button></div><button type="button" className="account-forgot" disabled={accountBusy||!auth} onClick={()=>void requestReset()}>{m.accountForgot}</button></form>{notice&&<p role="status" className="account-notice">{notice}</p>}{accountError&&<p role="alert" className="mode-warning">{accountError}</p>}<div className="auth-divider">{m.accountDivider}</div><div className="auth-actions"><button onClick={()=>signIn('google')} disabled={!auth}><GoogleIcon/>{m.google}</button><button disabled><AppleIcon/>{m.apple}<span className="soon-badge">{m.soon}</span></button></div>{!auth&&<p className="mode-warning">{m.oauthWait}</p>}{error&&<p role="alert" className="mode-warning">{error}</p>}</div><a className="mode-policy" href={"/privacypolicy.html?lang="+language} target="_blank" rel="noopener noreferrer">{m.dataLink}</a></div></div>;
+  return <div className="mode-page"><div className="mode-inner"><button className="mode-back" onClick={()=>{sessionStorage.removeItem('pending-connected');setMode('choose')}}>← {m.back}</button><LanguagePicker value={language} onChange={setLanguage}/><div className="mode-mark logo-mark"><BrandMark size={72}/></div><p className="mode-eyebrow">{m.loginEyebrow}</p><h1>{m.loginTitle}</h1><p className="mode-intro">{m.loginIntro}</p>{inviteGroup&&<p className="invite-note" role="status"><strong>{m.invitedTo} {inviteGroup}</strong><span>{m.invitedHint}</span></p>}<div className="mode-panel"><h2>{m.accountTitle}</h2><p>{m.accountNote}</p><form className="account-form" onSubmit={e=>{e.preventDefault();void emailSignIn('login');}}><label htmlFor="account-email">{m.accountEmail}</label><input id="account-email" type="text" autoComplete="username" autoCapitalize="none" spellCheck={false} value={email} onChange={e=>setEmail(e.target.value)} placeholder={m.accountIdPlaceholder} required/><label htmlFor="account-password">{m.accountPassword}</label><input id="account-password" type="password" autoComplete="current-password" value={password} onChange={e=>setPassword(e.target.value)} minLength={8} maxLength={72} required/><p className="account-hint">{m.accountPasswordHint}</p><div className="account-actions"><button type="submit" disabled={accountBusy||!auth}>{m.accountLogin}</button><button type="button" className="secondary" disabled={accountBusy||!auth} onClick={()=>void emailSignIn('create')}>{m.accountCreate}</button></div><button type="button" className="account-forgot" disabled={accountBusy||!auth} onClick={()=>void requestReset()}>{m.accountForgot}</button></form>{notice&&<p role="status" className="account-notice">{notice}</p>}{accountError&&<p role="alert" className="mode-warning">{accountError}</p>}<div className="auth-divider">{m.accountDivider}</div><div className="auth-actions"><button onClick={()=>signIn('google')} disabled={!auth}><GoogleIcon/>{m.google}</button><button disabled><AppleIcon/>{m.apple}<span className="soon-badge">{m.soon}</span></button></div>{!auth&&<p className="mode-warning">{m.oauthWait}</p>}{error&&<p role="alert" className="mode-warning">{error}</p>}</div><a className="mode-policy" href={"/privacypolicy.html?lang="+language} target="_blank" rel="noopener noreferrer">{m.dataLink}</a></div></div>;
 }

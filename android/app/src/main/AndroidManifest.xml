@@ -28,6 +28,12 @@
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="app.stegvis.mobile" android:host="auth" android:pathPrefix="/callback" />
             </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" android:host="nrnworld.one" android:pathPrefix="/step.by.step" />
+            </intent-filter>
         </activity>
 
         <provider
