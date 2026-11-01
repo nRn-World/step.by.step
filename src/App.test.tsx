@@ -59,7 +59,7 @@ describe('name to group creation', () => {
       throw new Error(`Unexpected request: ${input}`);
     });
     render(<App />);
-    fireEvent.click(screen.getAllByRole('button', { name: 'Skapa grupp' })[0]);
+    fireEvent.click((await screen.findAllByRole('button', { name: 'Skapa grupp' }))[0]);
     fireEvent.change(screen.getByPlaceholderText('Lunchpromenaden'), { target: { value: 'Team Sara' } });
     expect((screen.getByLabelText('Vad vill du bli kallad i den här gruppen?') as HTMLInputElement).value).toBe('');
     fireEvent.change(screen.getByLabelText('Vad vill du bli kallad i den här gruppen?'), { target: { value: 'Sara Test' } });

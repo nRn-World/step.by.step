@@ -340,3 +340,9 @@ h1,h2,h3,h4,.person-info strong{overflow-wrap:break-word}
 .profile-logout::before{content:'';position:absolute;inset:0 0 55%;background:linear-gradient(180deg,#ffffff1f,transparent);pointer-events:none}
 .profile-logout:hover{background:linear-gradient(135deg,#ffffff38,#ffffff14 60%,#ffffff1c);transform:translateY(-1px)}
 :root:not([data-theme=dark]) .profile-logout{color:#4a4560;border-color:#ffffffb3;background:linear-gradient(135deg,#7c60bb26,#7c60bb0d 60%,#ffffff66);box-shadow:inset 0 1px 0 #fff,0 8px 22px #7c60bb1f}
+
+.side-profile .profile-logout{flex:0 0 100%;width:100%}
+
+.eyebrow-star svg,.heading-sparkle svg,.tip-icon svg,.race-summary svg{animation:spin 20s linear infinite}
+
+.side-item .side-trophy{color:#e0a83a}

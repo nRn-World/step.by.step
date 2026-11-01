@@ -6,9 +6,10 @@ const BAG = '#f0e5d1';
 const FACE = '#3a3547';
 
 const TORSO = 'M-25 244C-31 256-32 292-31 316-31 327-17 333 0 333 17 333 31 327 31 316 32 292 31 256 25 244 16 239-16 239-25 244Z';
-const ARMS = 'M-24 250C-33 262-39 274-38 285-38 293-41 298-45 301M24 250C33 262 39 274 38 287 38 295 41 301 45 305';
-const HANDS_BACK = { cx: -47, cy: 303 };
-const HANDS_FRONT = { cx: 47, cy: 307 };
+const ARMS = 'M-16 250C-24 264-30 278-34 301M18 250C26 262 32 274 41 298';
+const HANDS_BACK = { cx: -35, cy: 304 };
+const HANDS_FRONT = { cx: 42, cy: 301 };
+const SHOE_PATH = 'M-42 384h14c8 0 15 3 17 8 1 3-1 5-4 5h-22c-4 0-6-3-5-13Z';
 
 const splitPaths = (d: string) => d.split(' M').map((part, i) => (i ? `M${part}` : part));
 const FRINGE_BOB = 'M-44 206C-44 176-22 152 2 153 22 154 38 168 37 190 30 183 21 181 13 185 4 189-6 191-15 192-24 193-34 194-40 199-42 202-43 205-44 206Z';
@@ -17,10 +18,10 @@ const FRINGE_SHORT = 'M-40 200C-40 174-20 154 2 155 21 156 36 168 35 186 27 180 
 
 function Legs() {
   return <>
-    <path d="M-8 328C-19 352-27 372-30 388M8 328C19 352 27 372 30 388" fill="none" stroke={LINE} strokeWidth="23" strokeLinecap="round"/>
-    <path d="M-8 328C-19 352-27 372-30 388M8 328C19 352 27 372 30 388" fill="none" stroke={TROUSER} strokeWidth="19" strokeLinecap="round"/>
-    <path d="M-44 386c-6 1-10 4-9 8 1 4 5 6 11 5l19-3c6-1 9-4 8-8-1-4-6-6-11-5Z" fill={SHOE} stroke={LINE} strokeWidth="2" strokeLinejoin="round"/>
-    <path d="M44 386c6 1 10 4 9 8-1 4-5 6-11 5l-19-3c-6-1-9-4-8-8 1-4 6-6 11-5Z" fill={SHOE} stroke={LINE} strokeWidth="2" strokeLinejoin="round"/>
+    <path d="M-6 328C-14 350-22 370-28 388M8 328C16 350 24 368 32 386" fill="none" stroke={LINE} strokeWidth="23" strokeLinecap="round"/>
+    <path d="M-6 328C-14 350-22 370-28 388M8 328C16 350 24 368 32 386" fill="none" stroke={TROUSER} strokeWidth="19" strokeLinecap="round"/>
+    <path d={SHOE_PATH} fill={SHOE} stroke={LINE} strokeWidth="2" strokeLinejoin="round"/>
+    <path d={SHOE_PATH} transform="translate(60 -2)" fill={SHOE} stroke={LINE} strokeWidth="2" strokeLinejoin="round"/>
   </>;
 }
 
@@ -28,8 +29,7 @@ function Arms({ color }: { color: string }) {
   return <>
     <path d={ARMS} fill="none" stroke={LINE} strokeWidth="19" strokeLinecap="round"/>
     <path d={ARMS} fill="none" stroke={color} strokeWidth="15" strokeLinecap="round"/>
-    <path d="M-41 294q4 5 8 4M41 296q4 5 8 4" fill="none" stroke={LINE} strokeWidth="1.8" strokeLinecap="round"/>
-  </>;
+      </>;
 }
 
 function Collar({ color }: { color: string }) {
@@ -68,18 +68,18 @@ type WalkerProps = {
 
 function Walker({ className, cx, skin, shirt, hair, mouth, hairMass, fringe, curls, children, overHair }: WalkerProps) {
   return <g className={`scene-person scene-person-${className}`}>
-    <g transform={`translate(${cx} 0)`}>
+    <g transform={`translate(${cx} 12)`}>
       <Legs/>
-      <path d={TORSO} fill={shirt} stroke={LINE} strokeWidth="2.2" strokeLinejoin="round"/>
+      <path d={TORSO} transform="scale(.8 1)" fill={shirt} stroke={LINE} strokeWidth="2.2" strokeLinejoin="round"/>
       <Arms color={shirt}/>
       <rect x="-8" y="218" width="16" height="32" fill={skin}/>
       {children}
-      <Collar color={shirt}/>
+      <g transform="translate(3 0) scale(.8 1)"><Collar color={shirt}/></g>
       <g fill={hair}><ellipse cx="0" cy="190" rx="38" ry="40"/>{hairMass.map(([hx, hy, r]) => <circle key={`${hx}:${hy}`} cx={hx} cy={hy} r={r}/>)}</g>
-      <ellipse cx="0" cy="200" rx="34" ry="35" fill={skin}/>
+      <ellipse cx="6" cy="200" rx="34" ry="35" fill={skin}/>
       {fringe.map((d) => <path key={d.slice(0, 14)} d={d} fill={hair}/>)}
       {curls}
-      <Features mouth={mouth}/>
+      <g transform="translate(7 0)"><Features mouth={mouth}/></g>
       {overHair}
       <Hand skin={skin} x={HANDS_BACK.cx} y={HANDS_BACK.cy}/>
       <Hand skin={skin} x={HANDS_FRONT.cx} y={HANDS_FRONT.cy}/>
@@ -92,7 +92,7 @@ export default function WalkingScene() {
     <defs>
       <pattern id="scene-grain" width="12" height="12" patternUnits="userSpaceOnUse"><circle cx="2" cy="3" r=".7" fill="#7c695e" opacity=".12"/><circle cx="9" cy="10" r=".5" fill="#7c695e" opacity=".1"/></pattern>
       <filter id="scene-shadow" x="-30%" y="-30%" width="160%" height="170%"><feGaussianBlur stdDeviation="10"/></filter>
-      <clipPath id="scene-torso"><path d={TORSO}/></clipPath>
+      <clipPath id="scene-torso"><path d={TORSO} transform="scale(.8 1)"/></clipPath>
     </defs>
     <path d="M37 324C116 244 217 262 278 297c76 43 135-15 227-35 110-23 174 22 225 64v134H37Z" fill="#e2e9d2"/>
     <path d="M31 362c92-63 178-49 262-17 84 31 131 26 219-8 84-32 155-23 218 18v105H31Z" fill="#c9dbba"/>
@@ -110,19 +110,19 @@ export default function WalkingScene() {
     <ellipse cx="372" cy="402" rx="207" ry="18" fill="#8c7966" opacity=".13" filter="url(#scene-shadow)"/>
 
     {/* Friend in coral shirt with a dark bob. */}
-    <Walker className="one" cx={252} skin="#dcae90" shirt="#e89179" hair="#3d3546" mouth="#8f5a56" hairMass={[[0,186,34],[-26,202,22],[26,202,22],[-30,226,17],[30,226,17]]} fringe={splitPaths(FRINGE_BOB)}>
-      <path d="M-64 288h15a3 3 0 0 1 3 3v21a3 3 0 0 1-3 3h-15a3 3 0 0 1-3-3v-21a3 3 0 0 1 3-3Z" fill="#b4a2cb" stroke={LINE} strokeWidth="2" transform="rotate(-12 -54 301)"/>
-      <path d="M-61 296h8" fill="none" stroke="#8f7fa5" strokeWidth="2"/>
-    </Walker>
+    <g transform="translate(0 10)"><Walker className="one" cx={252} skin="#dcae90" shirt="#e89179" hair="#3d3546" mouth="#8f5a56" hairMass={[[0,186,34],[-26,202,22],[26,202,22],[-30,226,17],[30,226,17]]} fringe={splitPaths(FRINGE_BOB)}>
+      <g transform="translate(12 0)"><path d="M-64 288h15a3 3 0 0 1 3 3v21a3 3 0 0 1-3 3h-15a3 3 0 0 1-3-3v-21a3 3 0 0 1 3-3Z" fill="#b4a2cb" stroke={LINE} strokeWidth="2" transform="rotate(-12 -54 301)"/>
+      <path d="M-61 296h8" fill="none" stroke="#8f7fa5" strokeWidth="2"/></g>
+    </Walker></g>
 
     {/* Center friend in a striped shirt with curly hair. */}
-    <Walker className="two" cx={385} skin="#b98264" shirt="#ece0bd" hair="#342f37" mouth="#7d4a48" hairMass={[[0,182,34],[-26,198,22],[26,198,22],[-31,222,18],[31,222,18],[-15,164,15],[15,164,15]]} fringe={splitPaths(FRINGE_CURLY)}
+    <g transform="translate(0 16)"><Walker className="two" cx={385} skin="#b98264" shirt="#ece0bd" hair="#342f37" mouth="#7d4a48" hairMass={[[0,182,34],[-26,198,22],[26,198,22],[-31,222,18],[31,222,18],[-15,164,15],[15,164,15]]} fringe={splitPaths(FRINGE_CURLY)}
       curls={<g fill="#342f37"><circle cx="-32" cy="188" r="8"/><circle cx="-16" cy="162" r="9"/><circle cx="8" cy="160" r="9"/><circle cx="28" cy="172" r="8"/></g>}>
       <g clipPath="url(#scene-torso)"><path d="M-32 272h64m-64 17h64m-64 17h64" fill="none" stroke="#cfc092" strokeWidth="6"/></g>
-    </Walker>
+    </Walker></g>
 
     {/* The first friend: green coat, bucket hat and dark trousers, kept exactly as drawn first. */}
-    <g className="scene-person scene-person-three">
+    <g transform="translate(0 16)"><g className="scene-person scene-person-three">
       <g transform="translate(492 405) scale(1.1) translate(-492 -405)" stroke="#493f45" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
         <path d="M489 349q-21 22-25 51m43-46q9 25 23 43" fill="none" stroke="#55526b" strokeWidth="17"/>
         <path d="m453 403 24 2m44-3 22-5" fill="none" stroke="#353447" strokeWidth="10"/>
@@ -137,15 +137,15 @@ export default function WalkingScene() {
         <circle cx="483" cy="232" r="2" fill="#493f45" stroke="none"/><circle cx="504" cy="232" r="2" fill="#493f45" stroke="none"/>
           <path d="M485 245q9 6 17-2" fill="none" stroke="#a66d65" strokeWidth="2"/>
       </g>
-    </g>
+    </g></g>
 
     {/* Front friend: sandy hair, slate blue shirt with a canvas tote. */}
-    <Walker className="four" cx={183} skin="#f0c8a6" shirt="#6f8fac" hair="#e3b365" mouth="#a4615c" hairMass={[[0,186,34],[-26,202,22],[26,202,22],[-30,226,17],[30,226,17]]} fringe={splitPaths(FRINGE_BOB)}
-      children={<>
+    <Walker className="four" cx={155} skin="#f0c8a6" shirt="#6f8fac" hair="#e3b365" mouth="#a4615c" hairMass={[[0,186,34],[-26,202,22],[26,202,22],[-30,226,17],[30,226,17]]} fringe={splitPaths(FRINGE_BOB)}
+      children={<g transform="translate(12 0)">
         <path d="M-16 241-7 238-38 302-46 297Z" fill={BAG} stroke={LINE} strokeWidth="2" strokeLinejoin="round"/>
         <path d="M-60 298h24c4 0 6 2 6 6v34c0 6-4 9-9 9h-20c-5 0-9-3-9-9v-34c0-4 2-6 8-6Z" fill={BAG} stroke={LINE} strokeWidth="2.2" strokeLinejoin="round"/>
         <path d="M-56 324q9-4 18 0" fill="none" stroke={LINE} strokeWidth="2" strokeLinecap="round"/>
-      </>}/>
+      </g>}/>
     {/* The dog walks up to each friend, then back to its own spot. */}
     <g className="scene-dog-track"><g className="scene-dog-turn"><g className="scene-dog-gait">
       <g className="scene-dog" stroke={LINE} strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round">
