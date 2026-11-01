@@ -28,7 +28,7 @@ const DATA = join(process.cwd(), 'data', 'steps.json');
 type GoalType = 'day' | 'week' | 'weekend' | 'month' | 'year';
 type Person = { id: string; token: string; name: string; distances: Record<string, number>; activities?: Walk[]; lastMovementAt?: number; oauthSubject?: string; };
 type GoalScope = 'each' | 'together';
-type Group = { mode?: 'connected'; id: string; code: string; pairCode?: string; name: string; ownerId: string; members: string[]; memberNames?: Record<string, string>; banned: string[]; bannedNames?: string[]; goals: { id: string; type: GoalType; target: number; scope?: GoalScope }[]; partners?: string[]; raceGoals?: Record<string, { period: 'day' | 'week' | 'month'; target: number }>; likes: Record<string, string[]>; createdAt: number };
+type Group = { mode?: 'connected'; id: string; code: string; pairCode?: string; name: string; ownerId: string; members: string[]; memberNames?: Record<string, string>; banned: string[]; bannedNames?: string[]; goals: { id: string; type: GoalType; target: number; scope?: GoalScope }[]; partners?: string[]; pairRequests?: string[]; raceGoals?: Record<string, { period: 'day' | 'week' | 'month'; target: number }>; likes: Record<string, string[]>; createdAt: number };
 type DB = { people: Person[]; groups: Group[] };
 // A goal is either for each walker ('each') or for the whole group together ('together').
 const goalKey = (g: { type: GoalType; scope?: GoalScope }) => `${g.type}:${g.scope === 'each' ? 'each' : 'together'}`;
@@ -127,7 +127,7 @@ const limit = (max: number, windowMs: number): express.RequestHandler => (req, r
 };
 const view = (g: Group, viewer: Person) => ({ id: g.id, viewerId: viewer.id, name: g.name, code: g.code, isAdmin: g.ownerId === viewer.id,
   partners: (g.partners || []).map(pid => db.groups.find(x => x.id === pid)).filter((x): x is Group => !!x).map(x => ({ ...partnerSummary(x), race: g.raceGoals?.[x.id] || null })),
-  ...(g.ownerId === viewer.id ? { pairCode: g.pairCode || null } : {}),
+  ...(g.ownerId === viewer.id ? { pairCode: g.pairCode || null, pairRequests: (g.pairRequests || []).map(fid => db.groups.find(x => x.id === fid)).filter((x): x is Group => !!x).map(x => ({ id: x.id, name: x.name, memberCount: x.members.length })), pairSent: db.groups.filter(x => (x.pairRequests || []).includes(g.id)).map(x => ({ id: x.id, name: x.name })) } : {}),
   goals: g.goals, members: g.members.map(mid => { const p = db.people.find(x => x.id === mid)!; return { id: p.id, name: g.memberNames?.[p.id] || p.name, distances: p.distances, activityCounts: countActivities(p.activities || []), isAdmin: p.id === g.ownerId, liked: (g.likes[`${dateKey()}:${p.id}`] || []).includes(viewer.id), likes: (g.likes[`${dateKey()}:${p.id}`] || []).length, active: !!p.lastMovementAt && Date.now() - p.lastMovementAt < 90000 }; }) });
 app.get('/api/state', (req, res) => { const p = person(req); if (!p) return fail(res, 401, 'Sessionen hittades inte. Ange ett namn igen.'); res.json({ me: { id: p.id, name: p.name, distances: p.distances }, groups: db.groups.filter(g => g.members.includes(p.id)).map(g => view(g,p)) }); });
 const validName = (input: unknown) => typeof input === 'string' ? input.trim().replace(/\s+/g, ' ') : '';
@@ -183,7 +183,37 @@ app.patch('/api/me', limit(20, 60 * 60 * 1000), (req, res) => { const p = person
 app.get('/api/invite/:code', (req, res) => { const g = db.groups.find(g => g.code === req.params.code); if (!g) return fail(res, 404, 'Länken är ogiltig.'); res.json({ id: g.id, name: g.name, members: g.members.length }); });
 app.post('/api/groups/:id/pair-code', (req, res) => { const p = person(req); const g = db.groups.find(g => g.id === req.params.id); if (!p || !g || g.ownerId !== p.id) return fail(res, 403, 'Bara gruppens skapare kan hämta koden.'); if (!g.pairCode) { g.pairCode = nextPairCode(); save(); } res.json({ code: g.pairCode }); });
 app.get('/api/pair/:code', (req, res) => { const p = person(req); if (!p) return fail(res, 401, 'Sessionen hittades inte. Ange ett namn igen.'); const code = String(req.params.code || '').trim().toUpperCase(); const g = db.groups.find(g => !!g.pairCode && g.pairCode === code); if (!g) return fail(res, 404, 'Koden hittades inte. Be det andra teamet om en ny kod.'); res.json({ id: g.id, name: g.name, memberCount: g.members.length }); });
-app.post('/api/groups/:id/partners', (req, res) => { const p = person(req); const g = db.groups.find(g => g.id === req.params.id); if (!p || !g || g.ownerId !== p.id) return fail(res, 403, 'Bara gruppens skapare kan para ihop grupper.'); const code = String(req.body.code || '').trim().toUpperCase(); if (!code) return fail(res, 400, 'Ange koden från det andra teamet.'); const other = db.groups.find(x => !!x.pairCode && x.pairCode === code); if (!other) return fail(res, 404, 'Koden hittades inte. Be det andra teamet om en ny kod.'); if (other.id === g.id) return fail(res, 400, 'Det är er egen kod. Använd koden från det andra teamet.'); g.partners ||= []; other.partners ||= []; if (g.partners.includes(other.id)) return fail(res, 409, 'De grupperna är redan ihopkopplade.'); if (g.partners.length >= 5) return fail(res, 409, 'En grupp kan vara ihopkopplad med högst fem grupper.'); g.partners.push(other.id); if (!other.partners.includes(g.id)) other.partners.push(g.id); save(); res.json(view(g, p)); });
+// Pairing is a request: the other group's creator has to say yes before the two groups are linked.
+const linkGroups = (a: Group, b: Group) => { a.partners ||= []; b.partners ||= []; if (!a.partners.includes(b.id)) a.partners.push(b.id); if (!b.partners.includes(a.id)) b.partners.push(a.id); a.pairRequests = (a.pairRequests || []).filter(id => id !== b.id); b.pairRequests = (b.pairRequests || []).filter(id => id !== a.id); };
+app.post('/api/groups/:id/partners', (req, res) => {
+  const p = person(req); const g = db.groups.find(g => g.id === req.params.id);
+  if (!p || !g || g.ownerId !== p.id) return fail(res, 403, 'Bara gruppens skapare kan para ihop grupper.');
+  const targetId = typeof req.body.targetId === 'string' ? req.body.targetId : '';
+  const code = String(req.body.code || '').trim().toUpperCase();
+  if (!targetId && !code) return fail(res, 400, 'Ange koden från det andra teamet.');
+  // Picking by id only works for groups you created yourself, so ids of other people's groups can't be probed.
+  const other = targetId ? db.groups.find(x => x.id === targetId && x.ownerId === p.id) : db.groups.find(x => !!x.pairCode && x.pairCode === code);
+  if (!other) return fail(res, 404, targetId ? 'Gruppen hittades inte.' : 'Koden hittades inte. Be det andra teamet om en ny kod.');
+  if (other.id === g.id) return fail(res, 400, 'Det är er egen kod. Använd koden från det andra teamet.');
+  g.partners ||= []; other.partners ||= [];
+  if (g.partners.includes(other.id)) return fail(res, 409, 'De grupperna är redan ihopkopplade.');
+  if (g.partners.length >= 5 || other.partners.length >= 5) return fail(res, 409, 'En grupp kan vara ihopkopplad med högst fem grupper.');
+  if ((g.pairRequests || []).includes(other.id)) linkGroups(g, other);
+  else { other.pairRequests ||= []; if (!other.pairRequests.includes(g.id)) other.pairRequests.push(g.id); }
+  save(); res.json(view(g, p));
+});
+app.post('/api/groups/:id/pair-requests/:fromId/:answer', (req, res) => {
+  const p = person(req); const g = db.groups.find(g => g.id === req.params.id);
+  if (!p || !g || g.ownerId !== p.id) return fail(res, 403, 'Bara gruppens skapare kan svara på en förfrågan.');
+  if (!['accept', 'decline'].includes(req.params.answer)) return fail(res, 400, 'Välj ja eller nej.');
+  const from = db.groups.find(x => x.id === req.params.fromId);
+  if (!from || !(g.pairRequests || []).includes(from.id)) return fail(res, 404, 'Förfrågan finns inte längre.');
+  if (req.params.answer === 'accept') {
+    if ((g.partners || []).length >= 5 || (from.partners || []).length >= 5) return fail(res, 409, 'En grupp kan vara ihopkopplad med högst fem grupper.');
+    linkGroups(g, from);
+  } else g.pairRequests = (g.pairRequests || []).filter(id => id !== from.id);
+  save(); res.json(view(g, p));
+});
 // A shared race goal between two paired groups. It is stored on both groups so either side sees the same goal.
 app.put('/api/groups/:id/partners/:partnerId/race', (req, res) => { const p = person(req); const g = db.groups.find(g => g.id === req.params.id); const other = db.groups.find(x => x.id === req.params.partnerId); if (!p || !g || g.ownerId !== p.id) return fail(res, 403, 'Bara gruppens skapare kan sätta ett gemensamt mål.'); if (!other || !(g.partners || []).includes(other.id)) return fail(res, 404, 'De grupperna är inte ihopkopplade.'); const period = req.body.period; const target = Math.round(Number(req.body.target)); if (!['day', 'week', 'month'].includes(period) || !Number.isFinite(target) || target < 1000 || target > 5000000) return fail(res, 400, 'Välj dag, vecka eller månad och ett mål på 1 000 till 5 000 000 steg.'); const race = { period, target }; g.raceGoals = { ...(g.raceGoals || {}), [other.id]: race }; other.raceGoals = { ...(other.raceGoals || {}), [g.id]: race }; save(); res.json(view(g, p)); });
 app.delete('/api/groups/:id/partners/:partnerId/race', (req, res) => { const p = person(req); const g = db.groups.find(g => g.id === req.params.id); const other = db.groups.find(x => x.id === req.params.partnerId); if (!p || !g || g.ownerId !== p.id) return fail(res, 403, 'Bara gruppens skapare kan ta bort ett gemensamt mål.'); if (g.raceGoals) delete g.raceGoals[req.params.partnerId]; if (other?.raceGoals) delete other.raceGoals[g.id]; save(); res.json(view(g, p)); });

@@ -209,8 +209,26 @@ describe('name to group creation', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Kopiera kod' }));
     await waitFor(() => expect(writeText).toHaveBeenCalledWith('EJ88PQ'));
     fireEvent.change(screen.getByLabelText('Kod från det andra teamet'), { target: { value: 'https://example.test/?pair=tw66er' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Para ihop grupperna' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Skicka förfrågan' }));
     await waitFor(() => expect(sent?.code).toBe('TW66ER'));
+  });
+
+  it('asks the creator to accept a pairing request and links the teams on yes', async () => {
+    localStorage.setItem('stride-token', 'owner-token');
+    let answered = '';
+    const g = { ...group('Alfa laget','Anna Test'), partners:[], pairRequests:[{ id:'team-beta', name:'Beta laget', memberCount:3 }] };
+    const paired = { ...g, pairRequests:[], partners:[{ id:'team-beta', name:'Beta laget', memberCount:3, goals:[], steps:{ day:0, week:0, month:0 } }] };
+    vi.spyOn(globalThis,'fetch').mockImplementation(async (input) => {
+      if (input === '/api/state') return reply({ me:{ id:'member-id', name:'Anna Test', distances:{} }, groups:[answered ? paired : g] });
+      if (input === '/api/groups/group-id/pair-requests/team-beta/accept') { answered = 'accept'; return reply(paired); }
+      throw new Error('Unexpected request: '+input);
+    });
+    render(<App />);
+    expect((await screen.findByText('Beta laget vill para ihop sig med Alfa laget.')).textContent).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Ja, para ihop' }));
+    await waitFor(() => expect(answered).toBe('accept'));
+    await waitFor(() => expect(document.getElementById('teams')!.textContent).toContain('Beta laget'));
+    expect(screen.queryByRole('button', { name: 'Ja, para ihop' })).toBeNull();
   });
 
   it('celebrates a personal goal with the matching day scene', async () => {
@@ -299,7 +317,7 @@ describe('name to group creation', () => {
     const g = { ...group('Alfa laget','Anna Test'), pairCode:'EJ88PQ', goals:[{ id:'g1', type:'day', target:40000, scope:'together' }], partners:[] };
     const paired = { ...g, partners:[{ id:'team-beta', name:'Beta laget', memberCount:4, goals:[{ type:'day', target:50000, steps:0 }], steps:{day:0,week:0,month:0} }] };
     vi.spyOn(globalThis,'fetch').mockImplementation(async (input, init) => {
-      if (input === '/api/state') return reply({ me:{ id:'member-id', name:'Anna Test', distances:{} }, groups:[g] });
+      if (input === '/api/state') return reply({ me:{ id:'member-id', name:'Anna Test', distances:{} }, groups:[sent ? paired : g] });
       if (input === '/api/groups/group-id/partners') { sent = JSON.parse(String(init?.body)); return reply(paired); }
       throw new Error('Unexpected request: '+input);
     });
@@ -308,7 +326,7 @@ describe('name to group creation', () => {
     const dialog = screen.getByRole('dialog');
     expect(dialog.textContent).toContain('EJ88PQ');
     fireEvent.change(screen.getByLabelText('Kod från det andra teamet'), { target: { value: 'tw66er' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Para ihop grupperna' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Skicka förfrågan' }));
     await waitFor(() => expect(sent?.code).toBe('TW66ER'));
     await waitFor(() => expect(document.getElementById('teams')!.textContent).toContain('Beta laget'));
   });
