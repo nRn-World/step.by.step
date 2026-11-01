@@ -93,7 +93,7 @@ A web browser cannot read the phone's steps and cannot track reliably in the bac
 | Mobile | Capacitor 8 for Android and iOS, Health Connect and HealthKit for steps |
 | Sharing close by | Bluetooth Low Energy directly between phones, custom service `e672a300-c4be-429e-89ec-df1477a51101` |
 | Sign-in | Supabase Auth: username or email with a password, Google and Apple |
-| Tests | Vitest with Testing Library, 42 tests in 7 files |
+| Tests | Vitest with Testing Library, 67 tests in 11 files |
 
 ## Getting started
 
@@ -107,7 +107,7 @@ Open **http://localhost:3000**. Vite serves the interface on port 3000 and the A
 ```bash
 npm run build        # production build
 PORT=3000 npm start  # serve the build with the API
-npm test             # 42 tests
+npm test             # 67 tests
 npm run lint         # type check with tsc
 ```
 
@@ -127,6 +127,7 @@ Static hosting, such as GitHub Pages, cannot run the group features because they
 
 | Method | Path | Does |
 | :--- | :--- | :--- |
+| `PATCH` | `/api/me` | Changes the name on the signed-in account |
 | `DELETE` | `/api/accounts` | Deletes the signed-in person and their data on the server |
 | `POST` | `/api/groups` | Creates a group |
 | `POST` | `/api/groups/:id/join` | Joins with a code |
