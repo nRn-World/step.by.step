@@ -1,6 +1,6 @@
 const path = require('path');
 const { slide } = require('./compose.cjs');
-const { OUT } = require('./base.cjs');
+const { OUT, tr } = require('./base.cjs');
 
 const SLIDES = [
   { id: '01-start', file: 'landing', eyebrow: 'STEP.BY.STEP', title: 'Gå tillsammans.',
@@ -24,6 +24,6 @@ const SLIDES = [
 const only = process.argv[2];
 for (const s of SLIDES) {
   if (only && s.id !== only) continue;
-  slide({ out: path.join(OUT, s.id + '.png'), eyebrow: s.eyebrow, title: s.title, sub: s.sub, screen: path.join(OUT, (s.file === 'landing' ? 'screen-landing' : s.file) + '.png'), accent: s.accent });
+  slide({ out: path.join(OUT, s.id + '.png'), eyebrow: tr(s.eyebrow), title: tr(s.title), sub: s.sub.map(tr), screen: path.join(OUT, (s.file === 'landing' ? 'screen-landing' : s.file) + '.png'), accent: s.accent });
   console.log('slide', s.id);
 }

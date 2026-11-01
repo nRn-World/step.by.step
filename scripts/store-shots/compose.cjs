@@ -1,6 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const { OUT, ROOT } = require('./base.cjs');
+const { OUT, ROOT, tr } = require('./base.cjs');
 const DEPS = process.env.STORE_DEPS || '/tmp/pw/node_modules';
 const load = (name) => { try { return require(name); } catch { return require(path.join(DEPS, name)); } };
 const { Resvg } = load('@resvg/resvg-js');
@@ -75,6 +75,7 @@ function slide({ out, eyebrow, title, sub, screen, offsetCss = 0, accent = '#df7
   <g clip-path="url(#screenClip)">
     <image x="${phoneX + bezel}" y="${phoneY + bezel - offsetCss * s}" width="${screenW}" height="${imgH}" preserveAspectRatio="none" xlink:href="${dataUri(src)}"/>
   </g>
+  <text x="${W / 2}" y="92" text-anchor="middle" font-family="DM Sans" font-weight="500" font-size="24" fill="#7b7570">${escapeXml(tr('Bilderna är skapade med AI'))}</text>
   <rect x="${phoneX + phoneW / 2 - 62}" y="${phoneY + 20}" width="124" height="32" rx="16" fill="#15141f"/>
   <rect x="${phoneX}" y="${phoneY}" width="${phoneW}" height="${screenH + bezel * 2}" rx="${radius}" fill="none" stroke="#3a3752" stroke-width="3"/>
 </svg>`;

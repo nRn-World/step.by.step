@@ -30,8 +30,12 @@ const C = {
 };
 
 // tiny hyperscript so every helper stays plain (satori cannot run components)
-const h = (type, props, ...children) => React.createElement(type, props || {}, ...children);
+// STORE_LANG=en translates every text through en.cjs (STORE_LANG=collect lists the strings that still need a translation)
+const DICT = process.env.STORE_LANG === 'en' ? require('./en.cjs') : {};
+const tr = (s) => { if (process.env.STORE_LANG === 'collect') fs.appendFileSync(path.join(OUT, 'strings.txt'), s + '\n'); return DICT[s] ?? s; };
+const deep = (c) => (typeof c === 'string' ? tr(c) : Array.isArray(c) ? c.map(deep) : c);
+const h = (type, props, ...children) => React.createElement(type, props || {}, ...children.map(deep));
 const t = (text, style) => h('div', { style }, text);
 const box = (style, ...children) => h('div', { style }, ...children);
 
-module.exports = { h, t, box, satori, fonts, Resvg, fs, path, b64, LOGO, SCENE, ICONS, C, React, ROOT, OUT };
+module.exports = { tr, h, t, box, satori, fonts, Resvg, fs, path, b64, LOGO, SCENE, ICONS, C, React, ROOT, OUT };

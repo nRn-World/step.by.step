@@ -29,7 +29,8 @@ const left = box({ display: 'flex', flexDirection: 'column', justifyContent: 'ce
 const page = box({ display: 'flex', width: W, height: H, background: 'linear-gradient(115deg, #fcfaf5 0%, #f8f4ea 55%, #f1ece1 100%)', position: 'relative', overflow: 'hidden' },
   box({ position: 'absolute', left: 640, top: -160, width: 520, height: 520, borderRadius: 260, background: '#e9eddd', opacity: 0.75 }),
   box({ position: 'absolute', left: -120, top: 300, width: 420, height: 420, borderRadius: 210, background: '#f7e2d8', opacity: 0.6 }),
-  left, scene);
+  left, scene,
+  T('Bilderna är skapade med AI', { position: 'absolute', right: 18, bottom: 12, fontFamily: 'DM Sans', fontWeight: 500, fontSize: 13, color: '#7b7570' }));
 
 (async () => {
   const svg = await satori(page, { width: W, height: H, fonts });

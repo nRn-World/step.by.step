@@ -1,6 +1,7 @@
 const { h, box, satori, fonts, Resvg, fs, path, LOGO, SCENE, C, OUT } = require('./base.cjs');
 const { icon, flag, star, arrowRight, arrowUpRight, arrowLeft, scribble } = require('./assets.cjs');
 
+const ACT = process.env.STORE_LANG === 'en' ? 'en' : 'sv';
 const T = (text, style) => h('div', { style }, text);
 const img = (src, style) => h('div', { style: { backgroundImage: `url(${src})`, backgroundSize: '100% 100%', backgroundRepeat: 'no-repeat', ...style } });
 const statusBar = (night) => box({ display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 44, padding: '0 26px', background: night ? '#29283b' : '#fff' },
@@ -31,7 +32,7 @@ const landing = () => box({ display: 'flex', flexDirection: 'column', width: 390
       box({ display: 'flex', alignItems: 'center', gap: 4, borderBottom: '1px solid #c8bdb5', paddingBottom: 3 },
         T('Din integritet', { fontFamily: 'DM Sans', fontWeight: 800, fontSize: 10.5, color: '#38364a' }),
         img(arrowUpRight('#e07153'), { width: 9, height: 9 }))),
-    box({ marginBottom: 8 }, modePillRow('sv')),
+    box({ marginBottom: 8 }, modePillRow(ACT)),
     T('EN BÄTTRE BIT PÅ VÄGEN.', { fontFamily: 'DM Sans', fontWeight: 800, fontSize: 9.5, letterSpacing: '1.3px', color: '#9d968e', paddingBottom: 10 })),
   box({ display: 'flex', flexDirection: 'column', padding: '22px 26px 0' },
     box({ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 },
@@ -111,7 +112,7 @@ const privateShell = (inner, active = 'sv') => box({ display: 'flex', flexDirect
 
 // 3 ─────────────────────────────────────────────── offline: reading steps from the phone
 const offlineStart = () => privateShell(box({ display: 'flex', flexDirection: 'column' },
-  box({ marginBottom: 16 }, modePillRow('sv')),
+  box({ marginBottom: 16 }, modePillRow(ACT)),
   T('OFFLINE · TILLSAMMANS I NÄRHETEN', { fontFamily: 'DM Sans', fontWeight: 800, fontSize: 9.5, letterSpacing: '2px', color: '#ba755c', marginTop: 20 }),
   T('Nära varandra. Bara här.', { fontFamily: 'Outfit', fontWeight: 700, fontSize: 36, lineHeight: '1.04', letterSpacing: '-1.6px', color: C.ink, marginTop: 8 }),
   T('Skapa en tillfällig gruppromenad med telefoner i närheten. Stegen kommer från telefonens hälsotjänst och delas direkt mellan er via Bluetooth. Inget konto, ingen GPS, ingen serverlagring.',
@@ -204,8 +205,8 @@ const liveShell = (inner) => box({ display: 'flex', flexDirection: 'column', wid
       T('Lunchpromenaden', { fontFamily: 'DM Sans', fontWeight: 700, fontSize: 11.5, color: '#25243a' })),
     box({ display: 'flex', alignItems: 'center', gap: 8 },
       box({ display: 'flex', alignItems: 'center', gap: 5, border: '1px solid #eeedf0', borderRadius: 9, padding: '7px 9px' },
-        img(flag('sv'), { width: 15, height: 10, borderRadius: 2 }),
-        T('Svenska', { fontFamily: 'DM Sans', fontWeight: 800, fontSize: 10.5, color: '#25243a' })),
+        img(flag(ACT), { width: 15, height: 10, borderRadius: 2 }),
+        T(ACT === 'en' ? 'English' : 'Svenska', { fontFamily: 'DM Sans', fontWeight: 800, fontSize: 10.5, color: '#25243a' })),
       box({ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 30, height: 30, border: '1px solid #eeedf0', borderRadius: 9 }, img(icon('Moon', '#25243a'), { width: 15, height: 15 })))),
   box({ flex: 1, display: 'flex', flexDirection: 'column', padding: '18px 18px 0' }, inner),
   homeBar('#faf9f6'));
@@ -352,7 +353,7 @@ const goals = () => liveShell(box({ display: 'flex', flexDirection: 'column' },
     box({ display: 'flex', alignItems: 'flex-end', gap: 7, height: 46, marginTop: 8 },
       [18, 34, 26, 44, 30, 38, 24].map((height, i) => box({ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 },
         h('div', { style: { width: '100%', height, borderRadius: 4, background: i >= 5 ? '#f2a07a' : '#4d4a6b' } }),
-        T(['M', 'T', 'O', 'T', 'F', 'L', 'S'][i], { fontFamily: 'DM Sans', fontWeight: 700, fontSize: 8, color: i >= 5 ? '#e6a287' : '#8f8bb0' })))),
+        T((process.env.STORE_LANG === 'en' ? ['M', 'T', 'W', 'T', 'F', 'S', 'S'] : ['M', 'T', 'O', 'T', 'F', 'L', 'S'])[i], { fontFamily: 'DM Sans', fontWeight: 700, fontSize: 8, color: i >= 5 ? '#e6a287' : '#8f8bb0' })))),
     box({ display: 'flex', alignItems: 'center', gap: 6, marginTop: 12, background: '#ffffff12', borderRadius: 9, padding: '10px 12px' },
       img(icon('Share2', '#e9e2f9'), { width: 14, height: 14 }),
       T('Bjud in vänner', { fontFamily: 'DM Sans', fontWeight: 800, fontSize: 10.5, color: '#e9e2f9' }),

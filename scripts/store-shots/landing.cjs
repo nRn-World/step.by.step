@@ -1,3 +1,4 @@
+const ACT = process.env.STORE_LANG === 'en' ? 'en' : 'sv';
 const { h, box, satori, fonts, Resvg, fs, path, LOGO, SCENE, C, OUT } = require('./base.cjs');
 const { icon, flag, star, arrowRight, arrowUpRight, arrowDown, scribble } = require('./assets.cjs');
 
@@ -28,7 +29,7 @@ const nav = box({ display: 'flex', flexDirection: 'column', borderBottom: '1px s
       img(arrowUpRight('#e07153'), { width: 9, height: 9 }))
   ),
   box({ display: 'flex', gap: 3, marginBottom: 8, padding: 3, background: '#efece5', border: '1px solid #e3dfd5', borderRadius: 9, alignSelf: 'flex-start' },
-    pill('Svenska', 'sv', true), pill('Dansk', 'da', false), pill('English', 'en', false)),
+    pill('Svenska', 'sv', ACT === 'sv'), pill('Dansk', 'da', false), pill('English', 'en', ACT === 'en')),
   T('EN BÄTTRE BIT PÅ VÄGEN.', { fontFamily: 'DM Sans', fontWeight: 800, fontSize: 9.5, letterSpacing: '1.3px', color: '#9d968e', paddingBottom: 11 })
 );
 
