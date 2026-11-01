@@ -56,7 +56,8 @@ Both modes use the same logo, the same typefaces, the same colours and the same 
 | **Goals for every period** | Day, week, weekend, month and year. The group can also set a shared goal that all steps count towards. |
 | **Leaderboard per group** | Every group has its own leaderboard with steps, kilometres and cheer hearts. Medals and a crown are handed out across the whole podium. |
 | **Celebration when a goal is reached** | When a goal has been reached, an animated scene plays that clearly shows which goal the group achieved. A separate scene for day, week, weekend, month, year and for the shared goal. |
-| **Pair two groups** | Share a code or a link. The other group only sees the shared goal and the member count, never personal goals, names or per person steps. |
+| **Pair two groups** | Only the creator of a group can pair it. Share your link, or paste the other team's link or code, and send a request. The other group's creator answers yes or no, and only then are the groups paired. Paired groups see each other's group goals and member count, never personal goals, names or per person steps. |
+| **Shared race goal** | Once two groups are paired, a creator sets one shared goal (day, week or month, 1 000 to 5 000 000 steps). Both groups see an animated track where each team walks towards the same finish line, with a short line about who leads. |
 | **Analysis map** | When two groups are paired, an animated map ranks the groups for day, week or month, with a crown on the leader and a line saying how many steps you are ahead or behind. |
 | **Email account** | Create an account with email and password, then sign in right away. Forgot your password? A reset link is sent by email. Google and Apple sign-in is also supported. |
 | **Username account** | Create an account with just a username and a password, no email. The name must be unique (3 to 20 letters, digits, dot, underscore or hyphen, not case sensitive). Supabase stores it under a made-up address, so there is no password reset. The server creates these accounts (`POST /api/username-signup`, needs `SUPABASE_SERVICE_KEY`). |
@@ -89,11 +90,11 @@ A web browser cannot read the phone's steps and cannot track reliably in the bac
 | Interface | React 19, TypeScript 5.8, Vite 6, Motion for animations |
 | Typefaces and colour | Outfit for headings, DM Sans for body text, all bundled locally |
 | Icons and illustration | Custom SVG components, no icon font and no external downloads |
-| Server | Express with TypeScript, data in `data/steps.json` |
+| Server | Express with TypeScript, data in `data/steps.json`, or in Supabase when `SUPABASE_SERVICE_KEY` is set |
 | Mobile | Capacitor 8 for Android and iOS, Health Connect and HealthKit for steps |
 | Sharing close by | Bluetooth Low Energy directly between phones, custom service `e672a300-c4be-429e-89ec-df1477a51101` |
 | Sign-in | Supabase Auth: username or email with a password, Google and Apple |
-| Tests | Vitest with Testing Library, 67 tests in 11 files |
+| Tests | Vitest with Testing Library, 72 tests in 12 files |
 
 ## Getting started
 
@@ -107,7 +108,7 @@ Open **http://localhost:3000**. Vite serves the interface on port 3000 and the A
 ```bash
 npm run build        # production build
 PORT=3000 npm start  # serve the build with the API
-npm test             # 67 tests
+npm test             # 72 tests
 npm run lint         # type check with tsc
 ```
 
@@ -127,7 +128,6 @@ Static hosting, such as GitHub Pages, cannot run the group features because they
 
 | Method | Path | Does |
 | :--- | :--- | :--- |
-| `PATCH` | `/api/me` | Changes the name on the signed-in account |
 | `DELETE` | `/api/accounts` | Deletes the signed-in person and their data on the server |
 | `POST` | `/api/groups` | Creates a group |
 | `POST` | `/api/groups/:id/join` | Joins with a code |
@@ -138,7 +138,12 @@ Static hosting, such as GitHub Pages, cannot run the group features because they
 | `POST` | `/api/groups/:id/like` | Cheers a member |
 | `POST` | `/api/groups/:id/pair-code` | Returns the group's pairing code |
 | `GET` | `/api/pair/:code` | Shows what the code leads to |
-| `POST` | `/api/groups/:id/partners` | Pairs two groups together |
+| `POST` | `/api/groups/:id/partners` | Sends a pairing request, by code or by the id of one of your own groups |
+| `POST` | `/api/groups/:id/pair-requests/:fromId/:answer` | The creator answers a request with `accept` or `decline` |
+| `DELETE` | `/api/groups/:id/partners/:partnerId` | Unlinks two groups |
+| `PUT` | `/api/groups/:id/partners/:partnerId/race` | Sets the shared race goal for two paired groups |
+| `DELETE` | `/api/groups/:id/partners/:partnerId/race` | Removes the shared race goal |
+| `PATCH` | `/api/me` | Changes the name on the signed-in account |
 | `GET` | `/api/state` | Fetches the state of the group |
 
 ## Project structure

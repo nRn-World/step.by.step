@@ -42,6 +42,15 @@ const translations: Record<string, Record<Exclude<Lang, 'sv'>, string>> = {
   'Lösenordet måste vara 8 till 72 tecken.': { da: 'Adgangskoden skal være 8 til 72 tegn.', en: 'The password must be 8 to 72 characters.' },
   'Kunde inte skapa kontot. Försök igen.': { da: 'Kontoen kunne ikke oprettes. Prøv igen.', en: 'The account could not be created. Try again.' },
   'Konton med användarnamn är inte påslagna på servern.': { da: 'Konti med brugernavn er ikke slået til på serveren.', en: 'Accounts with a username are not enabled on the server.' },
+  'Bara gruppens skapare kan svara på en förfrågan.': { da: 'Kun gruppens opretter kan svare på en forespørgsel.', en: 'Only the group creator can answer a request.' },
+  'Bara gruppens skapare kan sätta ett gemensamt mål.': { da: 'Kun gruppens opretter kan sætte et fælles mål.', en: 'Only the group creator can set a shared goal.' },
+  'Bara gruppens skapare kan ta bort ett gemensamt mål.': { da: 'Kun gruppens opretter kan fjerne et fælles mål.', en: 'Only the group creator can remove a shared goal.' },
+  'Välj ja eller nej.': { da: 'Vælg ja eller nej.', en: 'Choose yes or no.' },
+  'Förfrågan finns inte längre.': { da: 'Forespørgslen findes ikke længere.', en: 'The request no longer exists.' },
+  'Gruppen hittades inte.': { da: 'Gruppen blev ikke fundet.', en: 'The group was not found.' },
+  'De grupperna är inte ihopkopplade.': { da: 'De grupper er ikke forbundet.', en: 'Those groups are not linked.' },
+  'Välj dag, vecka eller månad och ett mål på 1 000 till 5 000 000 steg.': { da: 'Vælg dag, uge eller måned og et mål på 1.000 til 5.000.000 skridt.', en: 'Choose day, week or month and a goal of 1,000 to 5,000,000 steps.' },
+  'Ogiltigt stegantal.': { da: 'Ugyldigt antal skridt.', en: 'Invalid number of steps.' },
   'Vänta på nästa mätning.': { da: 'Vent på næste måling.', en: 'Wait for the next measurement.' },
 };
 

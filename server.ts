@@ -7,6 +7,8 @@ import { countActivities, recordWalk, type Walk } from './activity';
 import { cleanUsername, usernameToEmail } from './src/username';
 
 const app = express();
+// Behind Render's proxy every request would otherwise share the proxy's address, so the per-client rate limits would count all users together.
+if (process.env.RENDER) app.set('trust proxy', 1);
 const authClient = process.env.SUPABASE_URL && process.env.SUPABASE_ANON_KEY
   ? createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY, {auth:{persistSession:false}}) : null;
 
@@ -18,7 +20,7 @@ app.use('/api',(req,res,next)=>{
     res.setHeader('Access-Control-Allow-Origin',origin);
     res.setHeader('Vary','Origin');
     res.setHeader('Access-Control-Allow-Headers','Authorization, Content-Type');
-    res.setHeader('Access-Control-Allow-Methods','GET, POST, PATCH, DELETE, OPTIONS');
+    res.setHeader('Access-Control-Allow-Methods','GET, POST, PUT, PATCH, DELETE, OPTIONS');
   }
   if(req.method==='OPTIONS')return res.sendStatus(origin&&allowed.includes(origin)?204:403);
   next();
@@ -133,6 +135,15 @@ app.get('/api/state', (req, res) => { const p = person(req); if (!p) return fail
 const validName = (input: unknown) => typeof input === 'string' ? input.trim().replace(/\s+/g, ' ') : '';
 const makePerson = (name: string): Person => { const p: Person = { id: id(), token: id() + id(), name, distances: {} }; db.people.push(p); return p; };
 // Removes a person, every membership and every like on them. Used by account deletion and the legacy cleanup below.
+// A removed group must not stay in other groups' partner lists, requests or race goals, where it would still count towards the limit of five.
+const forgetGroups = (gone: string[]) => {
+  if (!gone.length) return;
+  for (const g of db.groups) {
+    g.partners = (g.partners || []).filter(pid => !gone.includes(pid));
+    g.pairRequests = (g.pairRequests || []).filter(pid => !gone.includes(pid));
+    for (const gid of gone) if (g.raceGoals) delete g.raceGoals[gid];
+  }
+};
 const removePerson = (p: Person) => {
   for (const g of db.groups) {
     if (!g.members.includes(p.id)) continue;
@@ -144,6 +155,7 @@ const removePerson = (p: Person) => {
     }
     if (g.ownerId === p.id) g.ownerId = g.members[0] || '';
   }
+  forgetGroups(db.groups.filter(g => g.members.length === 0).map(g => g.id));
   db.groups = db.groups.filter(g => g.members.length > 0);
   db.people = db.people.filter(x => x.id !== p.id);
   save();
@@ -225,7 +237,7 @@ app.post('/api/groups', (req, res) => {
   if (req.body.memberName === undefined || req.body.goals === undefined) return fail(res, 400, 'Du använder ett gammalt formulär. Ladda om sidan för att välja namn och mål.');
   if (memberName.length < 3 || memberName.length > 32) return fail(res, 400, 'Välj ett namn i gruppen på 3 till 32 tecken.');
   const requested = req.body.goals;
-  if (!Array.isArray(requested) || requested.length < 1 || requested.length > 10 || new Set(requested.map(g => goalKey(g))).size !== requested.length || requested.some(g => !['day','week','weekend','month','year'].includes(g?.type) || !Number.isInteger(g.target) || g.target < 100 || g.target > 10000000 || (g.scope !== undefined && !['each','together'].includes(g.scope)))) return fail(res, 400, 'Välj minst ett giltigt gruppmål.');
+  if (!Array.isArray(requested) || requested.length < 1 || requested.length > 10 || requested.some(g => !['day','week','weekend','month','year'].includes(g?.type) || !Number.isInteger(g.target) || g.target < 100 || g.target > 10000000 || (g.scope !== undefined && !['each','together'].includes(g.scope))) || new Set(requested.map(g => goalKey(g))).size !== requested.length) return fail(res, 400, 'Välj minst ett giltigt gruppmål.');
   let p = person(req);
   let recoveredToken: string | undefined;
   if (!p) { p = makePerson(memberName); recoveredToken = p.token; }
@@ -271,7 +283,7 @@ app.post('/api/groups/:id/leave', (req, res) => {
     if (key.endsWith(`:${p.id}`)) delete g.likes[key];
     else g.likes[key] = g.likes[key].filter(mid => mid !== p.id);
   }
-  if (g.members.length === 0) db.groups = db.groups.filter(group => group.id !== g.id);
+  if (g.members.length === 0) { db.groups = db.groups.filter(group => group.id !== g.id); forgetGroups([g.id]); }
   else if (g.ownerId === p.id) g.ownerId = g.members[0];
   save(); res.json({ left: true, deleted: g.members.length === 0 });
 });
