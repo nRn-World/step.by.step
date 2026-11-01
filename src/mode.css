@@ -174,3 +174,4 @@ h3.mode-option-title{margin:-12px 0 6px;text-align:left}
 @media(max-width:680px){.landing-footer-end{display:block;width:100%;text-align:center;justify-self:center;align-self:center}}
 @media(max-width:680px){.landing-tag{display:flex;justify-content:center;width:100%}.landing-tag-lines{text-align:center}}
 @media(max-width:680px){.landing-credit{display:flex;flex-wrap:wrap;justify-content:center;width:100%;text-align:center}}
+.landing-kicker{display:flex;align-items:center;justify-content:center;text-align:center}
