@@ -346,3 +346,48 @@ h1,h2,h3,h4,.person-info strong{overflow-wrap:break-word}
 .eyebrow-star svg,.heading-sparkle svg,.tip-icon svg,.race-summary svg{animation:spin 20s linear infinite}
 
 .side-item .side-trophy{color:#e0a83a}
+
+/* Shared race goal between two paired groups: a finish line, two runners and a little burst when someone arrives. */
+.rg{position:relative;margin:14px 0 0;padding:18px 18px 16px;border-radius:18px;background:linear-gradient(135deg,#fff7ef,#f3efff);border:1px solid #efe4da;box-shadow:0 10px 30px #7c60bb14;overflow:hidden}
+[data-theme=dark] .rg{background:linear-gradient(135deg,#2a2236,#1f2a33);border-color:#3a3050}
+.rg-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;margin-bottom:14px}
+.rg-badge{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:999px;background:#ed6949;color:#fff;font-size:11px;font-weight:800;letter-spacing:.04em;text-transform:uppercase}
+.rg-goal{font-size:12px;color:var(--muted)}
+.rg-goal strong{color:var(--ink)}
+.rg-lanes{display:grid;gap:12px}
+.rg-lane{display:grid;grid-template-columns:minmax(90px,140px) 1fr;align-items:center;gap:12px}
+.rg-name{min-width:0;display:flex;flex-direction:column}
+.rg-name strong{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rg-name small{font-size:11px;color:var(--muted)}
+.rg-lane.mine .rg-name strong{color:#ed6949}
+.rg-track{position:relative;height:18px;border-radius:999px;background:#ffffff99;box-shadow:inset 0 1px 3px #0000001a;margin-right:14px}
+[data-theme=dark] .rg-track{background:#ffffff14}
+.rg-fill{position:absolute;left:0;top:0;bottom:0;border-radius:999px;background:linear-gradient(90deg,#f7bd5a,#ed6949);transition:width 1.4s cubic-bezier(.2,.8,.2,1)}
+.rg-lane:not(.mine) .rg-fill{background:linear-gradient(90deg,#9b8fd6,#7c60bb)}
+.rg-runner{position:absolute;top:50%;width:28px;height:28px;margin:-14px 0 0 -14px;display:grid;place-items:center;border-radius:50%;background:var(--surface);box-shadow:0 4px 12px #0000002a;color:#ed6949;transition:left 1.4s cubic-bezier(.2,.8,.2,1);animation:rgBob .6s ease-in-out infinite alternate}
+.rg-lane:not(.mine) .rg-runner{color:#7c60bb}
+.rg-lane.done .rg-runner{animation:none}
+.rg-flag{position:absolute;right:-18px;top:50%;transform:translateY(-50%);color:#e0a83a}
+.rg-burst{position:absolute;right:-18px;top:50%;width:0;height:0}
+.rg-burst i{position:absolute;width:6px;height:6px;border-radius:50%;background:#f7bd5a;animation:rgPop .8s ease-out forwards}
+.rg-burst i:nth-child(1){--dx:-14px;--dy:-16px}
+.rg-burst i:nth-child(2){--dx:10px;--dy:-18px;background:#ed6949}
+.rg-burst i:nth-child(3){--dx:-4px;--dy:-24px;background:#7c60bb}
+.rg-burst i:nth-child(4){--dx:16px;--dy:-8px}
+.rg-burst i:nth-child(5){--dx:-20px;--dy:-6px;background:#ed6949}
+.rg-summary{display:flex;align-items:center;gap:7px;margin:14px 0 0;font-size:12px;font-weight:700;color:var(--ink)}
+.rg-summary svg{flex:none;color:#e0a83a}
+.rg-none{font-size:13px;color:var(--muted);margin:0 0 10px}
+.rg-open{margin-top:10px;border:1px dashed #ed6949;background:none;color:#ed6949;font-weight:800;font-size:12px;padding:8px 12px;border-radius:10px;cursor:pointer}
+.rg-form{margin-top:12px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.rg-periods{display:inline-flex;gap:4px;padding:3px;border-radius:10px;background:var(--soft)}
+.rg-periods button{border:0;background:none;padding:6px 10px;border-radius:8px;font-size:12px;font-weight:700;color:var(--muted);cursor:pointer}
+.rg-periods button.selected{background:var(--surface);color:var(--ink);box-shadow:0 2px 6px #0000001a}
+.rg-form input{width:140px;padding:8px 10px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--ink);font:inherit;font-size:13px}
+.rg-save{border:0;border-radius:10px;padding:9px 14px;background:#29283b;color:#fff;font-weight:800;font-size:12px;cursor:pointer}
+.rg-save:disabled{opacity:.5;cursor:not-allowed}
+.rg-remove{border:0;background:none;color:var(--muted);font-size:12px;font-weight:700;text-decoration:underline;cursor:pointer}
+@keyframes rgBob{from{transform:translateY(0)}to{transform:translateY(-3px)}}
+@keyframes rgPop{0%{transform:translate(0,0) scale(.4);opacity:1}100%{transform:translate(var(--dx,0),var(--dy,-16px)) scale(1);opacity:0}}
+@media (max-width:520px){.rg-lane{grid-template-columns:1fr;gap:6px}}
+@media (prefers-reduced-motion:reduce){.rg-runner,.rg-fill{transition:none;animation:none}.rg-burst i{animation:none;opacity:0}}
