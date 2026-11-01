@@ -191,7 +191,7 @@ describe('name to group creation', () => {
     expect(String(window.getSelection()?.toString())).toContain('?join=');
   });
 
-  it('copies the bare pair code and accepts a pasted pair link', async () => {
+  it('copies the pair link and accepts a pasted pair link', async () => {
     localStorage.setItem('stride-token', 'owner-token');
     const writeText = vi.fn().mockResolvedValue(undefined);
     Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText } });
@@ -206,8 +206,8 @@ describe('name to group creation', () => {
     });
     render(<App />);
     fireEvent.click(await screen.findByRole('button', { name: 'Länka grupp' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Kopiera kod' }));
-    await waitFor(() => expect(writeText).toHaveBeenCalledWith('EJ88PQ'));
+    fireEvent.click(screen.getByRole('button', { name: 'Kopiera länk' }));
+    await waitFor(() => expect(writeText).toHaveBeenCalledWith(expect.stringContaining('?pair=EJ88PQ')));
     fireEvent.change(screen.getByLabelText('Kod från det andra teamet'), { target: { value: 'https://example.test/?pair=tw66er' } });
     fireEvent.click(screen.getByRole('button', { name: 'Skicka förfrågan' }));
     await waitFor(() => expect(sent?.code).toBe('TW66ER'));
