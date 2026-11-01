@@ -1,0 +1,57 @@
+/* Playful look for the start page. Opt-in with ?look=fun (back to the original with ?look=classic).
+   Everything here is scoped to .fun-look, so deleting this file and the fun-look bits in ModeGate.tsx restores the old page. */
+.fun-trail,.fun-sparkles{display:none}
+.fun-look .landing-paper{isolation:isolate;background:linear-gradient(180deg,#fff2d6 0%,#fdebe3 34%,#efe8fb 68%,#f9f7f0 100%);background-size:100% 240%;animation:fun-bg 12s ease-in-out infinite alternate}
+@keyframes fun-bg{to{background-position:0 100%}}
+
+.fun-look .fun-sparkles{display:block;position:absolute;inset:0;z-index:-1;pointer-events:none;overflow:hidden}
+.fun-sparkles i{position:absolute;bottom:-24px;width:12px;height:12px;border-radius:50%;background:#f6b94f;opacity:0;animation:fun-float 9s linear infinite}
+.fun-sparkles i:nth-child(1){left:6%;animation-delay:0s}
+.fun-sparkles i:nth-child(2){left:18%;width:8px;height:8px;background:#ef8a5a;animation-delay:2.5s;animation-duration:11s}
+.fun-sparkles i:nth-child(3){left:31%;background:#a98fd6;animation-delay:5s}
+.fun-sparkles i:nth-child(4){left:44%;width:9px;height:9px;background:#7fb98a;animation-delay:1s;animation-duration:12s}
+.fun-sparkles i:nth-child(5){left:57%;animation-delay:6.5s}
+.fun-sparkles i:nth-child(6){left:69%;width:8px;height:8px;background:#ef8a5a;animation-delay:3.5s;animation-duration:10s}
+.fun-sparkles i:nth-child(7){left:81%;background:#a98fd6;animation-delay:7.5s}
+.fun-sparkles i:nth-child(8){left:92%;width:9px;height:9px;background:#7fb98a;animation-delay:4.2s;animation-duration:13s}
+@keyframes fun-float{0%{transform:translate(0,0) scale(.6);opacity:0}12%{opacity:.75}100%{transform:translate(24px,-105vh) scale(1.3);opacity:0}}
+
+.fun-look .landing-copy h1{animation:fun-pop .9s cubic-bezier(.2,1.6,.4,1) both}
+.fun-look .landing-copy h1 em{display:inline-block;transform-origin:50% 80%;animation:fun-wiggle 2.8s ease-in-out .9s infinite}
+@keyframes fun-pop{0%{opacity:0;transform:translateY(24px) scale(.9)}100%{opacity:1;transform:none}}
+@keyframes fun-wiggle{0%,100%{transform:rotate(-2deg)}50%{transform:rotate(2deg) scale(1.04)}}
+.fun-look .landing-kicker-star{display:inline-flex;animation:fun-spin 5s linear infinite}
+@keyframes fun-spin{to{transform:rotate(360deg)}}
+
+.fun-look .mobile-hero{transform-origin:50% 100%;animation:fun-pop .9s .15s cubic-bezier(.2,1.4,.4,1) both,fun-sway 4.5s 1s ease-in-out infinite}
+@keyframes fun-sway{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-5px) rotate(.5deg)}}
+
+@media(max-width:680px){
+.fun-look .fun-trail{display:block;position:relative;height:30px;overflow:hidden;margin:-2px 0 -6px}
+}
+.duck-row{position:absolute;left:-380px;bottom:0;display:flex;align-items:flex-end;gap:2px;animation:fun-duck-walk 13s linear infinite}
+.duck{flex:none;animation:fun-waddle .5s ease-in-out infinite}
+.duck-duckling{animation-duration:.28s}
+.duck:nth-child(2n){animation-delay:-.12s}.duck:nth-child(3n){animation-delay:-.2s}
+@keyframes fun-duck-walk{from{transform:translateX(0)}to{transform:translateX(calc(100vw + 420px))}}
+@keyframes fun-waddle{0%,100%{transform:translateY(0) rotate(-4deg)}50%{transform:translateY(-3px) rotate(4deg)}}
+
+.fun-look .landing-test-entry button{animation:fun-pulse 2.4s ease-in-out infinite}
+.fun-look .landing-test-entry button svg{animation:fun-nudge 1.2s ease-in-out infinite}
+@keyframes fun-pulse{0%,100%{transform:scale(1);box-shadow:0 8px 20px #29283b40,0 0 0 0 #ef8a5a66}50%{transform:scale(1.04);box-shadow:0 10px 24px #29283b40,0 0 0 11px #ef8a5a00}}
+@keyframes fun-nudge{0%,100%{transform:translateX(0)}50%{transform:translateX(5px)}}
+
+.fun-look .mode-option{animation:fun-rise .8s cubic-bezier(.2,1.4,.4,1) both}
+.fun-look .together-option{animation-delay:.18s}
+@keyframes fun-rise{0%{opacity:0;transform:translateY(40px) scale(.94)}100%{opacity:1;transform:none}}
+.fun-look .private-option .mode-option-symbol{animation:fun-wobble-a 3s ease-in-out infinite}
+.fun-look .together-option .mode-option-symbol{animation:fun-wobble-b 3s ease-in-out .4s infinite}
+@keyframes fun-wobble-a{0%,100%{transform:rotate(3deg)}50%{transform:rotate(14deg) scale(1.08)}}
+@keyframes fun-wobble-b{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(-14deg) scale(1.08)}}
+.fun-look .mode-option:active{transform:scale(.97)}
+
+.fun-look .social-buttons button,.fun-look .landing-test-entry button{position:relative;overflow:hidden}
+.fun-look .social-buttons button:not(:disabled)::after,.fun-look .landing-test-entry button::after{content:"";position:absolute;top:0;bottom:0;width:40%;left:-60%;background:linear-gradient(100deg,transparent,#ffffff55,transparent);animation:fun-shine 3.2s ease-in-out infinite}
+@keyframes fun-shine{0%,55%{left:-60%}100%{left:130%}}
+
+@media (prefers-reduced-motion:reduce){.fun-look *,.fun-look *::before,.fun-look *::after{animation:none!important}.fun-look .fun-sparkles{display:none}}

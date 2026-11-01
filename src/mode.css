@@ -85,7 +85,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 /* The tagline gets its own line under the brand on a phone, instead of disappearing. */
 @media(max-width:680px){
   .landing-nav{grid-template-rows:57px 41px auto}
-  .landing-nav-note{grid-column:1/-1;grid-row:3;display:block;padding:0 0 11px;border-left:0;font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#9d968e}
+  .landing-nav-note{display:none;font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#9d968e}
 }
 
 /* Sign-in brand icons: visible on the dark buttons, Google keeps its colours on a white tile. */
@@ -104,10 +104,58 @@ h3.mode-option-title{margin:-12px 0 6px;text-align:left}
 .social-buttons button:disabled{cursor:not-allowed;opacity:.55}
 .soon-badge{margin-left:2px;padding:3px 7px;white-space:nowrap;border-radius:999px;background:#ffffff26;font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase}
 .auth-actions .soon-badge{background:#ffffff26}
-@media(max-width:680px){.mode-options{grid-template-columns:1fr}}
+@media(max-width:680px){.mode-options{grid-template-columns:1fr 1fr;gap:10px}.mode-option{min-height:0;padding:14px 12px 0}.mode-option-title{font-size:19px}.mode-option-desc{font-size:11px;min-height:0}}
 .account-forgot{margin-top:14px;border:0;background:transparent;padding:6px 0;color:#715b90;font:700 13px 'DM Sans',sans-serif;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
 .invite-note{display:flex;flex-direction:column;gap:3px;max-width:460px;margin:14px 0 0;padding:12px 16px;border-radius:12px;background:#e8dff5;border:1px solid #cdbde6;color:#4b3a6b;font-size:13px;line-height:1.5}
 .invite-note strong{font:700 15px Outfit,sans-serif;color:#2f2347}
 .mode-inner .invite-note{margin:0 0 20px}
 
 .landing-choice-heading{flex-direction:column;align-items:center;text-align:center;gap:6px}.landing-choice-heading p{max-width:none}
+
+/* Phones: the illustration sits at the very top instead of below the text. */
+.mobile-hero{display:none}
+@media(max-width:680px){.mobile-hero{display:block;width:100%;height:auto}.landing-art{display:none}}
+@media(max-width:680px){.social-buttons{padding:10px 0 12px}.social-buttons button{font-size:11px;padding:8px 6px;min-width:0;white-space:normal;line-height:1.25;gap:5px;flex-wrap:wrap;justify-content:center;text-align:center}.social-buttons .soon-badge{font-size:8px;padding:2px 5px}}
+@media(max-width:680px){.social-buttons button{flex-direction:row;gap:7px;font-size:11px}.social-buttons .auth-icon-badge{width:22px;height:22px;border-radius:5px}.social-buttons .auth-icon{width:14px;height:14px}.social-buttons .soon-badge{margin-left:0}}
+.social-short{display:none}
+@media(max-width:680px){.social-buttons{flex-direction:row;gap:8px;padding:10px 0 12px}.social-buttons button{flex:1 1 0;min-width:0;flex-direction:row;flex-wrap:wrap;gap:4px;padding:8px 4px;font-size:11px;white-space:normal;line-height:1.2}.social-buttons .social-long{display:none}.social-buttons .social-short{display:inline}.social-buttons .auth-icon-badge{width:20px;height:20px}.social-buttons .auth-icon{width:13px;height:13px}}
+@media(max-width:680px){.social-buttons .soon-badge{display:block;box-sizing:border-box;max-width:100%;margin:2px 0 0;padding:3px 6px;white-space:normal;text-align:center;letter-spacing:0;line-height:1.15;font-size:8px;border-radius:8px;background:#ffffff4d;color:#fff}}
+.landing-copy.mobile-hero-title{display:none}
+@media(max-width:680px){.landing-copy.mobile-hero-title{display:block;padding:18px 22px 6px}.landing-main .landing-copy .landing-kicker,.landing-main .landing-copy h1{display:none}}
+@media(max-width:680px){.landing-test-entry p{display:none}}
+@media(max-width:680px){.landing-jump{display:none!important}}
+.mobile-lead{display:none}
+@media(max-width:680px){.mobile-lead{display:block;padding:6px 22px 28px;text-align:center}.landing-copy .landing-lead{display:none}}
+@media(max-width:680px){.landing-main .landing-copy{padding-top:4px}}
+@media(max-width:680px){.landing-test-entry{display:flex;justify-content:center}}
+/* Phones: tighter first screen so the login choices fit without scrolling. */
+@media(max-width:680px){.landing-nav{height:auto;min-height:0;padding-top:8px;padding-bottom:2px}.landing-copy.mobile-hero-title{padding:2px 22px 2px}.landing-copy.mobile-hero-title h1{font-size:36px;line-height:1.02;margin:6px 0 0}.mobile-hero{height:auto}.landing-main .landing-copy{padding-top:0}.landing-test-entry{margin:0}.landing-choices h2{font-size:22px;margin:0 0 4px}.landing-choices h2+p{display:none}.mode-option{padding:10px 10px 0}.mode-option-symbol{height:34px;width:34px}.mode-option .mode-option-title{font-size:17px;margin:6px 0 4px!important}.mode-option-desc{font-size:10.5px;line-height:1.32;margin-bottom:8px}.mode-option-bottom{min-height:36px}.social-buttons{padding:8px 0 10px}}
+@media(max-width:680px){.mode-option-tag{display:none}.mode-option-bottom{justify-content:flex-end}}
+.privacy-in-card{display:none}.private-wrap{display:contents}
+/* Phones: language picker sits top right and shows only the chosen language; "Din integritet" moves into the account card. */
+@media(max-width:680px){
+.landing-nav{grid-template-rows:57px;min-height:0}
+.landing-nav-link{display:none}
+.landing-nav .language-choices{grid-column:2;grid-row:1;justify-self:end;margin:0;position:relative}
+.language-choices button[aria-pressed=false]{display:none}
+.landing-nav .language-choices.open{position:absolute;top:10px;right:22px;flex-direction:column;align-items:stretch;box-shadow:0 10px 28px #29283b33;z-index:30}
+.language-choices.open button[aria-pressed=false]{display:flex}
+.private-wrap{display:flex;position:relative;min-width:0}
+.private-wrap>.mode-option{flex:1;min-width:0}
+.privacy-in-card{display:block;position:absolute;left:10px;bottom:11px;z-index:2;font-size:10.5px;font-weight:800;color:#5f715d;text-decoration:none;border-bottom:1px solid #b9c5b6;line-height:1.2}
+}
+/* Wide screens: tighter heights so the hero and the login choices fit on the first screen. */
+@media(min-width:931px){
+.landing{padding:8px 16px}
+.landing-nav{height:60px}
+.landing-main{min-height:0}
+.landing-main .landing-copy{padding-top:14px;padding-bottom:14px}
+.landing-main .landing-copy h1{font-size:clamp(48px,4.3vw,64px);line-height:1;margin-bottom:12px}
+.landing-art{height:310px}
+.landing-choices{padding-top:4px;padding-bottom:14px}
+.landing-choice-heading{margin-bottom:10px}
+.mode-option{min-height:0;padding-top:14px}
+.social-buttons{padding:10px 0 14px}
+.landing-footer{padding-top:8px;padding-bottom:8px}
+}
+@media(min-width:1100px){.social-buttons{flex-direction:row;gap:10px}.social-buttons button{flex:1}}

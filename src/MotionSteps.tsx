@@ -1,3 +1,4 @@
+import { languageForPlace } from './defaultLanguage';
 import { useEffect, useRef, useState } from 'react';
 import { Capacitor } from '@capacitor/core';
 
@@ -18,7 +19,7 @@ const readToday = (): number => {
 };
 
 export default function MotionSteps({ token, onSaved }: { token: string; onSaved: () => void }) {
-  const t = text[(localStorage.getItem('stride-lang') || 'sv') as keyof typeof text] || text.sv;
+  const t = text[(localStorage.getItem('stride-lang') || languageForPlace()) as keyof typeof text] || text.sv;
   const [on, setOn] = useState(false);
   const [error, setError] = useState('');
   const [steps, setSteps] = useState(readToday);

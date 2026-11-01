@@ -1,3 +1,4 @@
+import { languageForPlace } from './defaultLanguage';
 import { useEffect, useState } from 'react';
 import { Capacitor } from '@capacitor/core';
 
@@ -14,7 +15,7 @@ export default function InstallPrompt() {
   const android = /android/i.test(ua);
   const ios = /iphone|ipad|ipod/i.test(ua);
   const [show, setShow] = useState(false);
-  const t = text[(localStorage.getItem('stride-lang') || 'sv') as keyof typeof text] || text.sv;
+  const t = text[(localStorage.getItem('stride-lang') || languageForPlace()) as keyof typeof text] || text.sv;
 
   useEffect(() => {
     const installed = Capacitor.isNativePlatform() || matchMedia('(display-mode: standalone)').matches || (navigator as any).standalone;

@@ -7,6 +7,7 @@ import { App as NativeApp } from '@capacitor/app';
 import { Health } from '@capgo/capacitor-health';
 import { sensorStepsToday } from './stepSensor';
 import MotionSteps from './MotionSteps';
+import { languageForPlace } from './defaultLanguage';
 import { clearPendingJoin, inviteLink, pendingJoin, publicUrl } from './pendingJoin';
 import { getAccessToken } from './apiToken';
 import { copyText, selectText } from './clipboard';
@@ -55,7 +56,7 @@ const initials = (s:string) => s.split(' ').map(w=>w[0]).filter(Boolean).slice(0
 class ApiError extends Error { constructor(message:string, public status:number) { super(message); } }
 async function api(path:string,method='GET',body?:object,auth?:string) { let res:Response; try { res=await fetch((import.meta.env.VITE_API_URL || '/api')+path,{method,headers:{'Content-Type':'application/json',...((getAccessToken()||auth)?{Authorization:'Bearer '+(getAccessToken()||auth)}:{})},body:body?JSON.stringify(body):undefined}); } catch { throw new ApiError('',0); } const data=await res.json().catch(()=>({})); if(!res.ok) throw new ApiError((data as {error?:string}).error || '',res.status); return data; }
 export default function App({ accessToken, initialLang, onSignOut, onDeleteAccount, onRequireLogin }: { accessToken?: string; initialLang?: Lang; onSignOut?: () => void; onDeleteAccount?: () => void; onRequireLogin?: () => void } = {}) {
- const [lang,setLang]=useState<Lang>(()=>{const stored=initialLang||localStorage.getItem('stride-lang')||'sv';return stored==='da'||stored==='en'?stored:'sv';}); const t=labels[lang];
+ const [lang,setLang]=useState<Lang>(()=>{const stored=initialLang||localStorage.getItem('stride-lang')||languageForPlace();return stored==='da'||stored==='en'?stored:'sv';}); const t=labels[lang];
  useEffect(()=>{if(initialLang)setLang(initialLang)},[initialLang]);
  const [dark,setDark]=useState(()=>localStorage.getItem('stride-theme')==='dark');
  const [token,setToken]=useState(()=>accessToken || localStorage.getItem('stride-token')||'');
