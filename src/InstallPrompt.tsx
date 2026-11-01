@@ -20,7 +20,7 @@ export default function InstallPrompt() {
     let dismissed = false;
     try { dismissed = localStorage.getItem(KEY) === '1'; } catch { /* storage blocked: show it */ }
     if (installed || dismissed || !/android|iphone|ipad|ipod|mobile/i.test(navigator.userAgent)) return;
-    if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => undefined);
+    if ('serviceWorker' in navigator) navigator.serviceWorker.register(import.meta.env.BASE_URL + 'sw.js').catch(() => undefined);
     if (ios) { setShow(true); return; } // iOS has no install event, so only the instruction can be shown
     const onPrompt = (e: Event) => { e.preventDefault(); setEvent(e); setShow(true); };
     window.addEventListener('beforeinstallprompt', onPrompt);
@@ -31,7 +31,7 @@ export default function InstallPrompt() {
   if (!show) return null;
   return (
     <div role="dialog" aria-label={t.title} style={{ position: 'fixed', left: 12, right: 12, bottom: 'calc(12px + env(safe-area-inset-bottom))', zIndex: 9999, background: '#fff', color: '#29283b', borderRadius: 16, padding: 16, boxShadow: '0 8px 30px rgba(0,0,0,.25)', display: 'flex', gap: 12, alignItems: 'center' }}>
-      <img src="/icon-192.png" alt="" width={48} height={48} style={{ borderRadius: 12 }} />
+      <img src={import.meta.env.BASE_URL + 'icon-192.png'} alt="" width={48} height={48} style={{ borderRadius: 12 }} />
       <div style={{ flex: 1, fontSize: 14, lineHeight: 1.35 }}>
         <strong style={{ display: 'block', fontSize: 15 }}>{t.title}</strong>
         {ios ? t.ios : t.body}
