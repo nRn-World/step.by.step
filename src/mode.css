@@ -163,3 +163,11 @@ h3.mode-option-title{margin:-12px 0 6px;text-align:left}
 /* The animated walking scene (dog and people) sits at the top on phones; the copy inside landing-main keeps its own for wide screens. */
 .mobile-art{display:none}
 @media(max-width:680px){.mobile-art{display:flex;height:235px;width:100%;margin:0}}
+/* Phones: everything down to the login buttons fits on the first screen. */
+@media(max-width:680px){
+.mobile-art{height:185px}
+.fun-look .fun-trail,.fun-trail{height:24px}
+.landing-choice-heading p{display:none}
+.landing-nav{min-height:0;padding-top:4px}
+.landing-test-entry button{padding-top:12px;padding-bottom:12px}
+}
