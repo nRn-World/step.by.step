@@ -55,3 +55,11 @@
 @keyframes fun-shine{0%,55%{left:-60%}100%{left:130%}}
 
 @media (prefers-reduced-motion:reduce){.fun-look *,.fun-look *::before,.fun-look *::after{animation:none!important}.fun-look .fun-sparkles{display:none}}
+
+/* Wide screens: the duck family walks along the line between the hero and the login choices without taking up any height. */
+@media(min-width:681px){
+.fun-look main{display:flex;flex-direction:column}
+.fun-look .landing-choices{order:2}
+.fun-look .fun-trail{display:block;order:1;position:relative;height:0;z-index:3;pointer-events:none}
+.fun-look .duck-row{bottom:3px}
+}
