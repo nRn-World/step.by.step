@@ -12,6 +12,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -98,6 +100,18 @@ fun Pill(
         contentAlignment = Alignment.Center,
     ) {
         Txt(label, Type.title, color = if (!enabled) Muted else if (primary) CoralOn else Ink, maxLines = 1)
+    }
+}
+
+/** Error line: a small coral "!" badge plus the text, so the color is not the only signal. */
+@Composable
+fun ErrorLine(text: String, modifier: Modifier = Modifier) {
+    androidx.compose.foundation.layout.Row(modifier, horizontalArrangement = androidx.compose.foundation.layout.Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
+        Box(Modifier.size(16.dp).clip(androidx.compose.foundation.shape.CircleShape).background(Coral), contentAlignment = Alignment.Center) {
+            Txt("!", Type.caption, color = CoralOn, maxLines = 1)
+        }
+        androidx.compose.foundation.layout.Spacer(Modifier.width(6.dp))
+        Txt(text, Type.caption, color = Coral, modifier = Modifier.weight(1f, fill = false))
     }
 }
 

@@ -18,6 +18,9 @@ class AppModel(val svc: Services, private val scope: CoroutineScope) {
     var signedIn by mutableStateOf(vault.session != null)
     var phoneSession by mutableStateOf(vault.session?.fromPhone == true)
     var accountName by mutableStateOf(vault.accountName)
+    /** Set only by the debug demo mode: the page to show; all sensor, network and sign-in work is skipped. */
+    var demoPage by mutableStateOf<String?>(null)
+    val demo get() = demoPage != null
     var hasSensor by mutableStateOf(true)
 
     // Group data: null fetch = first load not done yet.
@@ -43,6 +46,7 @@ class AppModel(val svc: Services, private val scope: CoroutineScope) {
     }
 
     fun readSteps() {
+        if (demo) return
         scope.launch {
             val now = withContext(Dispatchers.IO) { runCatching { svc.updateSteps() }.getOrDefault(vault.todaySteps(System.currentTimeMillis())) }
             steps = now
@@ -52,6 +56,7 @@ class AppModel(val svc: Services, private val scope: CoroutineScope) {
     /** Loads /api/state. Keeps the last good data and marks it Offline when the network fails. */
     fun load(force: Boolean = false) {
         val now = System.currentTimeMillis()
+        if (demo) return
         if (loading || (!force && now - lastLoad < 60_000 && fetch is Fetch.Ok)) return
         loading = true
         scope.launch {

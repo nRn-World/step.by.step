@@ -82,12 +82,12 @@ private val EaseOutCubic = CubicBezierEasing(0.215f, 0.61f, 0.355f, 1f)
 // ---- Root ----------------------------------------------------------------------------------
 
 @Composable
-fun StegvisApp() {
+fun StegvisApp(demo: DemoConfig? = null) {
     val ctx = LocalContext.current
     val scope = rememberCoroutineScope()
-    val model = remember { AppModel(Services(ctx), scope) }
+    val model = remember { if (demo == null) AppModel(Services(ctx), scope) else AppModel(Services(ctx, MemoryStore()), scope).also { Demo.apply(it, demo) } }
     val nav = rememberSwipeDismissableNavController()
-    SwipeDismissableNavHost(navController = nav, startDestination = "main") {
+    SwipeDismissableNavHost(navController = nav, startDestination = if (demo?.page == "login") "login" else "main") {
         composable("main") { MainPager(model) { nav.navigate("login") } }
         composable("login") { LoginScreen(model, onBack = { nav.popBackStack() }) }
     }
@@ -95,7 +95,8 @@ fun StegvisApp() {
 
 @Composable
 fun MainPager(model: AppModel, onLogin: () -> Unit) {
-    val pager = rememberPagerState(pageCount = { 4 })
+    val start = remember { (model.vault.resumePage ?: when (model.demoPage) { "group" -> 1; "week" -> 2; "settings" -> 3; else -> 0 }).coerceIn(0, 3).also { model.vault.resumePage = null } }
+    val pager = rememberPagerState(initialPage = start, pageCount = { 4 })
     LaunchedEffect(pager.currentPage) { if (pager.currentPage in 1..2) model.load() }
     Box(Modifier.fillMaxSize().background(Bg)) {
         HorizontalPager(state = pager, modifier = Modifier.fillMaxSize()) { page ->
@@ -134,7 +135,7 @@ fun TodayPage(model: AppModel, onLogin: () -> Unit) {
     val context = LocalContext.current
     val reduced = remember { context.reducedMotion() }
     val lang = remember { effectiveLanguage(model.vault.language, android.content.res.Resources.getSystem().configuration.locales[0].language) }
-    var permitted by remember { mutableStateOf(hasActivityPermission(context)) }
+    var permitted by remember { mutableStateOf(if (model.demo) model.demoPage != "permission" else hasActivityPermission(context)) }
     var denied by remember { mutableStateOf(false) }
     val launcher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { ok ->
         permitted = ok
@@ -143,6 +144,7 @@ fun TodayPage(model: AppModel, onLogin: () -> Unit) {
 
     // Read the step counter now and then while the app is open; re-check the permission so returning from Settings works.
     LaunchedEffect(Unit) {
+        if (model.demo) return@LaunchedEffect
         withContext(Dispatchers.IO) { runCatching { model.svc.syncNow() } } // sync on start; failures are retried by the worker
         model.load()
         while (true) {
@@ -214,7 +216,7 @@ fun TodayPage(model: AppModel, onLogin: () -> Unit) {
                     if (progress.value > 0.001f) drawArc(ringColor, -90f, 360f * progress.value, false, tl, sz, style = Stroke(stroke, cap = StrokeCap.Round))
                 }
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    if (celebrating && feet.value > 0f) FeetRow(feet.value) else Txt(formatSteps(steps), if (steps >= 100_000) Type.hero.copy(fontSize = 26.sp) else Type.hero, maxLines = 1)
+                    if (celebrating && feet.value > 0f) FeetRow(feet.value) else Txt(formatSteps(steps), when { steps >= 100_000 -> Type.hero.copy(fontSize = 24.sp); steps >= 10_000 -> Type.hero.copy(fontSize = 30.sp); else -> Type.hero }, maxLines = 1)
                     Txt(stringResource(R.string.today_of_goal, formatSteps(goal)), Type.caption, maxLines = 1)
                 }
             }
@@ -251,6 +253,15 @@ private fun Foot(color: Color, alpha: Float, angle: Float) {
 
 @Composable
 fun PermissionScreen(denied: Boolean, onContinue: () -> Unit, onOpenSettings: () -> Unit) {
+    val activity = LocalContext.current.findActivity()
+    val backDesc = stringResource(R.string.back)
+    Box(Modifier.fillMaxSize()) {
+        Box(
+            Modifier.align(Alignment.TopStart).padding(start = 22.dp, top = 8.dp).size(48.dp).clip(CircleShape)
+                .semantics { contentDescription = backDesc }.clickable(role = Role.Button) { activity?.finish() },
+            contentAlignment = Alignment.Center,
+        ) { Txt("‹", Type.display, maxLines = 1) }
+    }
     Page {
         Column(Modifier.verticalScroll(rememberScrollState()), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) { Foot(Coral, 1f, -12f); Foot(Gold, 1f, 12f) }
@@ -324,7 +335,7 @@ fun GroupPage(model: AppModel, onLogin: () -> Unit) {
         } else {
             item { Txt(group.name, Type.title, maxLines = 1) }
         }
-        items(ranked.size) { i -> MemberRow(i + 1, ranked[i], stepsFromMeters(ranked[i].meters)) }
+        items(ranked.size) { i -> MemberRow(i + 1, ranked[i], if (ranked[i].isMe && model.steps > 0) maxOf(model.steps, 0) else stepsFromMeters(ranked[i].meters)) }
         item { Spacer(Modifier.height(4.dp)) }
     }
 }
@@ -381,8 +392,8 @@ fun WeekPage(model: AppModel) {
     val week = model.state?.weekMeters.orEmpty()
     val values = days.map { d ->
         val key = d.toString()
-        val localSteps = if (d == today) model.steps else local[key] ?: 0
-        maxOf(localSteps, week[key]?.let { stepsFromMeters(it) } ?: 0)
+        // Today comes from the watch itself (the server rounds through meters, +-1 step); other days take the larger value.
+        if (d == today && model.steps > 0) model.steps else maxOf(local[key] ?: 0, week[key]?.let { stepsFromMeters(it) } ?: 0)
     }
     val selected = 6
     val goal = model.goal
@@ -477,6 +488,7 @@ fun SettingsPage(model: AppModel, onLogin: () -> Unit) {
                             .clickable(role = Role.RadioButton) {
                                 if (!on) {
                                     model.vault.language = code
+                                    model.vault.resumePage = 3
                                     context.findActivity()?.recreate()
                                 }
                             },
@@ -498,14 +510,14 @@ fun SettingsPage(model: AppModel, onLogin: () -> Unit) {
             Pill(stringResource(if (syncing) R.string.loading else R.string.sync_now), {
                 syncing = true
                 scope.launch {
-                    val r = withContext(Dispatchers.IO) { runCatching { model.svc.syncNow() }.getOrDefault(SyncResult.FAILED) }
+                    val r = if (model.demo) SyncResult.OK else withContext(Dispatchers.IO) { runCatching { model.svc.syncNow() }.getOrDefault(SyncResult.FAILED) }
                     model.readSteps()
                     syncText = (syncMessages[r] ?: syncDone) to (if (r == SyncResult.OK) Green else Coral)
                     syncing = false
                 }
             }, enabled = !syncing)
         }
-        syncText?.let { (msg, color) -> item { Txt((if (color == Coral) "! " else "") + msg, Type.caption, color = color) } }
+        syncText?.let { (msg, color) -> item { if (color == Coral) ErrorLine(msg) else Txt(msg, Type.caption, color = color) } }
         item {
             if (model.signedIn) Pill(stringResource(R.string.sign_out), { model.signOut(); syncText = null })
             else Pill(stringResource(R.string.sign_in), onLogin, primary = true)

@@ -2,6 +2,7 @@ package app.stegvis.wear
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -118,7 +119,7 @@ fun LoginScreen(model: AppModel, onBack: () -> Unit) {
                 item { Field(stringResource(if (mode == Mode.SIGNUP) R.string.signup_password_field else R.string.login_password_field), password, KeyboardType.Password, !show) { password = it } }
                 item {
                     Box(
-                        Modifier.height(48.dp).clip(RoundedCornerShape(24.dp)).clickable(role = Role.Switch) { show = !show }.padding(horizontal = 12.dp),
+                        Modifier.height(48.dp).clip(RoundedCornerShape(24.dp)).toggleable(value = show, role = Role.Switch) { show = it }.padding(horizontal = 12.dp),
                         contentAlignment = Alignment.Center,
                     ) { Txt(stringResource(if (show) R.string.hide_password else R.string.show_password), Type.caption, color = Coral, maxLines = 1) }
                 }
@@ -140,7 +141,7 @@ fun LoginScreen(model: AppModel, onBack: () -> Unit) {
 
 @Composable
 private fun ErrorText(res: Int) {
-    Txt("! " + stringResource(res), Type.caption, color = Coral, modifier = Modifier.fillMaxWidth())
+    ErrorLine(stringResource(res), Modifier.fillMaxWidth())
 }
 
 @Composable

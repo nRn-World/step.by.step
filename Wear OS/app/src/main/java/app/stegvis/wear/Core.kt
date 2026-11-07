@@ -23,6 +23,9 @@ val STOCKHOLM: ZoneId = ZoneId.of("Europe/Stockholm")
 
 // ---- Steps -------------------------------------------------------------------------------
 
+/** Debug-only demo request (see src/debug). Never created in release builds. */
+class DemoConfig(val page: String, val celebrate: Boolean)
+
 data class SensorState(val day: String, val last: Long, val at: Long, val steps: Int)
 
 /** Adds a since-boot counter reading to today's total. Same rules as addReading() in src/stepSensor.ts. */
@@ -191,6 +194,11 @@ class Vault(private val kv: KeyValueStore) {
     var accountName: String?
         get() = kv.get("acct")
         set(value) = kv.put("acct", value)
+
+    /** Page to open after the app restarts itself (language change); read once. */
+    var resumePage: Int?
+        get() = kv.get("resume")?.toIntOrNull()
+        set(value) = kv.put("resume", value?.toString())
 
     var selectedGroup: String?
         get() = kv.get("group")

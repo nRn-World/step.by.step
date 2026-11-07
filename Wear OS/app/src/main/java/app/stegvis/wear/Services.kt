@@ -68,9 +68,9 @@ fun readStepTotal(context: Context, timeoutMs: Long = 4000): Long? {
 }
 
 /** App-wide services. Built per call, so a worker, tile, complication and the activity share the same storage. */
-class Services(context: Context) {
+class Services(context: Context, kv: KeyValueStore? = null) {
     private val app = context.applicationContext
-    val vault = Vault(PrefsKv(app))
+    val vault = Vault(kv ?: PrefsKv(app))
     val coordinator = Coordinator(
         SupabaseAuth(UrlHttp(), BuildConfig.SUPABASE_URL, BuildConfig.SUPABASE_ANON_KEY),
         StegvisApi(UrlHttp()),

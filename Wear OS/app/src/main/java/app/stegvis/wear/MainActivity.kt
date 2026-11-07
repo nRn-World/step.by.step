@@ -23,6 +23,6 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         SyncWorker.schedule(this)
-        setContent { StegvisApp() }
+        setContent { StegvisApp(Demo.config(intent)) }
     }
 }
