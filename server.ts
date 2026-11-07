@@ -31,7 +31,7 @@ type GoalType = 'day' | 'week' | 'weekend' | 'month' | 'year';
 type Person = { id: string; token: string; name: string; distances: Record<string, number>; activities?: Walk[]; lastMovementAt?: number; oauthSubject?: string; };
 type GoalScope = 'each' | 'together';
 type Group = { mode?: 'connected'; id: string; code: string; pairCode?: string; name: string; ownerId: string; members: string[]; memberNames?: Record<string, string>; banned: string[]; bannedNames?: string[]; goals: { id: string; type: GoalType; target: number; scope?: GoalScope }[]; partners?: string[]; pairRequests?: string[]; raceGoals?: Record<string, { period: 'day' | 'week' | 'month'; target: number }>; likes: Record<string, string[]>; createdAt: number };
-type DB = { people: Person[]; groups: Group[] };
+type DB = { people: Person[]; groups: Group[]; blocked?: { username: string; supabaseId: string; at: number }[] };
 // A goal is either for each walker ('each') or for the whole group together ('together').
 const goalKey = (g: { type: GoalType; scope?: GoalScope }) => `${g.type}:${g.scope === 'each' ? 'each' : 'together'}`;
 // Two teams pair up with a short code. Only their together goals are shared, never members or personal goals.
@@ -183,21 +183,45 @@ const adminOnly: express.RequestHandler = (req, res, next) => {
   if (!key || req.headers['x-admin-key'] !== key) { bad.push(now); adminFails.set(req.ip || '', bad); return fail(res, 401, 'Fel adminnyckel.'); }
   next();
 };
-app.get('/api/admin/people', adminOnly, (_req, res) => res.json(db.people.map(p => ({ id: p.id, name: p.name, supabaseId: p.oauthSubject || null, groups: db.groups.filter(g => g.members.includes(p.id)).map(g => g.name), lastMovementAt: p.lastMovementAt || null }))));
-app.post('/api/admin/people/:id/block', adminOnly, async (req, res) => {
-  const p = db.people.find(x => x.id === req.params.id);
-  if (!p?.oauthSubject || !store) return fail(res, 404, 'Kontot saknar inloggning att blockera.');
-  const { error } = await store.auth.admin.updateUserById(p.oauthSubject, { ban_duration: req.body.blocked ? '876000h' : 'none' });
-  if (error) return fail(res, 500, error.message);
-  res.json({ blocked: !!req.body.blocked });
+app.get('/api/admin/people', adminOnly, async (_req, res) => {
+  const names = new Map<string, string>();
+  if (store) { const { data } = await store.auth.admin.listUsers({ perPage: 1000 }); for (const u of data?.users || []) names.set(u.id, String(u.user_metadata?.username || '')); }
+  const blockedIds = new Set((db.blocked || []).map(b => b.supabaseId));
+  res.json({ people: db.people.filter(p => !blockedIds.has(p.oauthSubject || '')).map(p => ({ id: p.id, name: p.name, username: names.get(p.oauthSubject || '') || '', hasLogin: !!p.oauthSubject, groups: db.groups.filter(g => g.members.includes(p.id)).map(g => g.name) })), blocked: db.blocked || [] });
 });
-app.delete('/api/admin/people/:id', adminOnly, async (req, res) => {
-  const p = db.people.find(x => x.id === req.params.id);
-  if (!p) return fail(res, 404, 'Hittades inte.');
-  const subject = p.oauthSubject;
-  removePerson(p);
-  if (store && subject) { const { error } = await store.auth.admin.deleteUser(subject); if (error) console.error('Supabase deleteUser:', error.message); }
-  res.json({ deleted: true });
+const idList = (v: unknown) => Array.isArray(v) ? v.map(String) : [];
+// Block = ban the sign-in and reserve the username, so the name cannot be registered again even if the account is deleted later.
+app.post('/api/admin/block', adminOnly, async (req, res) => {
+  if (!store) return fail(res, 503, 'Supabase är inte påslaget.');
+  let done = 0;
+  for (const id of idList(req.body?.ids)) {
+    const p = db.people.find(x => x.id === id);
+    if (!p?.oauthSubject) continue;
+    const { data, error } = await store.auth.admin.updateUserById(p.oauthSubject, { ban_duration: '876000h' });
+    if (error) continue;
+    db.blocked ??= [];
+    if (!db.blocked.some(b => b.supabaseId === p.oauthSubject)) db.blocked.push({ username: String(data.user?.user_metadata?.username || '').toLowerCase(), supabaseId: p.oauthSubject, at: Date.now() });
+    done++;
+  }
+  save(); res.json({ blocked: done });
+});
+app.post('/api/admin/unblock', adminOnly, async (req, res) => {
+  const ids = idList(req.body?.supabaseIds);
+  // The user may already be deleted, so an unban error is ignored; the name is freed either way.
+  if (store) for (const sid of ids) await store.auth.admin.updateUserById(sid, { ban_duration: 'none' });
+  db.blocked = (db.blocked || []).filter(b => !ids.includes(b.supabaseId));
+  save(); res.json({ unblocked: ids.length });
+});
+app.post('/api/admin/delete', adminOnly, async (req, res) => {
+  let done = 0;
+  for (const id of idList(req.body?.ids)) {
+    const p = db.people.find(x => x.id === id);
+    if (!p) continue;
+    const subject = p.oauthSubject;
+    removePerson(p); done++;
+    if (store && subject) { const { error } = await store.auth.admin.deleteUser(subject); if (error) console.error('Supabase deleteUser:', error.message); }
+  }
+  res.json({ deleted: done });
 });
 // A name-only account: no email, so the server creates it already confirmed. The made-up address is unique per name,
 // which is what stops a second person from taking a name that exists. There is no password reset for these accounts.
@@ -206,6 +230,7 @@ app.post('/api/username-signup', limit(10, 60 * 60 * 1000), async (req, res) => 
   const username = cleanUsername(String(req.body?.username ?? ''));
   const password = String(req.body?.password ?? '');
   if (!username) return fail(res, 400, 'Användarnamnet måste vara 3 till 20 tecken: bokstäver, siffror, punkt, understreck eller bindestreck.');
+  if ((db.blocked || []).some(b => b.username && b.username === username.toLowerCase())) return fail(res, 409, 'Användarnamnet är upptaget.');
   if (password.length < 8 || password.length > 72) return fail(res, 400, 'Lösenordet måste vara 8 till 72 tecken.');
   let error: { message: string; code?: string; status?: number } | null;
   try { ({ error } = await store.auth.admin.createUser({ email: usernameToEmail(username), password, email_confirm: true, user_metadata: { username } })); } catch (err) { error = { message: String(err) }; }
