@@ -1,5 +1,7 @@
 # Byggspec — step.by.step på handleden
 
+**Version 1.1** · uppdaterad 2026-11-08 · gäller filen `index.html` i samma mapp (ändringslogg i avsnitt 15).
+
 **Vad det här är:** en exakt byggbeskrivning av designsidan i `design/smartwatch/index.html`.
 Sidan är ett koncept: hur appen *step.by.step* hade sett ut på en smartwatch (Wear OS och watchOS).
 Referensbilder finns i samma mapp (`index.html` är facit — öppna den vid sidan om).
@@ -26,6 +28,7 @@ utan att gissa. Alla siffror, färger, radavstånd och texter nedan är hämtade
 12. [Acceptanskriterier](#12-acceptanskriterier--bocka-av-allt) — checklista att bocka av
 13. [Så här verifierar du bygget](#13-så-här-verifierar-du-bygget)
 14. [Vad som inte ska byggas](#14-vad-som-inte-ska-byggas)
+15. [Ändringslogg](#15-ändringslogg)
 
 **Läshjälp:** kodblocken är kopieringsbara som de står. Där ett block innehåller `…pokal…`
 eller `…sol…` betyder det att en liten ikon-SVG är utelämnad i dokumentet — ta den från
@@ -527,6 +530,8 @@ I klockan:
     </span>
     <span class="top-spacer"></span>
     <span class="pill"><i></i> Designkoncept</span>
+    <a class="dl-btn dl-btn--top" href="BYGGSPEC.md" download="step-by-step-smartwatch-byggspec.md"
+       title="Ladda ner byggspecen som Markdown">…nedladdningsikon…<span class="lbl">Spec .md</span></a>
     <button class="theme-btn" id="themeBtn" type="button" aria-pressed="false">
       <span class="knob">
         <svg class="sun" …sol…></svg>
@@ -562,7 +567,22 @@ I klockan:
 .theme-btn .moon{display:none}
 html[data-mode="light"] .theme-btn .moon{display:block}
 html[data-mode="light"] .theme-btn .sun{display:none}
+
+/* nedladdning av byggspecen — samma knapp i topbar, i #bygga och i footern */
+.dl-btn{display:inline-flex;align-items:center;gap:8px;text-decoration:none;white-space:nowrap;
+  font-size:12px;font-weight:800;letter-spacing:.01em;border-radius:99px;padding:10px 17px;
+  background:linear-gradient(140deg,var(--coral),#ff8b63);color:#fff;
+  box-shadow:0 10px 22px -14px rgba(255,112,79,.9);transition:transform .2s,box-shadow .2s,border-color .2s}
+.dl-btn:hover{transform:translateY(-1px);box-shadow:0 14px 26px -14px rgba(255,112,79,.95)}
+.dl-btn:focus-visible{outline:2px solid var(--coral-deep);outline-offset:3px}
+.dl-btn svg{width:15px;height:15px;flex:none}
+.dl-btn--top{background:var(--card);color:var(--ink);border:1px solid var(--line);box-shadow:none;
+  padding:7px 14px 7px 12px}
+.dl-btn--top:hover{border-color:rgba(255,112,79,.42);transform:translateY(-1px);box-shadow:none}
 ```
+
+Knappen i topbaren är den diskreta varianten (kortets yta). Etiketten `Spec .md` döljs under 720 px,
+precis som temaknappens etikett — kvar är bara ikonen.
 
 ### 5.2 Hero — exakt copy
 
@@ -1452,6 +1472,40 @@ Under korten en guldnotis:
 
 > **Det här är ett koncept.** Inget är byggt eller testat på en riktig klocka, och det är inte en del av den publicerade appen. Alla siffror, namn och färger är lånade från step.by.step — inga nya data.
 
+Och sist i sektionen ett nedladdningskort som ger besökaren byggspecen som fil:
+
+```html
+<div class="dl-card reveal">
+  <span class="dl-ico"><svg …dokumentikon…></svg></span>
+  <div class="dl-copy">
+    <h3>Byggspecen, som fil</h3>
+    <p>Hela konceptet beskrivet i Markdown: tokens, mått, den fullständiga SVG:n och all copy per skärm —
+      redo att läggas in i en agent som ska bygga samma sak.</p>
+  </div>
+  <a class="dl-btn" href="BYGGSPEC.md" download="step-by-step-smartwatch-byggspec.md">…nedladdningsikon… Ladda ner BYGGSPEC.md</a>
+</div>
+```
+
+```css
+.dl-card{display:flex;align-items:center;gap:18px;margin-top:18px;padding:22px 24px;border-radius:22px;
+  background:var(--card);border:1px solid var(--line);box-shadow:0 1px 0 #fff inset;flex-wrap:wrap}
+.dl-card .dl-ico{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;flex:none;
+  background:rgba(255,112,79,.12);color:var(--coral-deep)}
+.dl-card .dl-ico svg{width:21px;height:21px}
+.dl-copy{flex:1;min-width:220px}
+.dl-copy h3{font-size:16px;letter-spacing:-.02em;margin-bottom:5px}
+.dl-copy p{font-size:12.8px;color:var(--muted);max-width:62ch;line-height:1.6}
+@media(max-width:720px){
+  .dl-btn--top .lbl{display:none}
+  .dl-btn--top{padding:7px 11px}
+  .dl-card{gap:14px;padding:20px 18px}
+  .dl-card .dl-btn{width:100%;justify-content:center}
+}
+```
+
+Länkarna pekar på `BYGGSPEC.md` **relativt sidan** och har `download`-attribut, så de fungerar både
+från `file://` och från en lokal server. Filnamnet som sparas är `step-by-step-smartwatch-byggspec.md`.
+
 ```css
 .build-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
 .bcard{border:1px solid var(--line);border-radius:22px;padding:26px 24px;background:var(--card);
@@ -1477,6 +1531,7 @@ Under korten en guldnotis:
   <div class="wrap foot">
     <span class="brand">…logotyp + wordmark…</span>
     <span>Koncept · på handleden</span>
+    <a href="BYGGSPEC.md" download="step-by-step-smartwatch-byggspec.md">Ladda ner byggspecen (.md)</a>
     <span class="spacer"></span>
     <span>Färger, typografi och siffror från appen · <a href="https://nrnworld.one">nrnworld.one</a></span>
   </div>
@@ -1656,6 +1711,11 @@ inte grund.
 - [ ] Inblendning fungerar och stängs av vid `prefers-reduced-motion`.
 - [ ] Inga konsolfel. Inga 404:or. Inga externa requests.
 
+**Nedladdning**
+- [ ] `BYGGSPEC.md` ligger i samma mapp som `index.html`.
+- [ ] Länken finns på tre ställen: i topbaren (`Spec .md`), i kortet sist i *Om det skulle byggas*, och i footern.
+- [ ] Alla tre har `download="step-by-step-smartwatch-byggspec.md"` och laddar ner filen — inte öppnar den som råtext.
+
 **Layout**
 - [ ] Ingen horisontell scroll vid 320, 390, 768, 1024 eller 1440 px.
 - [ ] Kortens metarad ligger på samma höjd inom varje rad.
@@ -1682,3 +1742,12 @@ inte grund.
 - Inga externa typsnitt, inga ikonbibliotek, ingen CDN. Allt är inline.
 - Ingen mörk sidbakgrund: sidan är alltid grädde `#faf9f6`; det är **klockan** som är mörk
   (eller ljus, med temaknappen).
+
+---
+
+## 15. Ändringslogg
+
+| Version | Datum | Ändring |
+| :--- | :--- | :--- |
+| **1.1** | 2026-11-08 | Vy 12 *Målet nått* lyser **grönt** i stället för korall: ny gradient `gradSage`, `.ring--done`, `.screen--done` (inre grön glöd), grön chip och grön trofé. Ny regel i avsnitt 1: **grönt = klart** — en full ring är alltid grön. Nedladdningsknapp för den här filen i topbaren, i *Om det skulle byggas* och i footern (avsnitt 5.1 och 8.4). |
+| **1.0** | 2026-11-08 | Första versionen: tokens, typografi, klockans chassi och skalsystem, den illustrerade urtavlan, 14 vyer med markup/CSS/copy, komplikationer, textsektioner, beteenden, brytpunkter, `color-mix`-fallback och checklista. |

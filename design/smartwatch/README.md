@@ -5,6 +5,9 @@ Sidan är en fristående prototyp i ren HTML, CSS och SVG — ingen build, inga 
 
 > **Ska sidan byggas om från noll?** Använd [`BYGGSPEC.md`](BYGGSPEC.md) — en exakt byggbeskrivning med
 > tokens, mått, den fullständiga SVG:n och all copy per skärm. `index.html` är facit.
+>
+> Specen går att **ladda ner från sidan**: knappen `Spec .md` i toppbaren, kortet sist i
+> *Om det skulle byggas*, eller länken i footern (`download` på `BYGGSPEC.md`).
 
 ```bash
 # öppna filen direkt, eller servera mappen
