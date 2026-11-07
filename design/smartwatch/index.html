@@ -41,6 +41,7 @@
   --case-a:#4a4854;
   --case-b:#141320;
 }
+
 html[data-mode="light"]{
   --w-bg:#fbf6ee;
   --w-bg-2:#f4ece0;
@@ -307,6 +308,7 @@ html[data-mode="light"] .theme-btn .sun{display:none}
 .lrow .n{font-family:'Outfit';font-size:calc(var(--u)*4.7);font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
 .lrow.me .who{color:var(--w-accent-ink)}
 .lrow.me .n{color:var(--w-accent-ink)}
+.lrow.me{background:rgba(255,112,79,.09);border-radius:calc(var(--u)*3);padding-left:calc(var(--u)*2);padding-right:calc(var(--u)*2);border-bottom-color:transparent}
 .pager{display:flex;gap:calc(var(--u)*1.6);margin-top:calc(var(--u)*3.6)}
 .pager i{width:calc(var(--u)*1.5);height:calc(var(--u)*1.5);border-radius:50%;background:var(--w-muted);opacity:.35}
 .pager i.on{background:var(--coral);opacity:1;width:calc(var(--u)*4);border-radius:99px}
@@ -397,6 +399,140 @@ html[data-mode="light"] .theme-btn .sun{display:none}
 .aod-sub{display:flex;align-items:center;gap:calc(var(--u)*2);font-size:calc(var(--u)*3.6);font-weight:700;color:var(--w-muted);margin-top:calc(var(--u)*1.6)}
 .aod-sub b{color:var(--w-ink);font-family:'Outfit';font-size:calc(var(--u)*4.6)}
 
+
+/* ---------- flödesgrupper ---------- */
+.flow-group{margin-top:46px}
+.flow-head{
+  display:grid;grid-template-columns:auto 1fr;column-gap:12px;row-gap:6px;
+  align-items:center;margin-bottom:20px;
+}
+.flow-num{
+  font-family:'Outfit';font-weight:800;font-size:11px;letter-spacing:.1em;
+  color:var(--coral-deep);background:rgba(255,112,79,.12);
+  padding:4px 8px;border-radius:6px;
+}
+.flow-head h3{font-size:19px;letter-spacing:-.025em}
+.flow-head p{grid-column:2;font-size:12.5px;color:var(--muted);max-width:66ch;line-height:1.55}
+.note-card{
+  display:flex;flex-direction:column;justify-content:center;gap:10px;
+  padding:34px 30px;border-radius:26px;align-self:center;
+  background:linear-gradient(180deg,rgba(124,96,187,.13),rgba(124,96,187,.07));
+  border:1px solid rgba(124,96,187,.28);
+}
+.note-card .note-ico{
+  width:40px;height:40px;border-radius:13px;display:grid;place-items:center;
+  background:var(--lav);color:#fff;margin-bottom:8px;box-shadow:0 8px 18px -10px rgba(124,96,187,.8);
+}
+.note-card .note-ico svg{width:21px;height:21px}
+.note-card h3{font-size:16px;letter-spacing:-.025em}
+.note-card p{font-size:12.5px;color:var(--muted);line-height:1.6;max-width:30ch}
+.note-card .note-meta{font-size:10.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:rgba(146,144,158,.9);margin-top:4px}
+
+/* ---------- parkoppling ---------- */
+.face--pair{gap:calc(var(--u)*1.4);padding:11% 12%}
+.pair-icon{
+  width:calc(var(--u)*23);height:calc(var(--u)*23);border-radius:calc(var(--u)*7);overflow:hidden;
+  margin-bottom:calc(var(--u)*2);
+  box-shadow:0 calc(var(--u)*3) calc(var(--u)*9) rgba(0,0,0,.5),inset 0 0 0 1px rgba(255,255,255,.09);
+}
+.pair-icon img{width:100%;height:100%;object-fit:cover;display:block}
+.pair-title{font-family:'Outfit';font-weight:700;font-size:calc(var(--u)*7);letter-spacing:-.035em;margin:0}
+.pair-text{font-size:calc(var(--u)*3.6);line-height:1.4;color:var(--w-muted);margin:0;max-width:34ch}
+
+/* ---------- välj grupp ---------- */
+.face--groups{padding:12% 11%;align-items:stretch;gap:calc(var(--u)*1.1)}
+.group-row{
+  display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:calc(var(--u)*2.2);
+  padding:calc(var(--u)*2);border-radius:calc(var(--u)*3.4);
+  background:rgba(255,255,255,.06);
+}
+.group-row.on{
+  background:rgba(255,112,79,.16);
+  box-shadow:inset 0 0 0 1px rgba(255,112,79,.42);
+}
+.g-badge{
+  width:calc(var(--u)*8.2);height:calc(var(--u)*8.2);border-radius:calc(var(--u)*2.6);
+  display:grid;place-items:center;font-family:'Outfit';font-weight:800;font-size:calc(var(--u)*3.8);
+  background:rgba(124,96,187,.24);color:#c0a8f5;
+}
+.group-row.on .g-badge{background:rgba(255,112,79,.28);color:#ffb39c}
+.g-name{text-align:left;font-size:calc(var(--u)*3.8);font-weight:700;line-height:1.15;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.g-name small{display:block;font-size:calc(var(--u)*2.9);color:var(--w-muted);font-weight:600;margin-top:calc(var(--u)*.3)}
+.g-tick{width:calc(var(--u)*4.2);height:calc(var(--u)*4.2);color:var(--coral);flex:none}
+.g-hint{font-size:calc(var(--u)*2.9);color:var(--w-muted);margin-top:calc(var(--u)*1.2);text-align:center}
+
+/* ---------- veckan ---------- */
+.face--week{padding:11% 13%;gap:calc(var(--u)*.8)}
+.week-chart{
+  display:grid;grid-template-columns:repeat(7,1fr);gap:calc(var(--u)*1.5);
+  width:100%;height:calc(var(--u)*29);margin-top:calc(var(--u)*2.4);position:relative;
+}
+.week-chart::after{
+  content:"";position:absolute;left:0;right:0;z-index:0;
+  top:calc((100% - var(--u)*5.4) * .333);
+  border-top:1px dashed rgba(255,255,255,.26);
+}
+.wk{position:relative;z-index:1}
+.wk{display:grid;grid-template-rows:1fr auto;justify-items:center;align-items:end;height:100%;gap:calc(var(--u)*1.1)}
+.wk i{width:100%;height:var(--h);border-radius:99px;background:rgba(255,255,255,.11);align-self:end;display:block}
+.wk.we i{background:rgba(124,174,92,.42)}
+.wk.on i{background:linear-gradient(180deg,#ff9a78,#ff704f);box-shadow:0 0 calc(var(--u)*2) rgba(255,112,79,.5)}
+.wk small{font-size:calc(var(--u)*2.8);font-weight:800;color:var(--w-muted)}
+.wk.on small{color:#ffb39c}
+
+/* ---------- tillsammans live ---------- */
+.face--live{padding:12%;gap:calc(var(--u)*.7)}
+.live-num{font-family:'Outfit';font-weight:700;font-size:calc(var(--u)*21);line-height:.88;letter-spacing:-.045em;margin:0;font-variant-numeric:tabular-nums}
+.live-people{display:flex;gap:calc(var(--u)*1.8);margin:calc(var(--u)*2.2) 0 calc(var(--u)*1.4)}
+.live-ava{
+  width:calc(var(--u)*9.4);height:calc(var(--u)*9.4);border-radius:50%;display:grid;place-items:center;
+  font-size:calc(var(--u)*3.2);font-weight:800;background:rgba(255,255,255,.10);
+  color:var(--w-ink);box-shadow:0 0 0 calc(var(--u)*.8) rgba(124,174,92,.55);
+}
+.live-ava:nth-child(2){box-shadow:0 0 0 calc(var(--u)*.8) rgba(255,112,79,.55)}
+.live-ava:nth-child(3){box-shadow:0 0 0 calc(var(--u)*.8) rgba(124,96,187,.6)}
+
+/* ---------- bara här ---------- */
+.face--near{padding:11% 12%;gap:calc(var(--u)*.8)}
+.near-title{font-family:'Outfit';font-weight:700;font-size:calc(var(--u)*8.6);letter-spacing:-.035em;margin:0}
+.near-net{width:86%;height:auto;margin:calc(var(--u)*1.6) 0 calc(var(--u)*.6)}
+.near-net .link{stroke:var(--w-muted);stroke-width:.9;stroke-dasharray:2.2 2.6;opacity:.7;fill:none}
+.near-net .orbit{fill:none;stroke:var(--w-muted);stroke-width:1;stroke-dasharray:1.6 2.8;opacity:.45}
+.near-net .node{fill:var(--w-ink);opacity:.72}
+
+/* ---------- analyskarta ---------- */
+.face--map{padding:12% 13%;align-items:stretch;gap:calc(var(--u)*2.4)}
+.map-row{display:flex;flex-direction:column;gap:calc(var(--u)*1.1)}
+.map-top{display:flex;justify-content:space-between;align-items:baseline;gap:calc(var(--u)*1.4);font-size:calc(var(--u)*3.2);font-weight:800}
+.map-top span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:flex;align-items:center;gap:calc(var(--u)*1)}
+.map-top b{font-family:'Outfit';font-size:calc(var(--u)*3.6);letter-spacing:-.01em;font-variant-numeric:tabular-nums}
+.map-bar{height:calc(var(--u)*2.4);border-radius:99px;background:var(--w-track);overflow:hidden}
+.map-bar i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#ff9670,#ff704f)}
+.map-row.b .map-bar i{background:linear-gradient(90deg,#a58ce6,#7c60bb)}
+.map-crown{width:calc(var(--u)*3.2);height:calc(var(--u)*3.2);color:var(--gold);flex:none}
+
+/* ---------- inställningar ---------- */
+.face--goals .chip,.face--map .chip,.face--settings .chip,.face--week .chip{align-self:center;text-align:center}
+.face--settings{padding:12% 13%;align-items:stretch;gap:0}
+.set-row{
+  display:flex;align-items:center;justify-content:space-between;gap:calc(var(--u)*2);
+  padding:calc(var(--u)*2.2) 0;font-size:calc(var(--u)*3.7);font-weight:700;
+  border-bottom:1px solid rgba(255,255,255,.12);
+}
+.set-row:last-of-type{border-bottom:0}
+.set-row b{font-size:calc(var(--u)*3.4);color:var(--w-muted);font-weight:700}
+.toggle{
+  width:calc(var(--u)*8.8);height:calc(var(--u)*5);border-radius:99px;flex:none;position:relative;
+  background:rgba(255,255,255,.13);
+}
+.toggle::after{
+  content:"";position:absolute;top:calc(var(--u)*.6);left:calc(var(--u)*.6);
+  width:calc(var(--u)*3.8);height:calc(var(--u)*3.8);border-radius:50%;background:var(--w-muted);
+}
+.toggle.on{background:rgba(255,112,79,.85)}
+.toggle.on::after{left:auto;right:calc(var(--u)*.6);background:#fff}
+.set-foot{font-size:calc(var(--u)*2.9);color:var(--w-muted);text-align:center;margin-top:calc(var(--u)*2)}
+
 /* mini labels under each watch */
 .screen-card{
   position:relative;display:flex;flex-direction:column;align-items:center;
@@ -408,7 +544,7 @@ html[data-mode="light"] .theme-btn .sun{display:none}
 }
 .screen-card:hover{transform:translateY(-6px);box-shadow:0 1px 0 #fff inset,0 34px 60px -40px rgba(35,32,54,.55);border-color:color-mix(in srgb,var(--coral) 26%,var(--line))}
 .screen-card .watch{--w:252;width:min(252px,94%)}
-.screen-card figcaption{margin-top:30px;text-align:center}
+.screen-card figcaption{margin-top:30px;text-align:center;display:flex;flex-direction:column;align-items:center;flex:1}
 .screen-card .num{
   display:inline-grid;place-items:center;width:22px;height:22px;border-radius:7px;
   background:color-mix(in srgb,var(--coral) 13%,transparent);color:var(--coral-deep);
@@ -417,7 +553,7 @@ html[data-mode="light"] .theme-btn .sun{display:none}
 .screen-card h3{font-size:16.5px;letter-spacing:-.025em;margin-bottom:7px}
 .screen-card figcaption p{font-size:12.5px;color:var(--muted);line-height:1.55;max-width:27ch}
 .screen-card .meta{
-  margin-top:13px;font-size:10.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;
+  margin-top:auto;padding-top:13px;font-size:10.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;
   color:color-mix(in srgb,var(--muted) 80%,transparent);
 }
 
@@ -613,8 +749,37 @@ footer{margin-top:96px;border-top:1px solid var(--line);padding:34px 0 44px}
   html{scroll-behavior:auto}
   .reveal{opacity:1;transform:none}
 }
+@supports not (color:color-mix(in srgb,red 50%,blue)){
+/* Fallback-tinter för motorer utan color-mix (Chrome < 111). */
+.topbar{background:rgba(250,249,246,.86)}
+.pill i{box-shadow:0 0 0 3px rgba(124,174,92,.18)}
+.halo{background:radial-gradient(closest-side,rgba(255,112,79,.16),transparent 72%),radial-gradient(closest-side at 70% 75%,rgba(124,96,187,.18),transparent 70%)}
+.chip-live .mini{background:rgba(124,174,92,.18);color:#4e7c37}
+.chip-pepp .mini{background:rgba(255,112,79,.16);color:var(--coral-deep)}
+.chip.mute{background:rgba(255,255,255,.09);color:var(--w-muted)}
+.face-icon{background:rgba(255,112,79,.15)}
+.face-icon.lav{background:rgba(124,96,187,.22)}
+.lrow{border-bottom:1px solid rgba(255,255,255,.10)}
+.screen-card .num{background:rgba(255,112,79,.13)}
+.screen-card .meta{color:rgba(127,124,142,.85)}
+.pcard .ico{background:rgba(255,112,79,.12)}
+.pcard:nth-child(2n) .ico{background:rgba(124,96,187,.13)}
+.pcard:nth-child(3n) .ico{background:rgba(124,174,92,.15)}
+.legend .k{background:rgba(255,112,79,.14)}
+.device-ico{background:rgba(124,96,187,.14)}
+.device.watch-side .device-ico{background:rgba(255,112,79,.14)}
+.bcard .tag{background:rgba(124,96,187,.12)}
+.bcard:nth-child(2) .tag{background:rgba(124,174,92,.16)}
+.bcard:nth-child(3) .tag{background:rgba(255,112,79,.14)}
+.bcard code{background:rgba(37,36,58,.06)}
+.note{background:rgba(226,168,63,.12);border:1px solid rgba(226,168,63,.34)}
+html[data-theme="dark"] .topbar{background:rgba(25,25,37,.86)}
+html[data-theme="dark"] .legend .k{background:rgba(255,112,79,.16)}
+html[data-theme="dark"] .bcard code,html[data-theme="dark"] .note{background:rgba(255,255,255,.07)}
+}
 </style>
-<noscript><style>.reveal{opacity:1;transform:none}</style></noscript>
+<noscript><style>.reveal{opacity:1;transform:none}
+</style></noscript>
 </head>
 <body>
 
@@ -680,7 +845,7 @@ footer{margin-top:96px;border-top:1px solid var(--line);padding:34px 0 44px}
       <text x="100" y="80" text-anchor="middle" font-family="Outfit" font-weight="600"
             font-size="29" letter-spacing="-1.6" fill="#2E2A3B">09:41</text>
       <text x="100" y="96" text-anchor="middle" font-family="DM Sans" font-weight="800"
-            font-size="5.6" letter-spacing="1.5" fill="#8B8070">FRE 7 NOV</text>
+            font-size="5.6" letter-spacing="1.5" fill="#8B8070">LÖR 7 NOV</text>
 
       <!-- liten cirkel: steg och mål -->
       <g filter="url(#softShadow)">
@@ -837,46 +1002,169 @@ footer{margin-top:96px;border-top:1px solid var(--line);padding:34px 0 44px}
   <section class="section" id="skarmar">
     <div class="wrap">
       <div class="section-head reveal">
-        <p class="eyebrow">Skärmarna</p>
-        <h2>Sex vyer. Inget scrollande.</h2>
+        <p class="eyebrow">Alla skärmar</p>
+        <h2>Hela appen, vy för vy.</h2>
         <p class="lede">
-          Allt viktigt ryms i en cirkel. Inga kort som klipps, inga menyer på djupet —
-          svep mellan vyerna och tryck när du vill peppra.
+          Fjorton skärmar, en cirkel i taget. Först parkopplingen, sedan dagen, gruppen,
+          det andra laget — och till slut firandet och vilan.
         </p>
       </div>
 
-      <div class="grid-screens">
-        <!-- 01 målet nått -->
+      <!-- 01 första gången -->
+      <div class="flow-group reveal">
+        <div class="flow-head">
+          <span class="flow-num">01</span>
+          <h3>Första gången</h3>
+          <p>Klockan ärver gruppen från telefonen. Inget konto, inget lösenord, ingen ny inloggning.</p>
+        </div>
+        <div class="grid-screens">
         <figure class="screen-card reveal">
           <div class="watch">
             <div class="case"><span class="crown"></span>
               <div class="screen">
-                <svg class="ring" viewBox="0 0 100 100" aria-hidden="true">
-                  <circle class="track" cx="50" cy="50" r="45" pathLength="100"/>
-                  <circle class="fill" cx="50" cy="50" r="45" pathLength="100" style="--off:0"/>
-                </svg>
-                <div class="face">
-                  <span class="face-icon gold">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4h8v5a4 4 0 0 1-8 0V4Z"/><path d="M8 5H5.4a2.6 2.6 0 0 0 2.9 4.5"/><path d="M16 5h2.6a2.6 2.6 0 0 1-2.9 4.5"/><path d="M12 13.2V17"/><path d="M8.8 20h6.4l-.7-2.1a1 1 0 0 0-.95-.7h-3a1 1 0 0 0-.95.7L8.8 20Z"/></svg>
-                  </span>
-                  <p class="face-eyebrow">Målet nått</p>
-                  <p class="big-num sm">8 000</p>
-                  <p class="face-label">steg · idag</p>
-                  <span class="chip">4 av 4 klara</span>
-                </div>
-                <div class="glass"></div>
-              </div>
+                <div class="face face--pair">
+                  <span class="pair-icon"><img src="assets/brand-mark.png" alt="" /></span>
+                  <p class="face-eyebrow">Första gången</p>
+                  <p class="pair-title">Parkoppla</p>
+                  <p class="pair-text">Öppna step.by.step i telefonen och välj klockan. Sedan finns grupperna här.</p>
+                  <span class="chip mute">Ingen inloggning här</span>
+                </div><div class="glass"></div></div>
             </div>
           </div>
           <figcaption>
             <span class="num">01</span>
-            <h3>Målet nått</h3>
-            <p>När dagens mål är nått spelar en kort scen upp — ritad för en rund skärm, klar på tre sekunder.</p>
-            <p class="meta">Firande · en gång per mål</p>
+            <h3>Parkoppla</h3>
+            <p>Ett varv på handleden och ett tryck i telefonen. Sedan finns grupperna där.</p>
+            <p class="meta">Uppstart · en gång</p>
           </figcaption>
         </figure>
+        <figure class="screen-card reveal">
+          <div class="watch">
+            <div class="case"><span class="crown"></span>
+              <div class="screen">
+                <div class="face face--groups">
+                  <p class="face-eyebrow">Mina grupper</p>
+                  <div class="group-row on">
+                    <span class="g-badge">L</span>
+                    <span class="g-name">Lunchpromenaden<small>4 medlemmar</small></span>
+                    <svg class="g-tick" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg>
+                  </div>
+                  <div class="group-row">
+                    <span class="g-badge">K</span>
+                    <span class="g-name">Kontorsgänget<small>6 medlemmar</small></span>
+                  </div>
+                  <div class="group-row">
+                    <span class="g-badge">S</span>
+                    <span class="g-name">Söndagspromenaden<small>2 medlemmar</small></span>
+                  </div>
+                  <p class="g-hint">Fler grupper läggs till i telefonen</p>
+                </div><div class="glass"></div></div>
+            </div>
+          </div>
+          <figcaption>
+            <span class="num">02</span>
+            <h3>Välj grupp</h3>
+            <p>Har du flera grupper ligger de här. Svep och tryck — klockan följer valet tills du byter.</p>
+            <p class="meta">Mina grupper · ett tryck</p>
+          </figcaption>
+        </figure>
+        <article class="note-card reveal">
+          <span class="note-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.2l7 2.6v5.4c0 4.4-3 7.6-7 9.6-4-2-7-5.2-7-9.6V5.8l7-2.6Z"/><path d="M9.4 12.2l1.9 1.9 3.5-3.6"/></svg></span>
+          <h3>Ingen inloggning på handleden</h3>
+          <p>Kontot, grupperna och historiken bor i telefonen. Klockan visar bara det som redan är ditt — och frågar aldrig efter ett lösenord.</p>
+          <p class="note-meta">Säkerhet · kort väg</p>
+        </article>
+        </div>
+      </div>
 
-        <!-- 02 topplista -->
+      <!-- 02 under dagen -->
+      <div class="flow-group reveal">
+        <div class="flow-head">
+          <span class="flow-num">02</span>
+          <h3>Under dagen</h3>
+          <p>Hur går det idag, hur går veckan och hur långt är jag från målet? Ett svep mellan svaren.</p>
+        </div>
+        <div class="grid-screens">
+        <figure class="screen-card reveal">
+          <div class="watch">
+            <div class="case"><span class="crown"></span>
+              <div class="screen"><svg class="ring" viewBox="0 0 100 100" aria-hidden="true"><circle class="track" cx="50" cy="50" r="45" pathLength="100"/><circle class="fill" cx="50" cy="50" r="45" pathLength="100" style="--off:14"/></svg>
+                <div class="face">
+                  <p class="face-eyebrow">Idag</p>
+                  <p class="big-num">6 842</p>
+                  <p class="face-label">steg · 5,1 km</p>
+                  <span class="chip">Mål 8 000 · 86 %</span>
+                </div><div class="glass"></div></div>
+            </div>
+          </div>
+          <figcaption>
+            <span class="num">03</span>
+            <h3>Dagens steg</h3>
+            <p>Steg, sträcka och mål i en ring. Tryck en gång för att se veckan.</p>
+            <p class="meta">Översikt · alltid först</p>
+          </figcaption>
+        </figure>
+        <figure class="screen-card reveal">
+          <div class="watch">
+            <div class="case"><span class="crown"></span>
+              <div class="screen">
+                <div class="face face--week">
+                  <p class="face-eyebrow">Veckan</p>
+                  <p class="big-num sm">34 210</p>
+                  <p class="face-label">steg · 68 % av 50 000</p>
+                  <div class="week-chart">
+                    <span class="wk " style="--h:45%"><i></i><small>M</small></span><span class="wk " style="--h:60%"><i></i><small>T</small></span><span class="wk " style="--h:34%"><i></i><small>O</small></span><span class="wk " style="--h:74%"><i></i><small>T</small></span><span class="wk " style="--h:52%"><i></i><small>F</small></span><span class="wk on" style="--h:20%"><i></i><small>L</small></span><span class="wk we" style="--h:3%"><i></i><small>S</small></span>
+                  </div>
+                </div><div class="glass"></div></div>
+            </div>
+          </div>
+          <figcaption>
+            <span class="num">04</span>
+            <h3>Veckan</h3>
+            <p>Sju staplar, ett streck för veckomålet och idag markerad i korall. Resten av veckan är redan räknad.</p>
+            <p class="meta">Vecka · sju dagar</p>
+          </figcaption>
+        </figure>
+        <figure class="screen-card reveal">
+          <div class="watch">
+            <div class="case"><span class="crown"></span>
+              <div class="screen">
+                <div class="face face--goals">
+                  <p class="face-eyebrow">Målen</p>
+                  <div class="grow">
+                    <div class="grow-top"><span>Dag</span><b>86 %</b></div>
+                    <div class="gbar"><i style="width:86%"></i></div>
+                  </div>
+                  <div class="grow">
+                    <div class="grow-top"><span>Vecka</span><b>68 %</b></div>
+                    <div class="gbar"><i style="width:68%"></i></div>
+                  </div>
+                  <div class="grow">
+                    <div class="grow-top"><span>Månad</span><b>34 %</b></div>
+                    <div class="gbar"><i style="width:34%"></i></div>
+                  </div>
+                  <span class="chip mute">8 000 steg i dag</span>
+                </div><div class="glass"></div></div>
+            </div>
+          </div>
+          <figcaption>
+            <span class="num">05</span>
+            <h3>Målen</h3>
+            <p>Dag, vecka och månad på samma skärm. Gruppmålet får en egen rad när gruppen sätter ett.</p>
+            <p class="meta">Perioder · ett svep</p>
+          </figcaption>
+        </figure>
+        </div>
+      </div>
+
+      <!-- 03 gruppen -->
+      <div class="flow-group reveal">
+        <div class="flow-head">
+          <span class="flow-num">03</span>
+          <h3>Gruppen</h3>
+          <p>Vem leder, vem behöver pepp och vem är ute just nu. Aldrig var de är.</p>
+        </div>
+        <div class="grid-screens">
         <figure class="screen-card reveal">
           <div class="watch">
             <div class="case"><span class="crown"></span>
@@ -899,20 +1187,16 @@ footer{margin-top:96px;border-top:1px solid var(--line);padding:34px 0 44px}
                     <span class="n">6 118</span>
                   </div>
                   <div class="pager"><i class="on"></i><i></i><i></i></div>
-                </div>
-                <div class="glass"></div>
-              </div>
+                </div><div class="glass"></div></div>
             </div>
           </div>
           <figcaption>
-            <span class="num">02</span>
+            <span class="num">06</span>
             <h3>Topplistan</h3>
             <p>Tre åt gången, svep för resten. Kronan sitter kvar på den som leder och du själv markeras i korall.</p>
-            <p class="meta">Grupp · svep för fler</p>
+            <p class="meta">Topplista · svep för fler</p>
           </figcaption>
         </figure>
-
-        <!-- 03 pepp -->
         <figure class="screen-card reveal">
           <div class="watch">
             <div class="case"><span class="crown"></span>
@@ -928,20 +1212,83 @@ footer{margin-top:96px;border-top:1px solid var(--line);padding:34px 0 44px}
                     <button class="pepp-btn" id="peppBtn" type="button">Peppa tillbaka</button>
                     <p class="notif-foot" aria-live="polite"><span class="h" id="peppIcon">♥</span> <span id="peppCount">8</span> pepp idag</p>
                   </div>
-                </div>
-                <div class="glass"></div>
-              </div>
+                </div><div class="glass"></div></div>
             </div>
           </div>
           <figcaption>
-            <span class="num">03</span>
+            <span class="num">07</span>
             <h3>Pepp på handleden</h3>
-            <p>Ett tryck, ett hjärta, en kort vibration. Tryck på knappen — den funkar här också.</p>
+            <p>Ett tryck skickar ett hjärta. Haptiken kvitterar — inget ljud, ingen skärm som måste öppnas.</p>
             <p class="meta">Notis · haptik</p>
           </figcaption>
         </figure>
+        <figure class="screen-card reveal">
+          <div class="watch">
+            <div class="case"><span class="crown"></span>
+              <div class="screen">
+                <div class="face face--live">
+                  <p class="face-eyebrow">Live · Lunchpromenaden</p>
+                  <p class="live-num">3</p>
+                  <p class="face-label">ute och går nu</p>
+                  <div class="live-people">
+                    <span class="live-ava">MO</span>
+                    <span class="live-ava">GL</span>
+                    <span class="live-ava">SK</span>
+                  </div>
+                  <span class="chip">28 461 steg i gruppen</span>
+                </div><div class="glass"></div></div>
+            </div>
+          </div>
+          <figcaption>
+            <span class="num">08</span>
+            <h3>Tillsammans live</h3>
+            <p>Antal som är ute nu och gruppens samlade steg. Inga kartor, inga positioner.</p>
+            <p class="meta">Live · bara siffror</p>
+          </figcaption>
+        </figure>
+        </div>
+      </div>
 
-        <!-- 04 race -->
+      <!-- 04 nära och två lag -->
+      <div class="flow-group reveal">
+        <div class="flow-head">
+          <span class="flow-num">04</span>
+          <h3>Nära — och mot ett annat lag</h3>
+          <p>Samma grupp utan server, eller två lag mot samma mållinje.</p>
+        </div>
+        <div class="grid-screens">
+        <figure class="screen-card reveal">
+          <div class="watch">
+            <div class="case"><span class="crown"></span>
+              <div class="screen">
+                <div class="face face--near">
+                  <p class="face-eyebrow">Nära varandra</p>
+                  <p class="near-title">Bara här</p>
+                  <svg class="near-net" viewBox="0 0 100 60" aria-hidden="true">
+                    <circle class="orbit" cx="50" cy="30" r="24"/>
+                    <g class="link">
+                      <path d="M50 30 26 14"/><path d="M50 30 74 14"/>
+                      <path d="M50 30 24 46"/><path d="M50 30 76 46"/>
+                    </g>
+                    <circle cx="50" cy="30" r="6.4" fill="none" stroke="#FF704F" stroke-width="1.6"/>
+                    <circle cx="50" cy="30" r="2.2" fill="#FF704F"/>
+                    <circle class="node" cx="26" cy="14" r="3.2"/>
+                    <circle class="node" cx="74" cy="14" r="3.2"/>
+                    <circle class="node" cx="24" cy="46" r="3.2"/>
+                    <circle class="node" cx="76" cy="46" r="3.2"/>
+                  </svg>
+                  <p class="face-label">4 i närheten</p>
+                  <span class="chip mute">Ingen server · ingen position</span>
+                </div><div class="glass"></div></div>
+            </div>
+          </div>
+          <figcaption>
+            <span class="num">09</span>
+            <h3>Bara här</h3>
+            <p>Gruppen nära dig via Bluetooth. Listan finns bara så länge vyn är öppen.</p>
+            <p class="meta">Utan server · BLE</p>
+          </figcaption>
+        </figure>
         <figure class="screen-card reveal">
           <div class="watch">
             <div class="case"><span class="crown"></span>
@@ -960,53 +1307,81 @@ footer{margin-top:96px;border-top:1px solid var(--line);padding:34px 0 44px}
                     <div class="rt"><i class="a"></i><span>Lunchpromenaden</span><b>42 180</b></div>
                     <div class="rt"><i class="b"></i><span>Kontorsgänget</span><b>40 940</b></div>
                   </div>
-                </div>
-                <div class="glass"></div>
-              </div>
+                </div><div class="glass"></div></div>
             </div>
           </div>
           <figcaption>
-            <span class="num">04</span>
+            <span class="num">10</span>
             <h3>Race mot partner</h3>
-            <p>Två grupper, ett gemensamt mål. Klockan visar siffror och avstånd till mållinjen — aldrig positioner.</p>
+            <p>Två lag mot samma mål. Klockan visar avståndet till mållinjen — inte vägen dit.</p>
             <p class="meta">Ihopkopplade grupper</p>
           </figcaption>
         </figure>
-
-        <!-- 05 målen -->
         <figure class="screen-card reveal">
           <div class="watch">
             <div class="case"><span class="crown"></span>
               <div class="screen">
-                <div class="face face--goals">
-                  <p class="face-eyebrow">Målen</p>
-                  <div class="grow">
-                    <div class="grow-top"><span>Dag</span><b>86 %</b></div>
-                    <div class="gbar"><i style="width:86%"></i></div>
+                <div class="face face--map">
+                  <p class="face-eyebrow">Veckan · två lag</p>
+                  <div class="map-row">
+                    <div class="map-top">
+                      <span>Lunchpromenaden</span>
+                      <b>42 180</b>
+                    </div>
+                    <div class="map-bar"><i style="width:100%"></i></div>
                   </div>
-                  <div class="grow">
-                    <div class="grow-top"><span>Vecka</span><b>61 %</b></div>
-                    <div class="gbar"><i style="width:61%"></i></div>
+                  <div class="map-row b">
+                    <div class="map-top">
+                      <span>Kontorsgänget</span>
+                      <b>40 940</b>
+                    </div>
+                    <div class="map-bar"><i style="width:97%"></i></div>
                   </div>
-                  <div class="grow">
-                    <div class="grow-top"><span>Månad</span><b>34 %</b></div>
-                    <div class="gbar"><i style="width:34%"></i></div>
-                  </div>
-                  <span class="chip mute">8 000 steg i dag</span>
-                </div>
-                <div class="glass"></div>
-              </div>
+                  <span class="chip">Ni leder med 1 240</span>
+                  <p class="face-label">Tillsammans 83 120 av 100 000</p>
+                </div><div class="glass"></div></div>
             </div>
           </div>
           <figcaption>
-            <span class="num">05</span>
-            <h3>Målen</h3>
-            <p>Dag, vecka och månad på en skärm. Gruppmålet får en egen rad när gruppen sätter ett.</p>
-            <p class="meta">Perioder · ett svep</p>
+            <span class="num">11</span>
+            <h3>Analyskarta</h3>
+            <p>Samma två lag, samma vecka: staplarna jämför lagen och chipen säger hur mycket ni leder med.</p>
+            <p class="meta">Bara gruppmål jämförs</p>
           </figcaption>
         </figure>
+        </div>
+      </div>
 
-        <!-- 06 alltid på -->
+      <!-- 05 firande och vila -->
+      <div class="flow-group reveal">
+        <div class="flow-head">
+          <span class="flow-num">05</span>
+          <h3>Firande och vila</h3>
+          <p>När målet är nått, när handleden vilar och när du vill ändra något.</p>
+        </div>
+        <div class="grid-screens">
+        <figure class="screen-card reveal">
+          <div class="watch">
+            <div class="case"><span class="crown"></span>
+              <div class="screen"><svg class="ring" viewBox="0 0 100 100" aria-hidden="true"><circle class="track" cx="50" cy="50" r="45" pathLength="100"/><circle class="fill" cx="50" cy="50" r="45" pathLength="100" style="--off:0"/></svg>
+                <div class="face">
+                  <span class="face-icon gold">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4h8v5a4 4 0 0 1-8 0V4Z"/><path d="M8 5H5.4a2.6 2.6 0 0 0 2.9 4.5"/><path d="M16 5h2.6a2.6 2.6 0 0 1-2.9 4.5"/><path d="M12 13.2V17"/><path d="M8.8 20h6.4l-.7-2.1a1 1 0 0 0-.95-.7h-3a1 1 0 0 0-.95.7L8.8 20Z"/></svg>
+                  </span>
+                  <p class="face-eyebrow">Målet nått</p>
+                  <p class="big-num sm">8 000</p>
+                  <p class="face-label">steg · idag</p>
+                  <span class="chip">4 av 4 klara</span>
+                </div><div class="glass"></div></div>
+            </div>
+          </div>
+          <figcaption>
+            <span class="num">12</span>
+            <h3>Målet nått</h3>
+            <p>En kort scen i tre sekunder, ritad för rund skärm. En per mål: dag, vecka, helg, månad, år och gruppmål.</p>
+            <p class="meta">Firande · en gång per mål</p>
+          </figcaption>
+        </figure>
         <figure class="screen-card reveal">
           <div class="watch">
             <div class="case"><span class="crown"></span>
@@ -1015,21 +1390,40 @@ footer{margin-top:96px;border-top:1px solid var(--line);padding:34px 0 44px}
                   <circle class="track" cx="50" cy="50" r="44" pathLength="100" stroke-width="1.2"/>
                 </svg>
                 <div class="face face--aod">
-                  <p class="aod-date">fre 7 nov</p>
+                  <p class="aod-date">lör 7 nov</p>
                   <p class="aod-time">09:41</p>
                   <p class="aod-sub"><b>6 842</b> steg <span>·</span> 86 %</p>
-                </div>
-                <div class="glass"></div>
-              </div>
+                </div><div class="glass"></div></div>
             </div>
           </div>
           <figcaption>
-            <span class="num">06</span>
+            <span class="num">13</span>
             <h3>Alltid på</h3>
-            <p>När handleden vilar: bara tid, steg och procent. Inga färger, inga animationer — knappt någon batteri.</p>
+            <p>Tid, steg och procent i nedtonat läge. Inga färger, inga animationer — knappt någon batteri.</p>
             <p class="meta">Ambient · låg ström</p>
           </figcaption>
         </figure>
+        <figure class="screen-card reveal">
+          <div class="watch">
+            <div class="case"><span class="crown"></span>
+              <div class="screen">
+                <div class="face face--settings">
+                  <p class="face-eyebrow">Inställningar</p>
+                  <div class="set-row"><span>Ljust armband</span><i class="toggle"></i></div>
+                  <div class="set-row"><span>Haptik</span><i class="toggle on"></i></div>
+                  <div class="set-row"><span>Språk</span><b>Svenska</b></div>
+                  <p class="set-foot">Allt annat sköts i telefonen</p>
+                </div><div class="glass"></div></div>
+            </div>
+          </div>
+          <figcaption>
+            <span class="num">14</span>
+            <h3>Inställningar</h3>
+            <p>Ljust armband, haptik och språk. Allt annat sköts i telefonen.</p>
+            <p class="meta">Inställningar · få val</p>
+          </figcaption>
+        </figure>
+        </div>
       </div>
 
       <!-- komplikationer -->
@@ -1253,7 +1647,7 @@ footer{margin-top:96px;border-top:1px solid var(--line);padding:34px 0 44px}
         <article class="bcard reveal">
           <span class="tag">watchOS 11</span>
           <h3>SwiftUI och WidgetKit</h3>
-          <p>Samma sex vyer i SwiftUI, komplikationer i WidgetKit och steg via HealthKit. <code>WatchConnectivity</code> skickar bara siffror mellan telefon och klocka.</p>
+          <p>Samma fjorton vyer i SwiftUI, komplikationer i WidgetKit och steg via HealthKit. <code>WatchConnectivity</code> skickar bara siffror mellan telefon och klocka.</p>
         </article>
         <article class="bcard reveal">
           <span class="tag">Dagens kodbas</span>

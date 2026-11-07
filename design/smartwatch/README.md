@@ -26,7 +26,9 @@ Tiden ligger kvar mitt på urtavlan, datumet under. Inget mer — en klocka ska 
 ## Sidan innehåller
 
 1. **Framsidan** i stort format, med dagens steg som mörk app-vy bredvid.
-2. **Sex vyer** — Målet nått, Topplistan, Pepp, Race mot partner, Målen och Alltid på.
+2. **Fjorton vyer** i fem flöden — första gången (parkoppla, välj grupp), under dagen (steg, vecka, mål),
+   gruppen (topplista, pepp, live), nära och race (bara här, race, analyskarta) och firande och vila
+   (målet nått, alltid på, inställningar).
 3. **Komplikationer** — samma data på en främmande urtavla: ring, siffra och fotspår.
 4. **Designprinciper** — säker zon, 48 dp träffyta, typografi, sant svart, en accent, haptik.
 5. **Mått och typografi** — anatomi för den runda skärmen.
