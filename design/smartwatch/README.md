@@ -3,6 +3,9 @@
 Ett designkoncept: hur **step.by.step** hade kunnat se ut på en smartwatch (Wear OS och watchOS).
 Sidan är en fristående prototyp i ren HTML, CSS och SVG — ingen build, inga beroenden, inga nya data.
 
+> **Ska sidan byggas om från noll?** Använd [`BYGGSPEC.md`](BYGGSPEC.md) — en exakt byggbeskrivning med
+> tokens, mått, den fullständiga SVG:n och all copy per skärm. `index.html` är facit.
+
 ```bash
 # öppna filen direkt, eller servera mappen
 cd design/smartwatch
