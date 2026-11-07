@@ -88,6 +88,7 @@ fun LoginScreen(model: AppModel, onBack: () -> Unit) {
         Modifier.fillMaxSize().background(Bg),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(6.dp),
+        autoCentering = null,
         contentPadding = PaddingValues(top = 26.dp, bottom = 30.dp, start = 10.dp, end = 10.dp),
     ) {
         item {

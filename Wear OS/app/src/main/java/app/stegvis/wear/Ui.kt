@@ -256,19 +256,19 @@ fun PermissionScreen(denied: Boolean, onContinue: () -> Unit, onOpenSettings: ()
     val activity = LocalContext.current.findActivity()
     val backDesc = stringResource(R.string.back)
     Box(Modifier.fillMaxSize()) {
+        Page {
+            Column(Modifier.verticalScroll(rememberScrollState()), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) { Foot(Coral, 1f, -12f); Foot(Gold, 1f, 12f) }
+                Txt(stringResource(if (denied) R.string.perm_denied else R.string.perm_body), Type.body)
+                if (denied) Pill(stringResource(R.string.perm_open_settings), onOpenSettings)
+                else Pill(stringResource(R.string.perm_continue), onContinue, primary = true)
+            }
+        }
         Box(
             Modifier.align(Alignment.TopStart).padding(start = 22.dp, top = 8.dp).size(48.dp).clip(CircleShape)
                 .semantics { contentDescription = backDesc }.clickable(role = Role.Button) { activity?.finish() },
             contentAlignment = Alignment.Center,
         ) { Txt("‹", Type.display, maxLines = 1) }
-    }
-    Page {
-        Column(Modifier.verticalScroll(rememberScrollState()), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) { Foot(Coral, 1f, -12f); Foot(Gold, 1f, 12f) }
-            Txt(stringResource(if (denied) R.string.perm_denied else R.string.perm_body), Type.body)
-            if (denied) Pill(stringResource(R.string.perm_open_settings), onOpenSettings)
-            else Pill(stringResource(R.string.perm_continue), onContinue, primary = true)
-        }
     }
 }
 
@@ -322,6 +322,7 @@ fun GroupPage(model: AppModel, onLogin: () -> Unit) {
         Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(6.dp),
+        autoCentering = null,
         contentPadding = androidx.compose.foundation.layout.PaddingValues(top = 28.dp, bottom = 56.dp, start = 8.dp, end = 8.dp),
     ) {
         if (model.offline) item { StatusPill(stringResource(R.string.offline)) }
@@ -467,6 +468,7 @@ fun SettingsPage(model: AppModel, onLogin: () -> Unit) {
         Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(6.dp),
+        autoCentering = null,
         contentPadding = androidx.compose.foundation.layout.PaddingValues(top = 28.dp, bottom = 56.dp, start = 8.dp, end = 8.dp),
     ) {
         item { Txt(stringResource(R.string.goal_label), Type.caption) }
