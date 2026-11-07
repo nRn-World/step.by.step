@@ -55,6 +55,9 @@ fun effectiveLanguage(stored: String, systemLang: String): String =
 /** "12 345" with a space as thousands separator. */
 fun formatSteps(n: Int): String = n.toString().reversed().chunked(3).joinToString(" ").reversed()
 
+/** "950", "8k", "12k": short form for chart labels. */
+fun compactSteps(n: Int): String = if (n < 1000) n.toString() else "${(n + 500) / 1000}k"
+
 /** Kilometres with two decimals; comma for sv/da, point for en. */
 fun formatKm(steps: Int, lang: String): String {
     val s = String.format(java.util.Locale.US, "%.2f", metersFor(steps) / 1000.0)

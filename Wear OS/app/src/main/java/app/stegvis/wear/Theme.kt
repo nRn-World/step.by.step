@@ -92,7 +92,7 @@ fun Pill(
             .height(48.dp)
             .defaultMinSize(minWidth = minWidth.dp)
             .clip(RoundedCornerShape(24.dp))
-            .background(if (!enabled) Surface else if (primary) Coral else Surface2)
+            .background(if (!enabled && primary) Surface else if (primary) Coral else Surface2)
             .clickable(enabled = enabled, role = Role.Button, onClick = onClick)
             .padding(horizontal = 16.dp),
         contentAlignment = Alignment.Center,

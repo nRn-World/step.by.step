@@ -129,3 +129,12 @@ class Services(context: Context) {
         return false
     }
 }
+
+/** A context using the language chosen in Settings (the watch language when "system"). Tile and complication use it too. */
+fun Context.localized(): Context {
+    val lang = try { Vault(PrefsKv(applicationContext)).language } catch (e: Exception) { "system" }
+    if (lang == "system") return this
+    val config = android.content.res.Configuration(resources.configuration)
+    config.setLocale(java.util.Locale.forLanguageTag(lang))
+    return createConfigurationContext(config)
+}

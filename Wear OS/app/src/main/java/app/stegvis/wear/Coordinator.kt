@@ -44,16 +44,20 @@ class Coordinator(
         return Access.Token(s.accessToken, false)
     }
 
-    /** Refreshes the watch's own session after a 401. Returns the new token or null. */
-    private fun refreshAfter401(): String? {
-        val s = vault.session ?: return null
-        if (s.fromPhone) return null
+    private sealed class Refreshed {
+        class Ok(val token: String) : Refreshed()
+        object Gone : Refreshed()       // no session left (own session expired, or none)
+        object Phone : Refreshed()      // the token came from the phone: only the phone can renew it
+        object Transient : Refreshed()  // offline or rate limited: keep the session, try again later
+    }
+
+    /** Refreshes the watch's own session after a 401. */
+    private fun refreshAfter401(): Refreshed {
+        val s = vault.session ?: return Refreshed.Gone
+        if (s.fromPhone) return Refreshed.Phone
         return when (val r = auth.refresh(s)) {
-            is AuthResult.Ok -> { vault.session = r.session; r.session.accessToken }
-            is AuthResult.Failed -> {
-                if (r.reason == AuthFailure.SESSION_EXPIRED) vault.session = null
-                null
-            }
+            is AuthResult.Ok -> { vault.session = r.session; Refreshed.Ok(r.session.accessToken) }
+            is AuthResult.Failed -> if (r.reason == AuthFailure.SESSION_EXPIRED) { vault.session = null; Refreshed.Gone } else Refreshed.Transient
         }
     }
 
@@ -66,7 +70,12 @@ class Coordinator(
         return try {
             var (code, body) = api.state(token)
             if (code == 401) {
-                val fresh = refreshAfter401() ?: return if (vault.session == null) Fetch.NotLoggedIn else Fetch.PhoneExpired
+                val fresh = when (val r = refreshAfter401()) {
+                    is Refreshed.Ok -> r.token
+                    Refreshed.Gone -> return Fetch.NotLoggedIn
+                    Refreshed.Phone -> return Fetch.PhoneExpired
+                    Refreshed.Transient -> return Fetch.Offline
+                }
                 val retry = api.state(fresh)
                 code = retry.first; body = retry.second
             }
@@ -91,8 +100,12 @@ class Coordinator(
         return try {
             var code = api.postSteps(token, steps)
             if (code == 401) {
-                val fresh = refreshAfter401()
-                    ?: return if (vault.session == null) SyncResult.NOT_SIGNED_IN else SyncResult.PHONE_EXPIRED
+                val fresh = when (val r = refreshAfter401()) {
+                    is Refreshed.Ok -> r.token
+                    Refreshed.Gone -> return SyncResult.NOT_SIGNED_IN
+                    Refreshed.Phone -> return SyncResult.PHONE_EXPIRED
+                    Refreshed.Transient -> return SyncResult.OFFLINE
+                }
                 code = api.postSteps(fresh, steps)
             }
             if (code in 200..299) SyncResult.OK else SyncResult.FAILED

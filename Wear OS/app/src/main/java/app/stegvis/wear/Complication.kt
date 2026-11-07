@@ -20,8 +20,8 @@ class StepComplicationService : SuspendingComplicationDataSourceService() {
     override fun getPreviewData(type: ComplicationType): ComplicationData? = build(7_500, DEFAULT_GOAL, type)
 
     private fun build(steps: Int, goal: Int, type: ComplicationType): ComplicationData? {
-        val label: ComplicationText = PlainComplicationText.Builder(getString(app.stegvis.wear.R.string.complication_name)).build()
-        val value: ComplicationText = PlainComplicationText.Builder(steps.toString()).build()
+        val label: ComplicationText = PlainComplicationText.Builder(localized().getString(app.stegvis.wear.R.string.complication_name)).build()
+        val value: ComplicationText = PlainComplicationText.Builder(formatSteps(steps)).build()
         return when (type) {
             ComplicationType.RANGED_VALUE -> RangedValueComplicationData.Builder(
                 steps.toFloat(), 0f, goal.toFloat(), label,

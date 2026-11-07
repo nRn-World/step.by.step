@@ -91,4 +91,28 @@ class SignupAndFormatTest {
         assertEquals("Anna", shortName("Anna"))
         assertEquals("Abcdefghijklm…", shortName("Abcdefghijklmnopqrst"))
     }
+
+    @Test fun ownSession401WhileOfflineIsOfflineNotPhoneExpired() {
+        val vault = Vault(MemoryStore())
+        vault.session = Session("t", "r", now + 3_600_000, false)
+        // state 401, then the refresh call fails with no network
+        val c = coordinator(FakeHttp(mutableListOf(401 to "{}", IOException("x"))), vault)
+        assertEquals(Fetch.Offline, c.fetchState("2026-11-07"))
+        vault.session = Session("t", "r", now + 3_600_000, false)
+        assertEquals(SyncResult.OFFLINE, coordinator(FakeHttp(mutableListOf(401 to "{}", 429 to "{}")), vault).syncResult(5))
+        assertNotNull(vault.session) // a transient failure never signs the user out
+    }
+
+    @Test fun ownSessionRejectedRefreshSignsOut() {
+        val vault = Vault(MemoryStore())
+        vault.session = Session("t", "r", now + 3_600_000, false)
+        assertEquals(Fetch.NotLoggedIn, coordinator(FakeHttp(mutableListOf(401 to "{}", 400 to "{}")), vault).fetchState("2026-11-07"))
+        assertNull(vault.session)
+    }
+
+    @Test fun compactStepsRounds() {
+        assertEquals("950", compactSteps(950))
+        assertEquals("12k", compactSteps(12_300))
+        assertEquals("100k", compactSteps(100_000))
+    }
 }

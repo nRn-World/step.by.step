@@ -45,11 +45,11 @@ class StepTileService : TileService() {
             .addContent(ring)
             .build()
         val label = LayoutElementBuilders.Text.Builder()
-            .setText(getString(app.stegvis.wear.R.string.tile_label))
+            .setText(localized().getString(app.stegvis.wear.R.string.tile_label))
             .setFontStyle(LayoutElementBuilders.FontStyle.Builder().setSize(sp(12f)).setColor(argb(0xFFAAA8B9.toInt())).build())
             .build()
         val number = LayoutElementBuilders.Text.Builder()
-            .setText(steps.toString())
+            .setText(formatSteps(steps))
             .setFontStyle(
                 LayoutElementBuilders.FontStyle.Builder()
                     .setSize(sp(26f))

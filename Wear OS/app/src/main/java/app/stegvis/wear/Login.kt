@@ -79,7 +79,7 @@ fun LoginScreen(model: AppModel, onBack: () -> Unit) {
                     .getOrElse { AuthFailure.OTHER }
             }
             working = false
-            if (failure == null) finish(typed.takeIf { !it.contains('@') }) else { password = ""; error = errorRes(failure) }
+            if (failure == null) finish(typed) else { password = ""; error = errorRes(failure) }
         }
     }
 

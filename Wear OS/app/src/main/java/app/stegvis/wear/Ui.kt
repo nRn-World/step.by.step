@@ -61,9 +61,11 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.wear.compose.foundation.lazy.ScalingLazyColumn
 import androidx.wear.compose.foundation.lazy.items
 import androidx.wear.compose.navigation.SwipeDismissableNavHost
@@ -119,7 +121,7 @@ fun MainPager(model: AppModel, onLogin: () -> Unit) {
 
 @Composable
 fun Page(content: @Composable () -> Unit) {
-    Box(Modifier.fillMaxSize().padding(start = 12.dp, end = 12.dp, top = 14.dp, bottom = 20.dp), contentAlignment = Alignment.Center) { content() }
+    Box(Modifier.fillMaxSize().padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 26.dp), contentAlignment = Alignment.Center) { content() }
 }
 
 // ---- Idag ----------------------------------------------------------------------------------
@@ -212,7 +214,7 @@ fun TodayPage(model: AppModel, onLogin: () -> Unit) {
                     if (progress.value > 0.001f) drawArc(ringColor, -90f, 360f * progress.value, false, tl, sz, style = Stroke(stroke, cap = StrokeCap.Round))
                 }
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    if (celebrating && feet.value > 0f) FeetRow(feet.value) else Txt(formatSteps(steps), Type.hero, maxLines = 1)
+                    if (celebrating && feet.value > 0f) FeetRow(feet.value) else Txt(formatSteps(steps), if (steps >= 100_000) Type.hero.copy(fontSize = 26.sp) else Type.hero, maxLines = 1)
                     Txt(stringResource(R.string.today_of_goal, formatSteps(goal)), Type.caption, maxLines = 1)
                 }
             }
@@ -382,7 +384,7 @@ fun WeekPage(model: AppModel) {
         val localSteps = if (d == today) model.steps else local[key] ?: 0
         maxOf(localSteps, week[key]?.let { stepsFromMeters(it) } ?: 0)
     }
-    var selected by remember { mutableStateOf(6) }
+    val selected = 6
     val goal = model.goal
     val top = maxOf(goal, values.max(), 1)
 
@@ -405,9 +407,10 @@ fun WeekPage(model: AppModel) {
                         if (reduced) frac.snapTo(target) else frac.animateTo(target, tween(600, easing = EaseOutCubic))
                     }
                     Column(
-                        Modifier.width(24.dp).fillMaxHeight().clickable(role = Role.Button) { selected = i },
+                        Modifier.width(24.dp).fillMaxHeight(),
                         horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
+                        Txt(if (v <= 0) "" else compactSteps(v), Type.caption, color = if (i == 6) Ink else Muted, maxLines = 1)
                         BoxWithConstraints(Modifier.weight(1f).fillMaxWidth()) {
                             val h = minOf(maxHeight, 96.dp)
                             val barH = maxOf(2.dp, h * frac.value)
@@ -415,7 +418,7 @@ fun WeekPage(model: AppModel) {
                             // Gold goal mark at the height of the daily goal.
                             Box(Modifier.align(Alignment.BottomCenter).offset(y = -(h * goal.toFloat() / top)).width(20.dp).height(2.dp).background(Gold.copy(alpha = 0.9f)))
                         }
-                        Txt(stringResource(letters[d.dayOfWeek.value - 1]), Type.caption, color = if (i == selected) Ink else Muted, maxLines = 1)
+                        Txt(stringResource(letters[d.dayOfWeek.value - 1]), Type.caption, color = if (i == 6) Ink else Muted, maxLines = 1)
                     }
                 }
             }
@@ -444,7 +447,7 @@ fun SettingsPage(model: AppModel, onLogin: () -> Unit) {
     )
     val accountText = when {
         !model.signedIn -> stringResource(R.string.account_none)
-        model.accountName != null -> model.accountName!!
+        !model.accountName.isNullOrBlank() -> model.accountName.orEmpty()
         model.phoneSession -> stringResource(R.string.account_phone)
         else -> stringResource(R.string.sign_in)
     }
@@ -457,9 +460,9 @@ fun SettingsPage(model: AppModel, onLogin: () -> Unit) {
     ) {
         item { Txt(stringResource(R.string.goal_label), Type.caption) }
         item {
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(2.dp)) {
+            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(2.dp)) {
                 StepButton("−", stringResource(R.string.goal_minus), model.goal > MIN_GOAL) { model.changeGoal(model.goal - 500) }
-                Txt(formatSteps(model.goal), Type.display, Modifier.width(78.dp), maxLines = 1)
+                Txt(formatSteps(model.goal), Type.display.copy(fontSize = 18.sp), Modifier.weight(1f), maxLines = 1)
                 StepButton("+", stringResource(R.string.goal_plus), model.goal < MAX_GOAL) { model.changeGoal(model.goal + 500) }
             }
         }
@@ -470,6 +473,7 @@ fun SettingsPage(model: AppModel, onLogin: () -> Unit) {
                     val on = activeLang == code
                     Box(
                         Modifier.size(48.dp).clip(RoundedCornerShape(24.dp)).background(if (on) Coral else Surface2)
+                            .semantics { selected = on; contentDescription = code }
                             .clickable(role = Role.RadioButton) {
                                 if (!on) {
                                     model.vault.language = code
