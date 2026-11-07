@@ -19,7 +19,7 @@ app.use('/api',(req,res,next)=>{
   if(origin&&allowed.includes(origin)){
     res.setHeader('Access-Control-Allow-Origin',origin);
     res.setHeader('Vary','Origin');
-    res.setHeader('Access-Control-Allow-Headers','Authorization, Content-Type');
+    res.setHeader('Access-Control-Allow-Headers','Authorization, Content-Type, X-Admin-Key');
     res.setHeader('Access-Control-Allow-Methods','GET, POST, PUT, PATCH, DELETE, OPTIONS');
   }
   if(req.method==='OPTIONS')return res.sendStatus(origin&&allowed.includes(origin)?204:403);
@@ -171,6 +171,32 @@ app.delete('/api/accounts', async (req, res) => {
   // Remove the sign-in user too, so a name-only account frees its name. A failure is logged and does not undo the deletion.
   // Express 4 does not catch errors thrown in async handlers, and an uncaught one would stop the whole server.
   if (store && subject) { try { const { error } = await store.auth.admin.deleteUser(subject); if (error) console.error('Kunde inte radera inloggningsanvändaren i Supabase:', error.message); } catch (err) { console.error('Kunde inte radera inloggningsanvändaren i Supabase:', err); } }
+  res.json({ deleted: true });
+});
+// Owner admin: list, block and delete accounts. Disabled unless ADMIN_KEY is set in .env.
+const adminFails = new Map<string, number[]>();
+const adminOnly: express.RequestHandler = (req, res, next) => {
+  const key = process.env.ADMIN_KEY?.trim();
+  // The key is short, so wrong guesses are capped per IP: 5 per hour.
+  const now = Date.now(); const bad = (adminFails.get(req.ip || '') || []).filter(at => now - at < 3600000);
+  if (bad.length >= 5) return fail(res, 429, 'För många försök. Vänta en stund.');
+  if (!key || req.headers['x-admin-key'] !== key) { bad.push(now); adminFails.set(req.ip || '', bad); return fail(res, 401, 'Fel adminnyckel.'); }
+  next();
+};
+app.get('/api/admin/people', adminOnly, (_req, res) => res.json(db.people.map(p => ({ id: p.id, name: p.name, supabaseId: p.oauthSubject || null, groups: db.groups.filter(g => g.members.includes(p.id)).map(g => g.name), lastMovementAt: p.lastMovementAt || null }))));
+app.post('/api/admin/people/:id/block', adminOnly, async (req, res) => {
+  const p = db.people.find(x => x.id === req.params.id);
+  if (!p?.oauthSubject || !store) return fail(res, 404, 'Kontot saknar inloggning att blockera.');
+  const { error } = await store.auth.admin.updateUserById(p.oauthSubject, { ban_duration: req.body.blocked ? '876000h' : 'none' });
+  if (error) return fail(res, 500, error.message);
+  res.json({ blocked: !!req.body.blocked });
+});
+app.delete('/api/admin/people/:id', adminOnly, async (req, res) => {
+  const p = db.people.find(x => x.id === req.params.id);
+  if (!p) return fail(res, 404, 'Hittades inte.');
+  const subject = p.oauthSubject;
+  removePerson(p);
+  if (store && subject) { const { error } = await store.auth.admin.deleteUser(subject); if (error) console.error('Supabase deleteUser:', error.message); }
   res.json({ deleted: true });
 });
 // A name-only account: no email, so the server creates it already confirmed. The made-up address is unique per name,

@@ -1,0 +1,20 @@
+<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>Admin</title>
+<body style="font:15px sans-serif;max-width:800px;margin:20px auto;padding:0 16px">
+<input id="a" placeholder="API-adress, t.ex. https://api.din-domän/api" size="40"><br><input id="k" type="password" placeholder="Adminnyckel"> <button onclick="load()">Visa konton</button>
+<table id="t" border="1" cellpadding="6" style="border-collapse:collapse;margin-top:12px;width:100%"></table>
+<script>
+// Empty field = same site (local). Online the page may sit on a static host, so the API address is typed here.
+const api = () => (a.value.trim() || '/api').replace(/\/$/, '');
+const h = () => ({ 'x-admin-key': k.value, 'content-type': 'application/json' });
+async function load() {
+  const r = await fetch(api() + '/admin/people', { headers: h() });
+  if (!r.ok) return t.innerHTML = '<tr><td>' + (await r.json()).error;
+  t.innerHTML = '<tr><th>Namn<th>Grupper<th>Inloggning<th></tr>' + (await r.json()).map(p =>
+    `<tr><td>${esc(p.name)}<td>${esc(p.groups.join(', '))}<td>${p.supabaseId ? 'ja' : 'nej'}<td>` +
+    (p.supabaseId ? `<button onclick="act('${p.id}',true)">Spärra</button> <button onclick="act('${p.id}',false)">Öppna</button> ` : '') +
+    `<button onclick="del('${p.id}')">Radera</button>`).join('');
+}
+const esc = s => String(s).replace(/[&<>"]/g, c => '&#' + c.charCodeAt(0) + ';');
+async function act(id, blocked) { await fetch(`${api()}/admin/people/${id}/block`, { method: 'POST', headers: h(), body: JSON.stringify({ blocked }) }); alert(blocked ? 'Spärrat' : 'Öppnat'); }
+async function del(id) { if (confirm('Radera kontot permanent?')) { await fetch(`${api()}/admin/people/${id}`, { method: 'DELETE', headers: h() }); load(); } }
+</script>
