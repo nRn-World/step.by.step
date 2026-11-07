@@ -450,6 +450,7 @@ fun SettingsPage(model: AppModel, onLogin: () -> Unit) {
     val scope = rememberCoroutineScope()
     var syncText by remember { mutableStateOf<Pair<String, Color>?>(null) }
     var syncing by remember { mutableStateOf(false) }
+    var pickingLanguage by remember { mutableStateOf(false) }
     val systemLang = android.content.res.Resources.getSystem().configuration.locales[0].language
     val activeLang = effectiveLanguage(model.vault.language, systemLang)
     val syncDone = stringResource(R.string.sync_done)
@@ -461,6 +462,21 @@ fun SettingsPage(model: AppModel, onLogin: () -> Unit) {
         SyncResult.OFFLINE to stringResource(R.string.sync_offline),
         SyncResult.FAILED to stringResource(R.string.sync_failed),
     )
+    if (pickingLanguage) {
+        LanguagePicker(
+            current = activeLang,
+            onBack = { pickingLanguage = false },
+            onPick = { code ->
+                pickingLanguage = false
+                if (code != activeLang) {
+                    model.vault.language = code
+                    model.vault.resumePage = 3 // stay on Settings after the restart
+                    context.findActivity()?.recreate()
+                }
+            },
+        )
+        return
+    }
     val accountText = when {
         !model.signedIn -> stringResource(R.string.account_none)
         !model.accountName.isNullOrBlank() -> model.accountName.orEmpty()
@@ -483,24 +499,17 @@ fun SettingsPage(model: AppModel, onLogin: () -> Unit) {
                 StepButton("+", stringResource(R.string.goal_plus), model.goal < MAX_GOAL) { model.changeGoal(model.goal + 500) }
             }
         }
-        item { Txt(stringResource(R.string.language_label), Type.caption) }
         item {
-            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                listOf("sv", "da", "en").forEach { code ->
-                    val on = activeLang == code
-                    Box(
-                        Modifier.size(48.dp).clip(RoundedCornerShape(24.dp)).background(if (on) Coral else Surface2)
-                            .semantics { selected = on; contentDescription = code }
-                            .clickable(role = Role.RadioButton) {
-                                if (!on) {
-                                    model.vault.language = code
-                                    model.vault.resumePage = 3
-                                    context.findActivity()?.recreate()
-                                }
-                            },
-                        contentAlignment = Alignment.Center,
-                    ) { Txt(code, Type.title, color = if (on) CoralOn else Ink, maxLines = 1) }
+            Box(
+                Modifier.fillMaxWidth().height(56.dp).clip(RoundedCornerShape(16.dp)).background(Surface2)
+                    .clickable(role = Role.Button) { pickingLanguage = true },
+                contentAlignment = Alignment.Center,
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Txt(stringResource(R.string.language_label), Type.caption, maxLines = 1)
+                    Txt(languageName(activeLang), Type.body, maxLines = 1)
                 }
+                Txt("›", Type.display, color = Muted, modifier = Modifier.align(Alignment.CenterEnd).padding(end = 14.dp), maxLines = 1)
             }
         }
         item {
@@ -540,4 +549,36 @@ private fun StepButton(symbol: String, description: String, enabled: Boolean, on
             .clickable(enabled = enabled, role = Role.Button, onClick = onClick),
         contentAlignment = Alignment.Center,
     ) { Txt(symbol, Type.display, color = if (enabled) Ink else Muted, maxLines = 1) }
+}
+
+/** Language names are written in their own language. */
+private fun languageName(code: String) = when (code) { "sv" -> "Svenska"; "da" -> "Dansk"; else -> "English" }
+
+@Composable
+private fun LanguagePicker(current: String, onBack: () -> Unit, onPick: (String) -> Unit) {
+    val backDesc = stringResource(R.string.back)
+    ScalingLazyColumn(
+        Modifier.fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(6.dp),
+        autoCentering = null,
+        contentPadding = androidx.compose.foundation.layout.PaddingValues(top = 26.dp, bottom = 56.dp, start = 8.dp, end = 8.dp),
+    ) {
+        item {
+            Box(
+                Modifier.size(48.dp).clip(CircleShape).background(Surface2)
+                    .semantics { contentDescription = backDesc }.clickable(role = Role.Button, onClick = onBack),
+                contentAlignment = Alignment.Center,
+            ) { Txt("‹", Type.display, maxLines = 1) }
+        }
+        item { Txt(stringResource(R.string.language_label), Type.title, maxLines = 1) }
+        items(listOf("sv", "da", "en")) { code ->
+            val on = code == current
+            Box(
+                Modifier.fillMaxWidth().height(48.dp).clip(RoundedCornerShape(24.dp)).background(if (on) Coral else Surface2)
+                    .semantics { selected = on }.clickable(role = Role.RadioButton) { onPick(code) }.padding(horizontal = 16.dp),
+                contentAlignment = Alignment.Center,
+            ) { Txt((if (on) "✓ " else "") + languageName(code), Type.title, color = if (on) CoralOn else Ink, maxLines = 1) }
+        }
+    }
 }
