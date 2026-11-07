@@ -3,14 +3,20 @@
 Ett designkoncept: hur **step.by.step** hade kunnat se ut på en smartwatch (Wear OS och watchOS).
 Sidan är en fristående prototyp i ren HTML, CSS och SVG — ingen build, inga beroenden, inga nya data.
 
-> **Ska sidan byggas om från noll?** Använd [`step-by-step-smartwatch-spec.pdf`](step-by-step-smartwatch-spec.pdf) —
-> 26 A4-sidor där varje skärm finns som bild plus tokens, mått och texter. `index.html` är facit;
-> PDF:en renderas ur det i två steg — `node pdf/shots.cjs` (bilderna) och `node pdf/build.cjs` (sidorna).
+> **Ska sidan byggas om från noll?** `index.html` är facit — allt ligger i den filen.
 >
-> Bilderna finns också för sig: `step-by-step-smartwatch-bilder.zip` (18 PNG, 2×).
+> En designspec som PDF (26 A4-sidor: varje skärm som bild plus tokens, mått och texter) och
+> ett bildpaket (18 PNG i 2×) går att rendera lokalt. Filerna versionshanteras inte — de är
+> byggda ur `index.html` och blir snabbt tunga:
 >
-> Specen går att **ladda ner från sidan**: knappen `Spec .pdf` i toppbaren, kortet sist i
-> *Om det skulle byggas*, eller länken i footern (`download` på PDF:en).
+> ```bash
+> python3 -m http.server 5173 &          # sidan måste serveras
+> node pdf/shots.cjs                     # → pdf/img/*.png
+> node pdf/build.cjs                     # → step-by-step-smartwatch-spec.pdf
+> ```
+>
+> Båda skripten behöver `puppeteer-core` och en headless Chromium
+> (`NODE_PATH`, `CHROME_PATH`, `CHROME_LIBS`).
 
 ```bash
 # öppna filen direkt, eller servera mappen

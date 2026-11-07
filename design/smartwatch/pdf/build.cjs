@@ -754,7 +754,7 @@ ${viewPages}
     <div><span class="bx"></span><span>Kortens metarad ligger på samma höjd inom varje rad</span></div>
     <div><span class="bx"></span><span>Komplikationernas rubriker ligger på samma höjd (112 px)</span></div>
     <div><span class="bx"></span><span>Varje urtavla går att läsa på en halv sekund</span></div>
-    <div><span class="bx"></span><span>Den här PDF:en finns att ladda ner från sidan</span></div>
+    <div><span class="bx"></span><span>Alla 18 bilder i PDF:en är byggda ur samma <code>index.html</code></span></div>
   </div>
   <div class="two" style="margin-top:6mm">
     <div class="box">
