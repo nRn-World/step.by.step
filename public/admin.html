@@ -2,9 +2,9 @@
 <body style="font:15px sans-serif;max-width:900px;margin:20px auto;padding:0 16px">
 <input id="k" type="password" placeholder="Adminnyckel"> <button onclick="load()">Visa konton</button>
 <p id="bar" hidden><button onclick="bulk('block')">Spärra markerade</button> <button onclick="bulk('delete')">Radera markerade</button></p>
-<h3>Konton</h3><table id="t" border="1" cellpadding="6" style="border-collapse:collapse;width:100%"></table>
-<h3>Spärrade</h3><p id="bar2" hidden><button onclick="unblock()">Upphäv markerade</button></p>
-<table id="b" border="1" cellpadding="6" style="border-collapse:collapse;width:100%"></table>
+<div id="main" hidden><h3>Konton</h3><table id="t" border="1" cellpadding="6" style="border-collapse:collapse;width:100%"></table>
+<h3>Spärrade</h3><p id="bar2"><button onclick="unblock()">Upphäv markerade</button></p>
+<table id="b" border="1" cellpadding="6" style="border-collapse:collapse;width:100%"></table></div>
 <script>
 // Local dev uses the same-origin proxy; anywhere else the Render API is used.
 const api = () => location.hostname === 'localhost' ? '/api' : 'https://step-by-step-0rsz.onrender.com/api';
@@ -14,9 +14,9 @@ const checked = sel => [...document.querySelectorAll(sel + ':checked')].map(c =>
 const all = (sel, on) => document.querySelectorAll(sel).forEach(c => c.checked = on);
 async function load() {
   const r = await fetch(api() + '/admin/people', { headers: { 'x-admin-key': k.value } });
-  if (!r.ok) return t.innerHTML = '<tr><td>' + (await r.json()).error;
+  if (!r.ok) { main.hidden = bar.hidden = true; return alert((await r.json()).error); }
   const d = await r.json();
-  bar.hidden = bar2.hidden = false;
+  main.hidden = bar.hidden = false;
   t.innerHTML = '<tr><th><input type=checkbox onclick="all(\'.p\',this.checked)"><th>Användarnamn<th>Visningsnamn<th>Grupper</tr>' + d.people.map(p =>
     `<tr><td><input class=p type=checkbox value="${esc(p.id)}"${p.hasLogin ? '' : ' disabled title="Saknar inloggning, kan bara raderas"'}><td>${esc(p.username || '–')}<td>${esc(p.name)}<td>${esc(p.groups.join(', '))}`).join('');
   b.innerHTML = '<tr><th><input type=checkbox onclick="all(\'.q\',this.checked)"><th>Spärrat användarnamn<th>Datum</tr>' + (d.blocked.length ? d.blocked.map(x =>
