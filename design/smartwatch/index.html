@@ -6,7 +6,7 @@
 <title>step.by.step · på handleden — ett smartwatch-koncept</title>
 <meta name="theme-color" content="#faf9f6" />
 <meta name="description" content="Ett designkoncept: hur step.by.step hade sett ut på en smartwatch. Steg, mål, topplista och pepp — i en cirkel." />
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6' fill='%23ff704f'/%3E%3Cg fill='%23fff'%3E%3Cellipse cx='11' cy='15' rx='3.4' ry='4.2'/%3E%3Ccircle cx='7.4' cy='7.6' r='1.6'/%3E%3Ccircle cx='10.6' cy='6.5' r='1.7'/%3E%3Ccircle cx='13.7' cy='7.2' r='1.5'/%3E%3Ccircle cx='16.2' cy='9.2' r='1.2'/%3E%3C/g%3E%3C/svg%3E" />
+<link rel="icon" href="assets/favicon-64.png" />
 <style>
 @font-face{font-family:'Outfit';font-style:normal;font-weight:100 900;font-display:swap;src:url('assets/outfit-latin-wght-normal.woff2') format('woff2')}
 @font-face{font-family:'DM Sans';font-style:normal;font-weight:100 1000;font-display:swap;src:url('assets/dm-sans-latin-wght-normal.woff2') format('woff2')}
@@ -91,12 +91,11 @@ svg{display:block}
 .topbar-inner{display:flex;align-items:center;gap:14px;height:66px}
 .brand{display:flex;align-items:center;gap:9px;font-family:'Outfit';font-weight:800;font-size:19px;letter-spacing:-.045em}
 .brand-mark{
-  width:30px;height:30px;border-radius:9px;display:grid;place-items:center;
-  background:linear-gradient(150deg,var(--coral),#ff8b63);color:#fff;
-  box-shadow:0 6px 14px -6px rgba(234,98,66,.8);
-  transform:rotate(-8deg);
+  width:34px;height:34px;border-radius:11px;overflow:hidden;display:block;flex:none;
+  background:#21212b;box-shadow:0 5px 14px -6px rgba(36,31,43,.55);
+  box-shadow:0 5px 14px -6px rgba(36,31,43,.55),inset 0 0 0 1px rgba(255,255,255,.06);
 }
-.brand-mark svg{width:19px;height:19px;transform:rotate(8deg)}
+.brand-mark img{width:100%;height:100%;display:block;object-fit:cover}
 .brand .dot{color:var(--coral)}
 .top-spacer{flex:1}
 .pill{
@@ -440,7 +439,8 @@ html[data-mode="light"] .theme-btn .sun{display:none}
   color:var(--w-ink);
   --u:calc(var(--w,300) * .00932px);
 }
-.comp{display:flex;flex-direction:column;align-items:center;gap:20px;text-align:center}
+.comp{display:flex;flex-direction:column;align-items:center;gap:18px;text-align:center}
+.comp-top{width:100%;height:112px;display:grid;place-items:center}
 .comp-face .track{stroke-width:7}
 .comp-face .fill{stroke-width:7.5}
 .comp-face{
@@ -455,11 +455,11 @@ html[data-mode="light"] .theme-btn .sun{display:none}
 .comp-pill b{font-family:'Outfit';font-size:20px;letter-spacing:-.03em}
 .comp-pill small{display:block;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--w-muted)}
 .comp-icon{
-  width:64px;height:64px;border-radius:50%;display:grid;place-items:center;
-  background:linear-gradient(150deg,var(--coral),#ff8b63);color:#fff;
-  box-shadow:0 14px 26px -14px rgba(255,112,79,.9);
+  width:66px;height:66px;border-radius:20px;overflow:hidden;display:block;
+  background:#21212b;box-shadow:0 16px 28px -16px rgba(20,16,34,.85),inset 0 0 0 1px rgba(255,255,255,.08);
 }
-.comp-icon svg{width:34px;height:34px}
+.comp-icon img{width:100%;height:100%;display:block;object-fit:cover}
+.comp-app-icon{border-radius:7px;display:block}
 .comp-label{font-size:11px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;color:var(--w-muted)}
 .comp-note{font-size:12.5px;color:var(--muted);max-width:24ch;margin-top:-8px}
 
@@ -629,15 +629,6 @@ footer{margin-top:96px;border-top:1px solid var(--line);padding:34px 0 44px}
       <stop offset="0" stop-color="#c3aef2"/>
       <stop offset="1" stop-color="#7c60bb"/>
     </linearGradient>
-    <symbol id="mark" viewBox="0 0 24 24">
-      <g fill="currentColor">
-        <ellipse cx="11.6" cy="15.4" rx="3.5" ry="4.4" transform="rotate(-7 11.6 15.4)"/>
-        <circle cx="7.5" cy="7.9" r="1.65"/>
-        <circle cx="10.8" cy="6.6" r="1.8"/>
-        <circle cx="14" cy="7.2" r="1.6"/>
-        <circle cx="16.6" cy="9.3" r="1.25"/>
-      </g>
-    </symbol>
 
     <radialGradient id="sunGlow">
       <stop offset="0" stop-color="#FBE3AE" stop-opacity=".9"/>
@@ -684,8 +675,8 @@ footer{margin-top:96px;border-top:1px solid var(--line);padding:34px 0 44px}
       <circle cx="92" cy="166" r="1.4" fill="#F0A47A" opacity=".8"/>
 
       <!-- text -->
-      <text x="100" y="34" text-anchor="middle" font-family="Outfit" font-weight="700"
-            font-size="5.4" letter-spacing=".2" fill="#8B8070">step.by.step</text>
+      <text x="100" y="34" text-anchor="middle" font-family="Outfit" font-weight="800"
+            font-size="5.4" letter-spacing=".1" fill="#6F6656">step<tspan fill="#E8834F">.</tspan>by<tspan fill="#E8834F">.</tspan>step</text>
       <text x="100" y="80" text-anchor="middle" font-family="Outfit" font-weight="600"
             font-size="29" letter-spacing="-1.6" fill="#2E2A3B">09:41</text>
       <text x="100" y="96" text-anchor="middle" font-family="DM Sans" font-weight="800"
@@ -760,7 +751,7 @@ footer{margin-top:96px;border-top:1px solid var(--line);padding:34px 0 44px}
 <header class="topbar">
   <div class="wrap topbar-inner">
     <span class="brand">
-      <span class="brand-mark"><svg><use href="#mark"/></svg></span>
+      <span class="brand-mark"><img src="assets/brand-mark.png" alt="" width="34" height="34" /></span>
       <span class="wordmark">step<span class="dot">.</span>by<span class="dot">.</span>step</span>
     </span>
     <span class="top-spacer"></span>
@@ -1052,6 +1043,7 @@ footer{margin-top:96px;border-top:1px solid var(--line);padding:34px 0 44px}
 
       <div class="band reveal">
         <div class="comp">
+          <div class="comp-top">
           <div class="comp-face">
             <svg class="ring" viewBox="0 0 100 100" aria-hidden="true">
               <circle class="track" cx="50" cy="50" r="40" pathLength="100" stroke-width="6"/>
@@ -1059,15 +1051,18 @@ footer{margin-top:96px;border-top:1px solid var(--line);padding:34px 0 44px}
             </svg>
             <span style="font-family:'Outfit';font-weight:700;font-size:20px;letter-spacing:-.03em">86 %</span>
           </div>
+          </div>
           <div>
             <p class="comp-label">Ringen</p>
             <p class="comp-note">Dagens mål i en blick, även på en annan urtavla.</p>
           </div>
         </div>
         <div class="comp">
+          <div class="comp-top">
           <div class="comp-pill">
-            <svg width="22" height="22" style="color:var(--coral)"><use href="#mark"/></svg>
+            <img class="comp-app-icon" src="assets/brand-mark.png" alt="" width="26" height="26" />
             <div><b>6 842</b><small>steg idag</small></div>
+          </div>
           </div>
           <div>
             <p class="comp-label">Siffran</p>
@@ -1075,7 +1070,9 @@ footer{margin-top:96px;border-top:1px solid var(--line);padding:34px 0 44px}
           </div>
         </div>
         <div class="comp">
-          <div class="comp-icon"><svg><use href="#mark"/></svg></div>
+          <div class="comp-top">
+          <div class="comp-icon"><img src="assets/brand-mark.png" alt="" /></div>
+          </div>
           <div>
             <p class="comp-label">Fotspåret</p>
             <p class="comp-note">Liten plats. Öppnar appen med ett tryck.</p>
@@ -1279,7 +1276,7 @@ footer{margin-top:96px;border-top:1px solid var(--line);padding:34px 0 44px}
 <footer>
   <div class="wrap foot">
     <span class="brand">
-      <span class="brand-mark"><svg><use href="#mark"/></svg></span>
+      <span class="brand-mark"><img src="assets/brand-mark.png" alt="" width="34" height="34" /></span>
       <span class="wordmark">step<span class="dot">.</span>by<span class="dot">.</span>step</span>
     </span>
     <span>Koncept · på handleden</span>
