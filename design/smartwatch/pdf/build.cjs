@@ -432,7 +432,8 @@ const html=`<!doctype html><html lang="sv"><head><meta charset="utf-8">
   <div class="kicker">Urtavlan</div>
   <h2>En liten värld,<br>med siffrorna i cirkeln.</h2>
   <p class="lead">Framsidan är inte en mörk appvy. Det är en handritad sommardag: gräddhimlen, solen med
-  streckad gloria, två backar, en stig, en hund och tre personer som går åt höger. Ovanpå landskapet ligger
+  streckad gloria, backar, en stig med prickad kant, en hund och fyra personer som går åt höger — med
+  olivträdet till höger och en liten lapp som säger "lite luft gör gott". Ovanpå landskapet ligger
   en streckad vit cirkel — det är där stegen och målet bor.</p>
   <div class="wide" style="text-align:center;padding:4mm"><img src="img/front-face.png" alt="Framsidan" style="width:116mm;margin:0 auto"></div>
   <div class="two" style="margin-top:5mm">
@@ -732,7 +733,7 @@ ${viewPages}
   eller som en agent annars hoppar över.</p>
   <div class="check">
     <div><span class="bx"></span><span>En <b>h1</b> på sidan: “Samma steg. Mycket mindre skärm.”</span></div>
-    <div><span class="bx"></span><span>Framsidan visar sol, två fåglar, backar, stig, hund och tre personer</span></div>
+    <div><span class="bx"></span><span>Framsidan visar sol med streckad gloria, fåglar, backar, stig, hund, olivträd och fyra personer</span></div>
     <div><span class="bx"></span><span>Cirkeln visar <b>86 %</b>, <b>6 842</b> och <b>AV 8 000 STEG</b> — ingen slogan</span></div>
     <div><span class="bx"></span><span>Datumet är <b>LÖR 7 NOV</b> (och <b>lör 7 nov</b> i alltid-på)</span></div>
     <div><span class="bx"></span><span>14 klockkort i 5 flöden, numrerade 01–14, i rätt ordning</span></div>

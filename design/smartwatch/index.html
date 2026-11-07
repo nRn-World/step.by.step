@@ -818,111 +818,190 @@ html[data-theme="dark"] .bcard code,html[data-theme="dark"] .note{background:rgb
 
     <!-- ======================================================= framsidan -->
     <symbol id="faceIllu" viewBox="0 0 200 200">
-      <!-- himmel -->
-      <rect width="200" height="200" fill="#FBF3E4"/>
-      <circle cx="160" cy="44" r="46" fill="url(#sunGlow)"/>
+      <!-- papper -->
+      <rect width="200" height="200" fill="#FDF6EA"/>
 
-      <!-- sol -->
-      <circle cx="160" cy="42" r="10.5" fill="#F5C64F"/>
-      <circle cx="160" cy="42" r="16" fill="none" stroke="#E8B94E" stroke-width="1" stroke-dasharray="1.8 4.4" opacity=".9"/>
-      <g stroke="#E8B94E" stroke-width="1.5" stroke-linecap="round" opacity=".75">
-        <path d="M160 21v-4.6"/>
-        <path d="M181 42h4.4"/>
-        <path d="M175.4 27l3.2-3.2"/>
-      </g>
+      <!-- lavendelblomma bakom, uppe till vänster -->
+      <path d="M-34 -30h48c20 0 31 12 31 27 0 18-14 26-33 26-15 0-22 7-34 7-15 0-24-9-24-24Z"
+            fill="#EFE7F6" opacity=".75"/>
+
+      <!-- gul glöd bakom solen -->
+      <circle cx="157" cy="44" r="48" fill="url(#sunGlow)"/>
+
+      <!-- sol med streckad gloria -->
+      <circle cx="157" cy="42" r="10.4" fill="#F3C24E"/>
+      <circle cx="157" cy="42" r="17.4" fill="none" stroke="#E9BC5E" stroke-width="1.1"
+              stroke-dasharray="1.7 4.6" opacity=".95"/>
 
       <!-- fåglar -->
       <g stroke="#8B8070" stroke-width="1.1" stroke-linecap="round" fill="none" opacity=".55">
-        <path d="M44 47q3-2.6 5.6 0q2.6-2.6 5.6 0"/>
-        <path d="M60 39q2.2-2 4.2 0q2-2 4.2 0"/>
+        <path d="M46 49q3-2.6 5.6 0q2.6-2.6 5.6 0"/>
+        <path d="M62 41q2.2-2 4.2 0q2-2 4.2 0"/>
       </g>
 
       <!-- backar -->
-      <path d="M0 149 C24 133 44 139 66 145 C92 152 112 137 136 139 C160 141 178 149 200 145 L200 200 L0 200 Z" fill="#DFE8C6"/>
-      <path d="M0 171 C30 155 58 167 88 171 C120 175 150 163 200 171 L200 200 L0 200 Z" fill="#C6D6AC"/>
-      <path d="M-2 186 C34 180 72 190 104 188 C140 186 172 178 202 182" fill="none"
-            stroke="#F4E5C9" stroke-width="9" stroke-linecap="round"/>
+      <path d="M0 148C24 132 44 138 66 144 92 151 112 136 136 138 160 140 178 148 200 144L200 200 0 200Z"
+            fill="#E4EDCF"/>
+      <path d="M0 170C30 154 58 166 88 170 120 174 150 162 200 170L200 200 0 200Z" fill="#CBDDAF"/>
+      <path d="M148 178c0-16 12-25 27-25 8 0 15 3 23 4v45h-50Z" fill="#BDD39C"/>
 
-      <!-- gräs och blomster -->
-      <g stroke="#8FA97C" stroke-width="1.5" stroke-linecap="round" fill="none" opacity=".95">
-        <path d="M22 174v-7M22 169c-3-1.6-4.2-3.6-4.2-5.8M22 169c3-1.6 4.2-3.6 4.2-5.8"/>
-        <path d="M184 176v-6M184 172c-2.6-1.4-3.6-3.2-3.6-5M184 172c2.6-1.4 3.6-3.2 3.6-5"/>
+      <!-- stigen -->
+      <path d="M-2 179C34 173 72 183 104 181 140 179 172 171 202 175" fill="none"
+            stroke="#F6E8CC" stroke-width="10" stroke-linecap="round"/>
+      <path d="M2 183C36 178 72 186 104 184 140 182 172 175 198 178" fill="none"
+            stroke="#DCC49C" stroke-width=".9" stroke-linecap="round" stroke-dasharray=".6 5.4"
+            opacity=".85"/>
+
+      <!-- träd till höger -->
+      <g transform="translate(177,119) rotate(-12) scale(.8)">
+        <path d="M0 -30C12-21 16-6 10 7 7 13 3 17 0 19-3 17-7 13-10 7-16-6-12-21 0-30Z" fill="#8FA36B"/>
+        <path d="M0 -24v38" stroke="#7C8F5C" stroke-width=".9" opacity=".5"/>
+        <path d="M0 18v16" stroke="#7C8F5C" stroke-width="1.6" stroke-linecap="round"/>
+        <circle cx="-13" cy="9" r="1.8" fill="#E2634A"/>
       </g>
-      <circle cx="31" cy="165" r="1.7" fill="#F0A47A"/>
-      <circle cx="174" cy="166" r="1.5" fill="#F5C64F"/>
-      <circle cx="92" cy="166" r="1.4" fill="#F0A47A" opacity=".8"/>
 
-      <!-- text -->
+      <!-- gräs, bär och prickar -->
+      <g stroke="#8FA97C" stroke-width="1.5" stroke-linecap="round" fill="none" opacity=".95">
+        <path d="M22 178v-8M22 172c-3-1.6-4.2-3.6-4.2-5.8M22 172c3-1.6 4.2-3.6 4.2-5.8"/>
+        <path d="M12 174v-5M12 170c-2.2-1.2-3-2.6-3-4.2M12 170c2.2-1.2 3-2.6 3-4.2"/>
+      </g>
+      <circle cx="29" cy="165" r="1.7" fill="#E2634A"/>
+      <circle cx="16" cy="183" r="1.3" fill="#F0A47A"/>
+      <circle cx="96" cy="163" r="1.4" fill="#F0A47A" opacity=".75"/>
+      <circle cx="120" cy="152" r="1.2" fill="#C9A6E0" opacity=".7"/>
+      <circle cx="66" cy="156" r="1.1" fill="#C9A6E0" opacity=".55"/>
+
+      <!-- varumärke -->
       <text x="100" y="34" text-anchor="middle" font-family="Outfit" font-weight="800"
             font-size="5.4" letter-spacing=".1" fill="#6F6656">step<tspan fill="#E8834F">.</tspan>by<tspan fill="#E8834F">.</tspan>step</text>
+
+      <!-- tid -->
       <text x="100" y="80" text-anchor="middle" font-family="Outfit" font-weight="600"
             font-size="29" letter-spacing="-1.6" fill="#2E2A3B">09:41</text>
       <text x="100" y="96" text-anchor="middle" font-family="DM Sans" font-weight="800"
             font-size="5.6" letter-spacing="1.5" fill="#8B8070">LÖR 7 NOV</text>
 
-      <!-- liten cirkel: steg och mål -->
-      <g filter="url(#softShadow)">
-        <circle cx="62" cy="136" r="25" fill="#FFFCF4"/>
-        <circle cx="62" cy="136" r="25" fill="none" stroke="#2E2A3B" stroke-width="1.1"
-                stroke-dasharray="3 4.2" stroke-linecap="round" opacity=".62"/>
+      <!-- liten tagg: lite luft gör gott -->
+      <g transform="translate(11,57) rotate(-4)">
+        <rect x="0" y="-7.4" width="60" height="14.8" rx="3.6" fill="#FFFDF6" stroke="#E6D9C0" stroke-width=".7"/>
+        <path d="M6 0h3.2" stroke="#D9C9A8" stroke-width=".9" stroke-linecap="round"/>
+        <text x="11.6" y="1.6" font-family="DM Sans" font-weight="600" font-size="4.3"
+              letter-spacing=".05" fill="#7A7160">lite luft gör gott</text>
+        <path d="M53 -3l1 2.3 2.3 1-2.3 1-1 2.3-1-2.3-2.3-1 2.3-1Z" fill="#E9BC5E"/>
       </g>
-      <circle cx="62" cy="136" r="19.5" fill="none" stroke="#EADFC8" stroke-width="3"/>
-      <circle cx="62" cy="136" r="19.5" fill="none" stroke="#E8834F" stroke-width="3"
+
+      <!-- märket: steg och mål -->
+      <g filter="url(#softShadow)">
+        <circle cx="61" cy="138" r="24" fill="#FFFCF4"/>
+        <circle cx="61" cy="138" r="24" fill="none" stroke="#2E2A3B" stroke-width="1.1"
+                stroke-dasharray="2.8 4" stroke-linecap="round" opacity=".58"/>
+      </g>
+      <circle cx="61" cy="138" r="18.4" fill="none" stroke="#EADFC8" stroke-width="3"/>
+      <circle cx="61" cy="138" r="18.4" fill="none" stroke="#E8834F" stroke-width="3"
               stroke-linecap="round" pathLength="100" stroke-dasharray="86 100"
-              transform="rotate(-90 62 136)"/>
-      <text x="62" y="125" text-anchor="middle" font-family="DM Sans" font-weight="800"
-            font-size="4.6" letter-spacing=".3" fill="#C9622F">86 %</text>
-      <text x="62" y="138.4" text-anchor="middle" font-family="Outfit" font-weight="700"
-            font-size="9.6" letter-spacing="-.3" fill="#2E2A3B">6 842</text>
-      <text x="62" y="147.4" text-anchor="middle" font-family="DM Sans" font-weight="800"
-            font-size="3.3" letter-spacing=".45" fill="#8B8070">AV 8 000 STEG</text>
+              transform="rotate(-90 61 138)"/>
+      <text x="61" y="127.6" text-anchor="middle" font-family="DM Sans" font-weight="800"
+            font-size="4.5" letter-spacing=".3" fill="#C9622F">86 %</text>
+      <text x="61" y="140.6" text-anchor="middle" font-family="Outfit" font-weight="700"
+            font-size="9.2" letter-spacing="-.35" fill="#2E2A3B">6 842</text>
+      <text x="61" y="149" text-anchor="middle" font-family="DM Sans" font-weight="800"
+            font-size="2.92" letter-spacing=".12" fill="#8B8070">AV 8 000 STEG</text>
 
       <!-- hunden -->
-      <g transform="translate(100,184) scale(1.08)">
-        <ellipse cx="1" cy="1.2" rx="8" ry="1.5" fill="#5E6B4A" opacity=".16"/>
-        <path d="M-3.4 -1.2v2.4M3.6 -1.2v2.4" stroke="#C98F63" stroke-width="1.8" stroke-linecap="round"/>
-        <path d="M5.8 -6.4c3.4.8 4-1 3.6-3.2-1.6 1.4-2.6 1.4-3.8 1" fill="#F6EFE2"/>
-        <ellipse cx="0" cy="-4.8" rx="6.2" ry="3.6" fill="#F6EFE2"/>
-        <circle cx="-5.6" cy="-7.6" r="3.4" fill="#FFFDF7"/>
-        <path d="M-7.4 -9.8c-1.2-1-2.2-.6-2.6.2.4 1.6 1.4 2.2 2.6 2.2Z" fill="#C98F63"/>
-        <circle cx="-6.4" cy="-8.2" r=".55" fill="#3B3444"/>
-        <circle cx="-8.7" cy="-7.4" r=".7" fill="#3B3444"/>
+      <g transform="translate(81,175) scale(1.12)">
+        <ellipse cx="1" cy="1.4" rx="7.4" ry="1.5" fill="#5E6B4A" opacity=".16"/>
+        <path d="M-3.2 -1.4v2.6M3.4 -1.4v2.6" stroke="#3B3444" stroke-width="1.6" stroke-linecap="round"/>
+        <path d="M5.4 -6.6c3.4.8 4.2-1 3.8-3.4-1.7 1.5-2.8 1.5-4 1.1" fill="#F7F2E8"/>
+        <ellipse cx="0" cy="-4.9" rx="6.2" ry="3.5" fill="#F7F2E8"/>
+        <path d="M-5.2 -6.4c2.2-1.3 5.2-1.3 7.6-.1-1.7 1.3-5.8 1.4-7.6.1Z" fill="#3B3444" opacity=".88"/>
+        <circle cx="-5.7" cy="-7.7" r="3.3" fill="#F7F2E8"/>
+        <path d="M-7.6 -9.9c-1.2-1-2.2-.5-2.5.4.5 1.5 1.5 2 2.7 2Z" fill="#B9825C"/>
+        <circle cx="-6.6" cy="-8.3" r=".5" fill="#3B3444"/>
+        <circle cx="-8.8" cy="-7.5" r=".65" fill="#3B3444"/>
       </g>
 
-      <!-- tre som går -->
-      <g transform="translate(118,184) scale(1.16)">
-        <ellipse cx="0" cy="1.4" rx="7" ry="1.5" fill="#5E6B4A" opacity=".16"/>
-        <path d="M-2.4 0L-2.8 -7.2M2.4 0L3 -7.2" stroke="#3B3444" stroke-width="2.1" stroke-linecap="round"/>
-        <path d="M-5.2 -7Q-6 -18.6 0 -18.6Q6 -18.6 5.2 -7Z" fill="#E8834F"/>
-        <path d="M-4.8 -14.6L-7.2 -9.8" stroke="#E8834F" stroke-width="2" stroke-linecap="round"/>
-        <path d="M4.8 -14.6L6.8 -10.2" stroke="#E8834F" stroke-width="2" stroke-linecap="round"/>
-        <circle cx="0" cy="-22.8" r="4.5" fill="#F3C9A4"/>
-        <path d="M-4.5 -23.6a4.5 4.5 0 0 1 9 0q-4.5 2.6 -9 0Z" fill="#3B3444"/>
-        <circle cx="0" cy="-27.6" r="2" fill="#3B3444"/>
+      <!-- fyra som går: blond i blått, mörk i korall, lockig i rutigt, keps i grönt -->
+      <g transform="translate(99,175) scale(1.44)">
+        <ellipse cx="0" cy="1.8" rx="7.6" ry="1.6" fill="#5E6B4A" opacity=".14"/>
+        <path d="M-2.5 1 -3-8.4M2.5 1 3.1-8.4" stroke="#E7D7B6" stroke-width="3.1" stroke-linecap="round"/>
+        <rect x="-5.4" y="-.5" width="4" height="2.6" rx="1.2" fill="#3B3444"/>
+        <rect x="1.5" y="-.5" width="4" height="2.6" rx="1.2" fill="#3B3444"/>
+        <path d="M-5.9 -8.2Q-7 -20.4 0 -20.4T5.9 -8.2Z" fill="#6F94B5"/>
+        <path d="M-.5 -19.9v11.5" stroke="#5C7FA0" stroke-width=".9" stroke-linecap="round"/>
+        <path d="M-5.2 -16.6-8.4-10.6" stroke="#6F94B5" stroke-width="2.6" stroke-linecap="round"/>
+        <path d="M5.2 -16.6 8.2-10.8" stroke="#6F94B5" stroke-width="2.6" stroke-linecap="round"/>
+        <path d="M-6.4 -17.6-7.6 -14.8" stroke="#D9C9A8" stroke-width=".8" stroke-linecap="round"/>
+        <rect x="-10.6" y="-15" width="5.4" height="6.2" rx="1.4" fill="#FBF6E8" stroke="#E6D9C0" stroke-width=".55"/>
+        <circle cx="-8.4" cy="-10.4" r=".9" fill="#F2C9A6"/>
+        <circle cy="-24.6" r="5.1" fill="#EBC97F"/>
+        <circle cy="-23.5" r="4.4" fill="#F2C9A6"/>
+        <circle cx="-1.5" cy="-24.3" r=".46" fill="#3B3444"/>
+        <circle cx="1.5" cy="-24.3" r=".46" fill="#3B3444"/>
+        <path d="M-.9 -22.7q.9 .8 1.9 0" stroke="#3B3444" stroke-width=".5" fill="none" stroke-linecap="round"/>
+      </g>
+      <g transform="translate(114.5,175) scale(1.44)">
+        <ellipse cx="0" cy="1.8" rx="7.6" ry="1.6" fill="#5E6B4A" opacity=".14"/>
+        <path d="M-2.5 1 -3-8.4M2.5 1 3.1-8.4" stroke="#E7D7B6" stroke-width="3.1" stroke-linecap="round"/>
+        <rect x="-5.2" y="-.4" width="3.6" height="2.3" rx="1.15" fill="#3B3444"/>
+        <rect x="1.6" y="-.4" width="3.6" height="2.3" rx="1.15" fill="#3B3444"/>
+        <path d="M-5.9 -8.2Q-7 -20.4 0 -20.4T5.9 -8.2Z" fill="#EF8A6C"/>
+        <path d="M-.5 -19.9v11.5" stroke="#DE7458" stroke-width=".9" stroke-linecap="round"/>
+        <path d="M-5.2 -16.6-8.4-10.6" stroke="#EF8A6C" stroke-width="2.6" stroke-linecap="round"/>
+        <path d="M5.2 -16.6 8.2-10.8" stroke="#EF8A6C" stroke-width="2.6" stroke-linecap="round"/>
+        <rect x="6.4" y="-14.2" width="4.6" height="3.4" rx="1" fill="#F3CBD2" stroke="#D9A9B4" stroke-width=".5"/>
+        <circle cx="8.7" cy="-12.5" r="1" fill="#8C7A83"/>
+        <circle cx="8.2" cy="-10.4" r=".95" fill="#E3B08A"/>
+        <circle cy="-24.6" r="5.1" fill="#2F2A33"/>
+        <circle cy="-23.5" r="4.4" fill="#E3B08A"/>
+        <circle cx="-1.5" cy="-24.3" r=".46" fill="#3B3444"/>
+        <circle cx="1.5" cy="-24.3" r=".46" fill="#3B3444"/>
+        <path d="M-.9 -22.7q.9 .8 1.9 0" stroke="#3B3444" stroke-width=".5" fill="none" stroke-linecap="round"/>
+      </g>
+      <g transform="translate(130,175) scale(1.44)">
+        <ellipse cx="0" cy="1.8" rx="7.6" ry="1.6" fill="#5E6B4A" opacity=".14"/>
+        <path d="M-2.5 1 -3-8.4M2.5 1 3.1-8.4" stroke="#E7D7B6" stroke-width="3.1" stroke-linecap="round"/>
+        <rect x="-5.2" y="-.4" width="3.6" height="2.3" rx="1.15" fill="#3B3444"/>
+        <rect x="1.6" y="-.4" width="3.6" height="2.3" rx="1.15" fill="#3B3444"/>
+        <path d="M-5.9 -8.2Q-7 -20.4 0 -20.4T5.9 -8.2Z" fill="#F4ECDC"/>
+        <path d="M-.5 -19.9v11.5" stroke="#DFD0B6" stroke-width=".9" stroke-linecap="round"/>
+        <path d="M-5.2 -16.6-8.4-10.6" stroke="#F4ECDC" stroke-width="2.6" stroke-linecap="round"/>
+        <path d="M5.2 -16.6 8.2-10.8" stroke="#F4ECDC" stroke-width="2.6" stroke-linecap="round"/>
+        <path d="M-5.4 -16.4Q0 -14.4 5.4 -16.4M-5 -12.6Q0 -10.6 5 -12.6M-2.7 -19.6Q-3.3 -14 -2.9 -8.6M2.7 -19.6Q3.3 -14 2.9 -8.6"
+              fill="none" stroke="#DFD0B6" stroke-width=".55"/>
+        <circle cx="-8.2" cy="-10.6" r=".95" fill="#B9825C"/>
+        <circle cx="8" cy="-10.8" r=".95" fill="#B9825C"/>
+        <circle cx="-3.6" cy="-29.4" r="1.9" fill="#2A2530"/>
+        <circle cx="0" cy="-30.6" r="1.9" fill="#2A2530"/>
+        <circle cx="3.6" cy="-29.4" r="1.9" fill="#2A2530"/>
+        <circle cx="-5" cy="-26.8" r="1.6" fill="#2A2530"/>
+        <circle cx="5" cy="-26.8" r="1.6" fill="#2A2530"/>
+        <circle cy="-24.6" r="5.1" fill="#2A2530"/>
+        <circle cy="-23.5" r="4.4" fill="#B9825C"/>
+        <circle cx="-1.5" cy="-24.3" r=".46" fill="#3B3444"/>
+        <circle cx="1.5" cy="-24.3" r=".46" fill="#3B3444"/>
+        <path d="M-.9 -22.7q.9 .8 1.9 0" stroke="#3B3444" stroke-width=".5" fill="none" stroke-linecap="round"/>
+      </g>
+      <g transform="translate(145.5,175) scale(1.44)">
+        <ellipse cx="0" cy="1.8" rx="7.6" ry="1.6" fill="#5E6B4A" opacity=".14"/>
+        <path d="M-2.5 1 -3-8.4M2.5 1 3.1-8.4" stroke="#4C4A63" stroke-width="3" stroke-linecap="round"/>
+        <rect x="-5.2" y="-.4" width="3.6" height="2.3" rx="1.15" fill="#2E2A3B"/>
+        <rect x="1.6" y="-.4" width="3.6" height="2.3" rx="1.15" fill="#2E2A3B"/>
+        <path d="M-5.9 -8.2Q-7 -20.4 0 -20.4T5.9 -8.2Z" fill="#7E9C74"/>
+        <path d="M-.5 -19.9v11.5" stroke="#6C8963" stroke-width=".9" stroke-linecap="round"/>
+        <path d="M-5.2 -16.6-8.4-10.6" stroke="#7E9C74" stroke-width="2.6" stroke-linecap="round"/>
+        <path d="M5.2 -16.6 8.2-10.8" stroke="#7E9C74" stroke-width="2.6" stroke-linecap="round"/>
+        <circle cx="-8.2" cy="-10.4" r=".95" fill="#8F6242"/>
+        <circle cx="8.2" cy="-10.6" r=".95" fill="#8F6242"/>
+        <circle cy="-24.6" r="5.1" fill="#3F3226"/>
+        <path d="M-5.5 -25.4a5.5 5.5 0 0 1 11 0Z" fill="#B7A8C4"/>
+        <path d="M5 -25.2h4.6" stroke="#B7A8C4" stroke-width="1.5" stroke-linecap="round"/>
+        <circle cy="-23.5" r="4.4" fill="#8F6242"/>
+        <circle cx="-1.5" cy="-24.3" r=".46" fill="#3B3444"/>
+        <circle cx="1.5" cy="-24.3" r=".46" fill="#3B3444"/>
+        <path d="M-.9 -22.7q.9 .8 1.9 0" stroke="#3B3444" stroke-width=".5" fill="none" stroke-linecap="round"/>
       </g>
 
-      <g transform="translate(133,184) scale(1.16)">
-        <ellipse cx="0" cy="1.4" rx="7" ry="1.5" fill="#5E6B4A" opacity=".16"/>
-        <path d="M-2.4 0L-2.8 -7.2M2.4 0L3 -7.2" stroke="#3B3444" stroke-width="2.1" stroke-linecap="round"/>
-        <path d="M-5.2 -7Q-6 -18.6 0 -18.6Q6 -18.6 5.2 -7Z" fill="#6E8C64"/>
-        <path d="M-4.8 -14.6L-6.6 -10.4" stroke="#6E8C64" stroke-width="2" stroke-linecap="round"/>
-        <path d="M4.8 -14.6L7 -11.4" stroke="#6E8C64" stroke-width="2" stroke-linecap="round"/>
-        <rect x="6.4" y="-12.6" width="4.4" height="4.6" rx="1.2" fill="#F0C88A"/>
-        <circle cx="0" cy="-22.8" r="4.5" fill="#E0AC80"/>
-        <path d="M-4.6 -23.4q-1 -4.6 2.2 -5.4q3.4 -.4 3.8 3.4q.2 1.8 -1 2.2q-.4 -3 -2.4 -3q-2 0 -2.6 2.8Z" fill="#4A3529"/>
-      </g>
-
-      <g transform="translate(148,184) scale(1.16)">
-        <ellipse cx="0" cy="1.4" rx="7" ry="1.5" fill="#5E6B4A" opacity=".16"/>
-        <path d="M-2.4 0L-2.8 -7.2M2.4 0L3 -7.2" stroke="#3B3444" stroke-width="2.1" stroke-linecap="round"/>
-        <path d="M-5.2 -7Q-6 -18.6 0 -18.6Q6 -18.6 5.2 -7Z" fill="#87A6B8"/>
-        <path d="M-4.8 -14.6L-7.2 -10.4" stroke="#87A6B8" stroke-width="2" stroke-linecap="round"/>
-        <path d="M4.8 -14.6L6.6 -10.8" stroke="#87A6B8" stroke-width="2" stroke-linecap="round"/>
-        <circle cx="0" cy="-22.8" r="4.5" fill="#C98F63"/>
-        <path d="M-4.6 -24.2q.6 -4.4 4.6 -4.4q4 0 4.6 4.4q-4.6 2 -9.2 0Z" fill="#E8C15F"/>
-        <rect x="1" y="-24.6" width="6.6" height="1.6" rx=".8" fill="#E8C15F"/>
-      </g>
-    </symbol>
+                </symbol>
   </defs>
 </svg>
 
