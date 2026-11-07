@@ -1,0 +1,91 @@
+plugins {
+    id 'com.android.application'
+    id 'org.jetbrains.kotlin.android'
+    id 'org.jetbrains.kotlin.plugin.compose'
+}
+
+// Supabase settings come from local.properties (gitignored) or from the phone app's ../.env, read at build time only.
+def readProps = { File f ->
+    def p = [:]
+    if (f.exists()) f.eachLine { line ->
+        def l = line.trim()
+        if (l && !l.startsWith('#') && l.contains('=')) {
+            def kv = l.split('=', 2)
+            p[kv[0].trim()] = kv[1].trim().replaceAll(/^["']|["']$/, '')
+        }
+    }
+    return p
+}
+def localProps = readProps(rootProject.file('local.properties'))
+def dotEnv = readProps(rootProject.file('../.env'))
+def supaUrl = localProps['SUPABASE_URL'] ?: dotEnv['VITE_SUPABASE_URL'] ?: ''
+def supaKey = localProps['SUPABASE_ANON_KEY'] ?: dotEnv['VITE_SUPABASE_ANON_KEY'] ?: ''
+def ksProps = readProps(rootProject.file('../android/keystore.properties'))
+
+android {
+    namespace 'app.stegvis.wear'
+    compileSdk 36
+
+    defaultConfig {
+        applicationId 'app.stegvis.mobile'
+        minSdk 30
+        targetSdk 36
+        versionCode 6
+        versionName '1.5'
+        buildConfigField 'String', 'SUPABASE_URL', "\"${supaUrl}\""
+        buildConfigField 'String', 'SUPABASE_ANON_KEY', "\"${supaKey}\""
+    }
+
+    signingConfigs {
+        release {
+            if (ksProps['storeFile']) {
+                storeFile rootProject.file('../android/' + ksProps['storeFile'].replace('../', ''))
+                storePassword ksProps['storePassword']
+                keyAlias ksProps['keyAlias']
+                keyPassword ksProps['keyPassword']
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            if (ksProps['storeFile']) signingConfig signingConfigs.release
+            minifyEnabled false
+        }
+    }
+
+    buildFeatures {
+        compose true
+        buildConfig true
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    testOptions {
+        unitTests.includeAndroidResources = true
+    }
+}
+
+dependencies {
+    def composeBom = platform('androidx.compose:compose-bom:2025.05.00')
+    implementation composeBom
+    implementation 'androidx.compose.ui:ui'
+    implementation 'androidx.compose.foundation:foundation'
+    implementation 'androidx.wear.compose:compose-material:1.4.0'
+    implementation 'androidx.wear.compose:compose-foundation:1.4.0'
+    implementation 'androidx.wear.compose:compose-navigation:1.4.0'
+    implementation 'androidx.activity:activity-compose:1.10.1'
+    implementation 'androidx.core:core-ktx:1.16.0'
+    implementation 'androidx.wear.tiles:tiles:1.4.0'
+    implementation 'androidx.wear.protolayout:protolayout:1.2.0'
+    implementation 'androidx.wear.watchface:watchface-complications-data-source-ktx:1.2.1'
+    implementation 'androidx.concurrent:concurrent-futures:1.2.0'
+    implementation 'androidx.work:work-runtime-ktx:2.10.1'
+    implementation 'androidx.security:security-crypto:1.1.0-alpha06'
+    implementation 'com.google.android.gms:play-services-wearable:19.0.0'
+    testImplementation 'junit:junit:4.13.2'
+    testImplementation 'org.json:json:20240303'
+}

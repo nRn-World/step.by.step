@@ -1,0 +1,108 @@
+package app.stegvis.wear
+
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+
+/** UI state shared by all pages. Every call is safe: failures end up as states, never as crashes. */
+class AppModel(val svc: Services, private val scope: CoroutineScope) {
+    val vault get() = svc.vault
+
+    var steps by mutableIntStateOf(vault.todaySteps(System.currentTimeMillis()))
+    var goal by mutableIntStateOf(vault.goal)
+    var signedIn by mutableStateOf(vault.session != null)
+    var phoneSession by mutableStateOf(vault.session?.fromPhone == true)
+    var accountName by mutableStateOf(vault.accountName)
+    var hasSensor by mutableStateOf(true)
+
+    // Group data: null fetch = first load not done yet.
+    var fetch by mutableStateOf<Fetch?>(null)
+    var state by mutableStateOf<ServerState?>(null)
+    var offline by mutableStateOf(false)
+    var loading by mutableStateOf(false)
+    var selectedGroup by mutableStateOf(vault.selectedGroup)
+    private var lastLoad = 0L
+
+    init {
+        // Cached group data first, so the lists are not empty while the first request runs.
+        val cached = vault.groupCache
+        if (cached != null && signedIn) {
+            state = runCatching { parseState(cached, dayKey(System.currentTimeMillis())) }.getOrNull()
+        }
+    }
+
+    fun changeGoal(value: Int) {
+        goal = clampGoal(value)
+        vault.goal = goal
+        svc.refreshSurfaces()
+    }
+
+    fun readSteps() {
+        scope.launch {
+            val now = withContext(Dispatchers.IO) { runCatching { svc.updateSteps() }.getOrDefault(vault.todaySteps(System.currentTimeMillis())) }
+            steps = now
+        }
+    }
+
+    /** Loads /api/state. Keeps the last good data and marks it Offline when the network fails. */
+    fun load(force: Boolean = false) {
+        val now = System.currentTimeMillis()
+        if (loading || (!force && now - lastLoad < 60_000 && fetch is Fetch.Ok)) return
+        loading = true
+        scope.launch {
+            val today = dayKey(now)
+            val result = withContext(Dispatchers.IO) { runCatching { svc.coordinator.fetchState(today) }.getOrDefault(Fetch.Failed) }
+            fetch = result
+            when (result) {
+                is Fetch.Ok -> {
+                    state = result.state
+                    offline = false
+                    lastLoad = now
+                    vault.groupCache = result.raw
+                    if (result.state.meName.isNotBlank()) {
+                        vault.accountName = result.state.meName
+                        accountName = result.state.meName
+                    }
+                    signedIn = true
+                }
+                Fetch.Offline -> {
+                    offline = true
+                    if (state == null) state = vault.groupCache?.let { runCatching { parseState(it, today) }.getOrNull() }
+                }
+                Fetch.Failed -> if (state == null) offline = false
+                Fetch.NotLoggedIn -> { state = null; signedIn = false; phoneSession = false }
+                Fetch.PhoneExpired -> phoneSession = true
+            }
+            loading = false
+        }
+    }
+
+    fun onSignedIn(name: String?) {
+        signedIn = true
+        phoneSession = vault.session?.fromPhone == true
+        if (!name.isNullOrBlank()) { vault.accountName = name; accountName = name }
+        fetch = null
+        load(force = true)
+        scope.launch { withContext(Dispatchers.IO) { runCatching { svc.syncNow() } } }
+    }
+
+    fun signOut() {
+        svc.coordinator.signOut()
+        signedIn = false
+        phoneSession = false
+        accountName = null
+        state = null
+        fetch = null
+        offline = false
+    }
+
+    fun selectGroup(id: String) {
+        selectedGroup = id
+        vault.selectedGroup = id
+    }
+}

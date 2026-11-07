@@ -1,0 +1,4 @@
+# Copy to local.properties (gitignored). Keys are optional: without them the build reads ../.env (VITE_SUPABASE_*).
+sdk.dir=C\:/Users/Admin/AppData/Local/Android/Sdk
+SUPABASE_URL=https://YOUR-PROJECT.supabase.co
+SUPABASE_ANON_KEY=YOUR-ANON-KEY
