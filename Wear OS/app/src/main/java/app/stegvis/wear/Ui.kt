@@ -216,9 +216,10 @@ fun TodayPage(model: AppModel, onLogin: () -> Unit) {
                     if (progress.value > 0.001f) drawArc(ringColor, -90f, 360f * progress.value, false, tl, sz, style = Stroke(stroke, cap = StrokeCap.Round))
                 }
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    if (celebrating && feet.value > 0f) FeetRow(feet.value) else Txt(formatSteps(steps), when { steps >= 100_000 -> Type.hero.copy(fontSize = 24.sp); steps >= 10_000 -> Type.hero.copy(fontSize = 30.sp); else -> Type.hero }, maxLines = 1)
+                    Txt(formatSteps(steps), when { steps >= 100_000 -> Type.hero.copy(fontSize = 24.sp); steps >= 10_000 -> Type.hero.copy(fontSize = 30.sp); else -> Type.hero }, maxLines = 1)
                     Txt(stringResource(R.string.today_of_goal, formatSteps(goal)), Type.caption, maxLines = 1)
                 }
+                if (celebrating && feet.value > 0f) Box(Modifier.align(Alignment.TopCenter).padding(top = 9.dp)) { FeetRow(feet.value) }
             }
             Spacer(Modifier.height(4.dp))
             if (celebrating) Txt(stringResource(R.string.goal_reached), Type.title, color = Green)
@@ -236,18 +237,21 @@ fun TodayPage(model: AppModel, onLogin: () -> Unit) {
 @Composable
 private fun FeetRow(t: Float) {
     Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
-        Foot(Coral, t.coerceIn(0f, 1f), -12f)
-        Foot(Gold, (t - 1f).coerceIn(0f, 1f), 12f)
+        Foot(Coral, t.coerceIn(0f, 1f), -10f, 30)
+        Foot(Gold, (t - 1f).coerceIn(0f, 1f), 10f, 30)
     }
 }
 
 @Composable
-private fun Foot(color: Color, alpha: Float, angle: Float) {
-    Canvas(Modifier.size(width = 18.dp, height = 28.dp).rotate(angle)) {
+private fun Foot(color: Color, alpha: Float, angle: Float, height: Int = 28) {
+    Canvas(Modifier.size(width = (height * 0.6f).dp, height = height.dp).rotate(angle)) {
         val c = color.copy(alpha = alpha)
-        drawOval(c, Offset(size.width * 0.1f, size.height * 0.28f), Size(size.width * 0.8f, size.height * 0.72f))
-        drawCircle(c, size.width * 0.17f, Offset(size.width * 0.3f, size.height * 0.12f))
-        drawCircle(c, size.width * 0.14f, Offset(size.width * 0.68f, size.height * 0.1f))
+        val w = size.width
+        val h = size.height
+        // Sole: a rounded heel and ball of the foot, then four toes in an arc above it.
+        drawRoundRect(c, Offset(w * 0.1f, h * 0.42f), Size(w * 0.8f, h * 0.58f), CornerRadius(w * 0.4f, w * 0.4f))
+        listOf(Triple(0.27f, 0.2f, 0.16f), Triple(0.5f, 0.1f, 0.11f), Triple(0.68f, 0.14f, 0.1f), Triple(0.83f, 0.25f, 0.085f))
+            .forEach { (x, y, r) -> drawCircle(c, w * r, Offset(w * x, h * y)) }
     }
 }
 
@@ -337,7 +341,7 @@ fun GroupPage(model: AppModel, onLogin: () -> Unit) {
             item { Txt(group.name, Type.title, maxLines = 1) }
         }
         items(ranked.size) { i -> MemberRow(i + 1, ranked[i], if (ranked[i].isMe && model.steps > 0) maxOf(model.steps, 0) else stepsFromMeters(ranked[i].meters)) }
-        item { Spacer(Modifier.height(4.dp)) }
+        item { Spacer(Modifier.height(40.dp)) }
     }
 }
 
@@ -524,6 +528,7 @@ fun SettingsPage(model: AppModel, onLogin: () -> Unit) {
             if (model.signedIn) Pill(stringResource(R.string.sign_out), { model.signOut(); syncText = null })
             else Pill(stringResource(R.string.sign_in), onLogin, primary = true)
         }
+        item { Spacer(Modifier.height(40.dp)) }
     }
 }
 
