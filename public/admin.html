@@ -1,10 +1,10 @@
 <!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>Admin</title>
 <body style="font:15px sans-serif;max-width:800px;margin:20px auto;padding:0 16px">
-<input id="a" placeholder="API-adress, t.ex. https://api.din-domän/api" size="40"><br><input id="k" type="password" placeholder="Adminnyckel"> <button onclick="load()">Visa konton</button>
+<input id="k" type="password" placeholder="Adminnyckel"> <button onclick="load()">Visa konton</button>
 <table id="t" border="1" cellpadding="6" style="border-collapse:collapse;margin-top:12px;width:100%"></table>
 <script>
-// Empty field = same site (local). Online the page may sit on a static host, so the API address is typed here.
-const api = () => (a.value.trim() || '/api').replace(/\/$/, '');
+// Local dev uses the same-origin proxy; anywhere else the Render API is used.
+const api = () => location.hostname === 'localhost' ? '/api' : 'https://step-by-step-0rsz.onrender.com/api';
 const h = () => ({ 'x-admin-key': k.value, 'content-type': 'application/json' });
 async function load() {
   const r = await fetch(api() + '/admin/people', { headers: h() });
