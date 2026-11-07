@@ -312,7 +312,7 @@ const html=`<!doctype html><html lang="sv"><head><meta charset="utf-8">
     <div class="fact"><b>41/45</b><span>millimeter</span></div>
     <div class="fact"><b>1</b><span>accent i taget</span></div>
   </div>
-  <div class="meta"><span>Koncept · Wear OS &amp; watchOS</span><span>Version 1.1 · 8 november 2026</span></div>
+  <div class="meta"><span>Koncept · Wear OS &amp; watchOS</span><span>Version 1.2 · 8 november 2026</span></div>
 </div>
 
 <!-- 2 INNEHÅLL -->
@@ -363,6 +363,8 @@ const html=`<!doctype html><html lang="sv"><head><meta charset="utf-8">
       <p>Varje urtavla på sidorna 8–21 är renderad direkt ur HTML-prototypen i 2× upplösning
       (944 px per klocka) — ingen illustration är ritad separat. Bilden och koden visar därför
       alltid samma sak: ändras koden ska bilden renderas om.</p>
+      <p style="margin-top:2mm"><b>Alla 18 bilder:</b> framsidan (s. 1 och 4) · vy 01–14 (s. 8–21) ·
+      komplikationerna (s. 22) · anatomin (s. 23) · prototypens hero-sektion (s. 24).</p>
     </div>
     <div class="box">
       <h3>Vad som inte ska byggas</h3>
@@ -658,6 +660,23 @@ ${viewPages}
     <div class="box"><h3>En accent i taget</h3><p>Korall betyder mål och rörelse. Lavendel betyder grupp. Aldrig två accenter som slåss i samma vy.</p></div>
     <div class="box"><h3>Stillhet och haptik</h3><p>Ingen studsande animation. En ring som fylls, en siffra som räknas upp. Bekräftelsen känns i handleden.</p></div>
   </div>
+  <div class="two" style="margin-top:7mm;grid-template-columns:98mm 1fr;gap:8mm;align-items:center">
+    <figure class="shot" style="margin:0;padding:2.5mm">
+      <img src="img/front-stage.png" alt="Prototypens hero-sektion i webbläsaren">
+    </figure>
+    <div>
+      <h3 style="font-size:11pt;letter-spacing:-.02em;margin-bottom:2.4mm">Sidan och klockan är samma sak</h3>
+      <p style="font-size:8.4pt;color:var(--muted);line-height:1.62">
+      Hero-sektionen i prototypen: den illustrerade urtavlan med stegmärket i cirkeln, den mörka
+      appvyn bredvid och armbanden under. Det är samma HTML och samma SVG som ligger bakom varje
+      bild i den här specen — ingenting är ritat separat.
+      </p>
+      <p style="font-size:8.4pt;color:var(--muted);line-height:1.62;margin-top:2.6mm">
+      <b style="color:var(--ink)">Alla 18 bilder:</b> framsidan (s. 1 och 4) · vy 01–14 (s. 8–21) ·
+      komplikationerna (s. 22) · anatomin (s. 23) · den här översikten (s. 24).
+      </p>
+    </div>
+  </div>
   <div class="foot"><span>step.by.step · designspec</span><span>nrnworld.one</span></div>
 </div>
 
@@ -761,6 +780,7 @@ ${viewPages}
     <h3>Ändringslogg</h3>
     <table class="t">
       <tr><th>Version</th><th>Datum</th><th>Ändring</th></tr>
+      <tr><td><b>1.2</b></td><td>2026-11-08</td><td>Prototypens hero-bild inlagd (s. 24). Bildförteckning: alla 18 bilder redovisade på s. 2 och s. 24.</td></tr>
       <tr><td><b>1.1</b></td><td>2026-11-08</td><td>Målet nått lyser grönt (gradSage, ring, chip, trofé). Regel: grönt = klart. PDF med alla vyer.</td></tr>
       <tr><td><b>1.0</b></td><td>2026-11-08</td><td>Första versionen: 14 vyer, komplikationer, principer, anatomi, arkitektur.</td></tr>
     </table>
