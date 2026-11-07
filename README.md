@@ -163,6 +163,7 @@ step.by.step
 ├── art                      illustrations for web and store
 ├── store                    screenshots and material for Google Play
 ├── scripts                  icon export, scene rendering and store images
+├── design/smartwatch        design concept: the app on a smartwatch (open index.html)
 ├── android                  Capacitor project for Android
 └── ios                      Capacitor project for iOS
 ```
