@@ -93,7 +93,7 @@ fun LoginScreen(model: AppModel, onBack: () -> Unit) {
     ) {
         item {
             Box(
-                Modifier.size(48.dp).clip(RoundedCornerShape(24.dp)).semantics { contentDescription = backDesc }
+                Modifier.size(48.dp).clip(RoundedCornerShape(24.dp)).background(Surface2).semantics { contentDescription = backDesc }
                     .clickable(role = Role.Button) { if (mode == Mode.LOGIN) onBack() else { mode = Mode.LOGIN; error = null } },
                 contentAlignment = Alignment.Center,
             ) { Txt("‹", Type.display, color = Ink, maxLines = 1) }

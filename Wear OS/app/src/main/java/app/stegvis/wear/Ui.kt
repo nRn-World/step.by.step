@@ -269,7 +269,7 @@ fun PermissionScreen(denied: Boolean, onContinue: () -> Unit, onOpenSettings: ()
             }
         }
         Box(
-            Modifier.align(Alignment.TopStart).padding(start = 22.dp, top = 8.dp).size(48.dp).clip(CircleShape)
+            Modifier.align(Alignment.TopStart).padding(start = 22.dp, top = 8.dp).size(48.dp).clip(CircleShape).background(Surface2)
                 .semantics { contentDescription = backDesc }.clickable(role = Role.Button) { activity?.finish() },
             contentAlignment = Alignment.Center,
         ) { Txt("‹", Type.display, maxLines = 1) }
