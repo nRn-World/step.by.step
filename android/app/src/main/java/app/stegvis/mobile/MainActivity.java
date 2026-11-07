@@ -7,6 +7,7 @@ public class MainActivity extends BridgeActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         registerPlugin(StepCounterPlugin.class);
+        registerPlugin(WearBridgePlugin.class);
         super.onCreate(savedInstanceState);
     }
 }
