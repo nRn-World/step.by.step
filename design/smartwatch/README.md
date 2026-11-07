@@ -7,6 +7,8 @@ Sidan är en fristående prototyp i ren HTML, CSS och SVG — ingen build, inga 
 > 26 A4-sidor där varje skärm finns som bild plus tokens, mått och texter. `index.html` är facit;
 > PDF:en renderas ur det i två steg — `node pdf/shots.cjs` (bilderna) och `node pdf/build.cjs` (sidorna).
 >
+> Bilderna finns också för sig: `step-by-step-smartwatch-bilder.zip` (18 PNG, 2×).
+>
 > Specen går att **ladda ner från sidan**: knappen `Spec .pdf` i toppbaren, kortet sist i
 > *Om det skulle byggas*, eller länken i footern (`download` på PDF:en).
 
