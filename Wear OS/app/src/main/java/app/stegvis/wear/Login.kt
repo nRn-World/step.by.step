@@ -103,7 +103,7 @@ fun LoginScreen(model: AppModel, onBack: () -> Unit) {
                 item { Txt(stringResource(R.string.phone_instruction), Type.body, color = Muted) }
                 error?.let { e -> item { ErrorText(e) } }
                 item {
-                    Pill(stringResource(if (working) R.string.login_working else R.string.phone_done), {
+                    WidePill(stringResource(if (working) R.string.login_working else R.string.phone_done), {
                         working = true; error = null
                         scope.launch {
                             val found = withContext(Dispatchers.IO) { runCatching { model.svc.pullPhoneToken() }.getOrDefault(false) }
@@ -126,14 +126,14 @@ fun LoginScreen(model: AppModel, onBack: () -> Unit) {
                 error?.let { e -> item { ErrorText(e) } }
                 item {
                     val label = if (mode == Mode.SIGNUP) R.string.signup_submit else R.string.login_button
-                    Pill(stringResource(if (working) R.string.login_working else label), { submit() }, primary = true, enabled = !working && user.isNotBlank() && password.isNotEmpty())
+                    WidePill(stringResource(if (working) R.string.login_working else label), { submit() }, primary = true, enabled = !working && user.isNotBlank() && password.isNotEmpty())
                 }
                 item {
-                    Pill(stringResource(if (mode == Mode.SIGNUP) R.string.login_button else R.string.signup_open), {
+                    WidePill(stringResource(if (mode == Mode.SIGNUP) R.string.login_button else R.string.signup_open), {
                         mode = if (mode == Mode.SIGNUP) Mode.LOGIN else Mode.SIGNUP; error = null
                     }, enabled = !working)
                 }
-                item { Pill(stringResource(R.string.login_via_phone), { mode = Mode.PHONE; error = null }, enabled = !working) }
+                item { WidePill(stringResource(R.string.login_via_phone), { mode = Mode.PHONE; error = null }, enabled = !working) }
             }
         }
     }
@@ -165,3 +165,8 @@ fun Field(label: String, value: String, keyboard: KeyboardType, secret: Boolean,
 }
 
 private fun Modifier.heightIn48() = this.then(Modifier.height(48.dp))
+
+/** Same width as the text fields. */
+@Composable
+private fun WidePill(label: String, onClick: () -> Unit, primary: Boolean = false, enabled: Boolean = true) =
+    Pill(label, onClick, Modifier.fillMaxWidth(), primary = primary, enabled = enabled)

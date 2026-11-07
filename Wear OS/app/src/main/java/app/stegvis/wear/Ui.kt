@@ -322,7 +322,7 @@ fun GroupPage(model: AppModel, onLogin: () -> Unit) {
         Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(6.dp),
-        contentPadding = androidx.compose.foundation.layout.PaddingValues(top = 28.dp, bottom = 34.dp, start = 8.dp, end = 8.dp),
+        contentPadding = androidx.compose.foundation.layout.PaddingValues(top = 28.dp, bottom = 56.dp, start = 8.dp, end = 8.dp),
     ) {
         if (model.offline) item { StatusPill(stringResource(R.string.offline)) }
         if (groups.size > 1) {
@@ -467,7 +467,7 @@ fun SettingsPage(model: AppModel, onLogin: () -> Unit) {
         Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(6.dp),
-        contentPadding = androidx.compose.foundation.layout.PaddingValues(top = 28.dp, bottom = 36.dp, start = 8.dp, end = 8.dp),
+        contentPadding = androidx.compose.foundation.layout.PaddingValues(top = 28.dp, bottom = 56.dp, start = 8.dp, end = 8.dp),
     ) {
         item { Txt(stringResource(R.string.goal_label), Type.caption) }
         item {
