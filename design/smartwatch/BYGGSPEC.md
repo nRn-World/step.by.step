@@ -119,7 +119,10 @@ html[data-mode="light"]{
 ```
 
 **Färgbetydelse (får inte blandas):** korall = mål och rörelse · lavendel = grupp och det andra laget ·
-sage = vänner ute / klar · guld = trofé, krona, konceptnotis · grädde `#FBF3E4` = den illustrerade urtavlan.
+**grönt (sage) = klart — målet är nått** · guld = krona, konceptnotis · grädde `#FBF3E4` = den illustrerade urtavlan.
+
+**Regel:** så fort ett mål är uppfyllt byter vyn accent från korall till grönt. En full ring är alltid grön,
+aldrig korall. Det gäller ring, chip och ikon i samma vy — en accent i taget.
 
 ### Gradienter och filter som SVG-definitioner
 
@@ -129,6 +132,11 @@ sage = vänner ute / klar · guld = trofé, krona, konceptnotis · grädde `#FBF
     <stop offset="0" stop-color="#ff9670"/>
     <stop offset=".55" stop-color="#ff704f"/>
     <stop offset="1" stop-color="#e85f42"/>
+  </linearGradient>
+  <linearGradient id="gradSage" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#c3e8a4"/>
+    <stop offset=".55" stop-color="#8ed46c"/>
+    <stop offset="1" stop-color="#67a94c"/>
   </linearGradient>
   <linearGradient id="gradLav" x1="0" y1="0" x2="1" y2="1">
     <stop offset="0" stop-color="#c3aef2"/>
@@ -282,7 +290,16 @@ Alla mått inne i en klocka räknas i `--u` (se avsnitt 3.3). Exempel: `font-siz
   animation:ringDraw 1.7s cubic-bezier(.2,.8,.2,1) both;
 }
 @keyframes ringDraw{from{stroke-dashoffset:100}}
+
+/* målet nått: ringen, chipen och trofén lyser grönt i stället för korall */
+.ring--done .fill{stroke:url(#gradSage);filter:drop-shadow(0 0 3px rgba(131,200,101,.6))}
+.screen--done{box-shadow:inset 0 0 0 1px rgba(131,200,101,.2),inset 0 18px 34px rgba(0,0,0,.45),
+  inset 0 0 calc(var(--u)*11) rgba(131,200,101,.16)}
 ```
+
+Är målet nått sätts **båda** klasserna: `class="screen screen--done"` och `class="ring ring--done"`.
+Den inre gröna glöden i `.screen--done` är det som får skärmen att "lysa" — den ska vara subtil
+(16 % alpha), aldrig en grön lampa.
 
 ### 3.5 `.face` — innehållslagret
 
@@ -1143,16 +1160,23 @@ Korttext: *Samma två lag, samma vecka: staplarna jämför lagen och chipen säg
 
 ### 6.12 Vy 12 — Målet nått
 
-*Firande, en gång per mål.*
+*Firande, en gång per mål.* **Hela vyn är grön — inte korall.** Det är enda vyn i konceptet där
+accenten byts, och det är själva poängen: grönt betyder klart.
 
 ```html
-<svg class="ring" …><circle class="track" …/><circle class="fill" … style="--off:0"/></svg>
-<div class="face">
-  <span class="face-icon gold"><svg …pokal…></svg></span>
-  <p class="face-eyebrow">Målet nått</p>
-  <p class="big-num sm">8 000</p>
-  <p class="face-label">steg · idag</p>
-  <span class="chip">4 av 4 klara</span>
+<div class="screen screen--done">
+  <svg class="ring ring--done" viewBox="0 0 100 100" aria-hidden="true">
+    <circle class="track" cx="50" cy="50" r="45" pathLength="100"/>
+    <circle class="fill" cx="50" cy="50" r="45" pathLength="100" style="--off:0"/>
+  </svg>
+  <div class="face">
+    <span class="face-icon done"><svg …pokal…></svg></span>
+    <p class="face-eyebrow">Målet nått</p>
+    <p class="big-num sm">8 000</p>
+    <p class="face-label">steg · idag</p>
+    <span class="chip chip--done">4 av 4 klara</span>
+  </div>
+  <div class="glass"></div>
 </div>
 ```
 
@@ -1160,10 +1184,15 @@ Korttext: *Samma två lag, samma vecka: staplarna jämför lagen och chipen säg
 .face-icon{width:calc(var(--u)*17);height:calc(var(--u)*17);border-radius:50%;display:grid;place-items:center;
   background:rgba(255,112,79,.15);color:var(--w-accent-ink);margin-bottom:calc(var(--u)*1)}
 .face-icon svg{width:calc(var(--u)*10);height:calc(var(--u)*10)}
-.face-icon.gold{background:rgba(226,168,63,.2);color:#f5ca74}
+.face-icon.done{background:rgba(124,174,92,.2);color:#cbeeb0}
+.chip--done{background:rgba(124,174,92,.2);color:#b9e39a}
+html[data-mode="light"] .chip--done{background:rgba(90,140,64,.14);color:#4e7c37}
+html[data-mode="light"] .face-icon.done{background:rgba(90,140,64,.16);color:#4e7c37}
 ```
 
-Ringen är hel (86 → 100 %). Pokalen är guld, inte korall — firande får en egen färg.
+Ringen är hel (`--off:0`) och grön via `gradSage`. Trofén, chipen och glöden är samma gröna familj —
+**ingen korall och inget guld kvar i vyn**. Pokalens glyph ritas i `currentColor` (ljust grönt),
+inte i gult.
 
 Korttext: *En kort scen i tre sekunder, ritad för rund skärm. En per mål: dag, vecka, helg, månad, år och gruppmål.* — meta: `Firande · en gång per mål`
 
@@ -1609,6 +1638,11 @@ inte grund.
 - [ ] Allt innehåll inom säker zon — inget klipps av rundningen.
 - [ ] `--w` sätts i runtime; typografin skalar med klockans bredd.
 - [ ] Ringen animeras från 0 till 86 % på 1,7 s och stannar.
+- [ ] När målet är nått (vy 12) är ring, chip, trofé och inre glöd **gröna** — ingen korall, inget guld.
+
+**Grönt = klart**
+- [ ] Vy 12 har `screen--done` och `ring--done`, grön gradient `gradSage` och grön chip.
+- [ ] Ingen annan vy är grön i sin accent — bara markörer som `live-dot` får vara gröna.
 
 **Siffror och text**
 - [ ] 6 842 / 8 000 / 86 % / 5,1 km i alla vyer där de förekommer.

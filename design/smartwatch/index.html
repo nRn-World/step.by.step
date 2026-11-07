@@ -252,6 +252,10 @@ html[data-mode="light"] .theme-btn .sun{display:none}
 .ring circle{fill:none;stroke-linecap:round}
 .ring .track{stroke:var(--w-track);stroke-width:2.4}
 .ring .fill{stroke:url(#gradCoral);stroke-width:3;stroke-dasharray:100 100;stroke-dashoffset:var(--off,0);filter:drop-shadow(0 0 2px rgba(255,112,79,.55));animation:ringDraw 1.7s cubic-bezier(.2,.8,.2,1) both}
+/* målet nått: ringen, chipen och trofén lyser grönt i stället för korall */
+.ring--done .fill{stroke:url(#gradSage);filter:drop-shadow(0 0 3px rgba(131,200,101,.6))}
+.screen--done{box-shadow:inset 0 0 0 1px rgba(131,200,101,.2),inset 0 18px 34px rgba(0,0,0,.45),
+  inset 0 0 calc(var(--u)*11) rgba(131,200,101,.16)}
 @keyframes ringDraw{from{stroke-dashoffset:100}}
 .face{
   position:absolute;inset:0;z-index:2;
@@ -284,6 +288,10 @@ html[data-mode="light"] .theme-btn .sun{display:none}
 .face-icon svg{width:calc(var(--u)*10);height:calc(var(--u)*10)}
 .face-icon.lav{background:color-mix(in srgb,var(--lav) 22%,transparent);color:#c0a8f5}
 .face-icon.gold{background:rgba(226,168,63,.2);color:#f5ca74}
+.face-icon.done{background:rgba(124,174,92,.2);color:#cbeeb0}
+.chip--done{background:rgba(124,174,92,.2);color:#b9e39a}
+html[data-mode="light"] .chip--done{background:rgba(90,140,64,.14);color:#4e7c37}
+html[data-mode="light"] .face-icon.done{background:rgba(90,140,64,.16);color:#4e7c37}
 
 /* list face */
 .face--list{justify-content:center;gap:0;padding:13% 13%}
@@ -789,6 +797,11 @@ html[data-theme="dark"] .bcard code,html[data-theme="dark"] .note{background:rgb
       <stop offset="0" stop-color="#ff9670"/>
       <stop offset=".55" stop-color="#ff704f"/>
       <stop offset="1" stop-color="#e85f42"/>
+    </linearGradient>
+    <linearGradient id="gradSage" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#c3e8a4"/>
+      <stop offset=".55" stop-color="#8ed46c"/>
+      <stop offset="1" stop-color="#67a94c"/>
     </linearGradient>
     <linearGradient id="gradLav" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0" stop-color="#c3aef2"/>
@@ -1363,15 +1376,15 @@ html[data-theme="dark"] .bcard code,html[data-theme="dark"] .note{background:rgb
         <figure class="screen-card reveal">
           <div class="watch">
             <div class="case"><span class="crown"></span>
-              <div class="screen"><svg class="ring" viewBox="0 0 100 100" aria-hidden="true"><circle class="track" cx="50" cy="50" r="45" pathLength="100"/><circle class="fill" cx="50" cy="50" r="45" pathLength="100" style="--off:0"/></svg>
+              <div class="screen screen--done"><svg class="ring ring--done" viewBox="0 0 100 100" aria-hidden="true"><circle class="track" cx="50" cy="50" r="45" pathLength="100"/><circle class="fill" cx="50" cy="50" r="45" pathLength="100" style="--off:0"/></svg>
                 <div class="face">
-                  <span class="face-icon gold">
+                  <span class="face-icon done">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4h8v5a4 4 0 0 1-8 0V4Z"/><path d="M8 5H5.4a2.6 2.6 0 0 0 2.9 4.5"/><path d="M16 5h2.6a2.6 2.6 0 0 1-2.9 4.5"/><path d="M12 13.2V17"/><path d="M8.8 20h6.4l-.7-2.1a1 1 0 0 0-.95-.7h-3a1 1 0 0 0-.95.7L8.8 20Z"/></svg>
                   </span>
                   <p class="face-eyebrow">Målet nått</p>
                   <p class="big-num sm">8 000</p>
                   <p class="face-label">steg · idag</p>
-                  <span class="chip">4 av 4 klara</span>
+                  <span class="chip chip--done">4 av 4 klara</span>
                 </div><div class="glass"></div></div>
             </div>
           </div>
