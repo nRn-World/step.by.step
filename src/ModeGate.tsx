@@ -39,7 +39,7 @@ export default function ModeGate({ initialMode, initialLanguage }: { initialMode
   // The playful start page is the default; ?look=classic switches it off (and remembers it), ?look=fun brings it back.
   const [fun]=useState(()=>{const p=new URLSearchParams(window.location.search).get('look');try{if(p==='fun')localStorage.removeItem('landing-look');if(p==='classic')localStorage.setItem('landing-look','classic');return p==='classic'?false:localStorage.getItem('landing-look')!=='classic';}catch{return p!=='classic';}});
   useEffect(()=>{document.documentElement.lang=language},[language]);
-  const [mode, setMode] = useState<'choose'|'private'|'connected'>(() => initialMode ?? (sessionStorage.getItem('pending-connected')==='yes'||localStorage.getItem('stride-connected')==='yes'?'connected':'choose'));
+  const [mode, setMode] = useState<'choose'|'private'|'connected'>(() => initialMode ?? (sessionStorage.getItem('pending-connected')==='yes'?'connected':'choose'));
   // An invite link is remembered right away, because signing in sends the person away and back without the ?join= part.
   const [inviteGroup, setInviteGroup] = useState('');
   useEffect(() => {
@@ -90,7 +90,7 @@ export default function ModeGate({ initialMode, initialLanguage }: { initialMode
       // The link can arrive before this listener exists (the app was restarted by it), so read it from the launch too.
       void NativeApp.getLaunchUrl().then(launch => { if (launch?.url) void finishNative(launch.url); }).catch(() => undefined);
     }
-    auth.auth.getSession().then(({data})=>{setSession(data.session);if(data.session)sessionStorage.removeItem('pending-connected')}).catch(()=>setError(m.sessionError));
+    auth.auth.getSession().then(({data})=>{setSession(data.session);if(data.session){sessionStorage.removeItem('pending-connected');if(localStorage.getItem('stride-connected')==='yes')setMode('connected')}}).catch(()=>setError(m.sessionError));
     const {data:{subscription}} = auth.auth.onAuthStateChange((event, next)=>{setSession(next);if(next)localStorage.setItem('stride-connected','yes');if(event==='PASSWORD_RECOVERY'){setRecovering(true);setMode('connected');}});
     return () => {subscription.unsubscribe(); void listener?.remove();};
   }, [auth]);
