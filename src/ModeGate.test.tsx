@@ -27,6 +27,14 @@ describe('privacy-first mode selection', () => {
     expect(screen.getByText('Hvordan vil du logge ind i dag?')).toBeDefined();
     expect(localStorage.getItem('stride-lang')).toBeNull();
   });
+  it('keeps the chosen language after a reload before sign-in',()=>{
+    const first = render(<ModeGate />);
+    fireEvent.click(screen.getByRole('button',{name:/English/}));
+    first.unmount();
+    render(<ModeGate />);
+    expect(screen.getByRole('button',{name:/English/}).getAttribute('aria-pressed')).toBe('true');
+    expect(document.documentElement.lang).toBe('en');
+  });
   it('converts steps to an explicitly estimated distance',()=>{
     expect(estimatedMeters(1000)).toBe(750);
   });
