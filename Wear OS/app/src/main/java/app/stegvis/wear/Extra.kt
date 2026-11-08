@@ -22,6 +22,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
@@ -51,7 +52,7 @@ fun PeppCard(model: AppModel, info: PeppInfo, onClose: () -> Unit) {
     LaunchedEffect(info) { if (!model.demo) { delay(12_000); onClose() } }
     Box(Modifier.fillMaxSize().background(Bg), contentAlignment = Alignment.Center) {
         Column(
-            Modifier.width((150 * u).dp).clip(RoundedCornerShape((14 * u).dp)).background(CardBg).padding((8 * u).dp),
+            Modifier.width((164 * u).dp).clip(RoundedCornerShape((16 * u).dp)).background(CardBg).border(1.dp, Color(0xFF2A2840), RoundedCornerShape((16 * u).dp)).padding((10 * u).dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
@@ -72,7 +73,7 @@ fun PeppCard(model: AppModel, info: PeppInfo, onClose: () -> Unit) {
             Spacer(Modifier.height((6 * u).dp))
             // The server tells how many hearts you got, not who gave them, so "send one back" only works in the demo.
             Box(
-                Modifier.fillMaxWidth().height((26 * u).dp).clip(RoundedCornerShape(50)).background(Brush.horizontalGradient(listOf(Coral, CoralSoft)))
+                Modifier.fillMaxWidth().height((28 * u).dp).shadow((6 * u).dp, RoundedCornerShape(50), ambientColor = Coral, spotColor = Coral).clip(RoundedCornerShape(50)).background(Brush.horizontalGradient(listOf(Coral, CoralSoft)))
                     .clickable(role = Role.Button, onClick = onClose),
                 contentAlignment = Alignment.Center,
             ) { Txt(stringResource(if (model.demo) R.string.pepp_back else R.string.close), Type.title.copy(fontSize = (11 * u).sp), color = Color.White, maxLines = 1) }
@@ -102,7 +103,7 @@ fun LivePage(model: AppModel) {
             Row(horizontalArrangement = Arrangement.spacedBy((-1 * u).dp)) {
                 walking.take(4).forEachIndexed { i, m ->
                     Box(
-                        Modifier.size((22 * u).dp).clip(CircleShape).background(Color(0xFF1E1D24)).border((2 * u).dp, rings[i % rings.size], CircleShape),
+                        Modifier.size((22 * u).dp).clip(CircleShape).border((2 * u).dp, rings[i % rings.size], CircleShape),
                         contentAlignment = Alignment.Center,
                     ) { Txt(m.name.take(2).uppercase(), Type.title.copy(fontSize = (8 * u).sp), maxLines = 1) }
                 }
@@ -160,11 +161,11 @@ fun RacePage(model: AppModel) {
 
 @Composable
 private fun RaceLine(dot: Color, name: String, steps: Int, u: Float) {
-    Row(Modifier.width((136 * u).dp), verticalAlignment = Alignment.CenterVertically) {
+    Row(Modifier.width((150 * u).dp), verticalAlignment = Alignment.CenterVertically) {
         Box(Modifier.size((6 * u).dp).clip(CircleShape).background(dot))
         Spacer(Modifier.width((5 * u).dp))
-        Txt(name, Type.title.copy(fontSize = (10 * u).sp), Modifier.weight(1f), color = Muted, align = TextAlign.Start, maxLines = 1)
-        Txt(formatSteps(steps), Type.number.copy(fontSize = (12 * u).sp), maxLines = 1)
+        Txt(name, Type.title.copy(fontSize = (9 * u).sp), Modifier.weight(1f), color = Muted, align = TextAlign.Start, maxLines = 1)
+        Txt(formatSteps(steps), Type.number.copy(fontSize = (11 * u).sp), maxLines = 1)
     }
 }
 
@@ -202,7 +203,7 @@ private fun TeamBar(name: String, steps: Int, frac: Float, light: Color, deep: C
             Txt(formatSteps(steps), Type.number.copy(fontSize = (11 * u).sp), maxLines = 1)
         }
         Spacer(Modifier.height((2 * u).dp))
-        Box(Modifier.fillMaxWidth().height((6 * u).dp).clip(RoundedCornerShape(50)).background(Color(0xFF1F1E26))) {
+        Box(Modifier.fillMaxWidth().height((9 * u).dp).clip(RoundedCornerShape(50)).background(Color(0xFF1F1E26))) {
             Box(Modifier.fillMaxWidth(frac.coerceIn(0.02f, 1f)).fillMaxSize().clip(RoundedCornerShape(50)).background(Brush.horizontalGradient(listOf(light, deep))))
         }
     }

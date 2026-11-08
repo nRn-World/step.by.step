@@ -21,6 +21,12 @@ import com.google.android.gms.wearable.Wearable
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 
+private var sharedKvInstance: PrefsKv? = null
+
+/** One encrypted store per process: creating it is slow (Keystore), so every caller shares it instead of rebuilding it. */
+@Synchronized
+fun sharedKv(context: Context): PrefsKv = sharedKvInstance ?: PrefsKv(context.applicationContext ?: context).also { sharedKvInstance = it }
+
 /** Session, goal and steps live in encrypted preferences. Falls back to memory only, never to plain files. */
 class PrefsKv(context: Context) : KeyValueStore {
     private val prefs = try {
@@ -70,7 +76,7 @@ fun readStepTotal(context: Context, timeoutMs: Long = 4000): Long? {
 /** App-wide services. Built per call, so a worker, tile, complication and the activity share the same storage. */
 class Services(context: Context, kv: KeyValueStore? = null) {
     private val app = context.applicationContext
-    val vault = Vault(kv ?: PrefsKv(app))
+    val vault = Vault(kv ?: sharedKv(app))
     val coordinator = Coordinator(
         SupabaseAuth(UrlHttp(), BuildConfig.SUPABASE_URL, BuildConfig.SUPABASE_ANON_KEY),
         StegvisApi(UrlHttp()),
@@ -132,7 +138,7 @@ class Services(context: Context, kv: KeyValueStore? = null) {
 
 /** A context using the language chosen in Settings (the watch language when "system"). Tile and complication use it too. */
 fun Context.localized(): Context {
-    val lang = try { Vault(PrefsKv(applicationContext)).language } catch (e: Exception) { "system" }
+    val lang = try { Vault(sharedKv(this)).language } catch (e: Exception) { "system" }
     if (lang == "system") return this
     val config = android.content.res.Configuration(resources.configuration)
     config.setLocale(java.util.Locale.forLanguageTag(lang))

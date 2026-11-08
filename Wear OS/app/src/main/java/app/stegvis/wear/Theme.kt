@@ -147,7 +147,7 @@ fun Context.reducedMotion(): Boolean =
 
 fun vibrateGoal(context: Context) {
     try {
-        if (!Vault(PrefsKv(context.applicationContext)).haptics) return
+        if (!Vault(sharedKv(context)).haptics) return
         val v = context.getSystemService(Vibrator::class.java) ?: return
         if (v.hasVibrator()) v.vibrate(VibrationEffect.createWaveform(longArrayOf(0, 60, 90, 60, 90, 120), -1))
     } catch (e: Exception) {

@@ -114,10 +114,11 @@ fun StegvisApp(demo: DemoConfig? = null) {
     }
 }
 
-private val demoPageIds = mapOf("goal_reached" to "today", "pepp" to "today", "pair" to "top")
+private val demoPageIds = mapOf("goal_reached" to "today", "pepp" to "today")
 
 /** The pages in swipe order. Live, Race and the analysis only exist when the data does. */
-private fun pageIds(model: AppModel): List<String> = buildList {
+private fun pageIds(model: AppModel, pairFirst: Boolean): List<String> = buildList {
+    if (pairFirst) add("pair")
     add("today"); add("week"); add("goals"); add("top")
     if (model.activeGroup != null) add("live")
     if (model.activeGroup?.partners?.isNotEmpty() == true) { add("race"); add("analysis") }
@@ -126,7 +127,9 @@ private fun pageIds(model: AppModel): List<String> = buildList {
 
 @Composable
 fun MainPager(model: AppModel, onLogin: () -> Unit) {
-    val ids = pageIds(model)
+    // First start without sign-in: the pairing page comes first, once (vy-01 "Uppstart · en gång").
+    val pairFirst = remember { (!model.signedIn && !model.vault.pairShown).also { if (it) model.vault.pairShown = true } }
+    val ids = pageIds(model, pairFirst)
     val start = remember {
         val resume = model.vault.resumePage
         model.vault.resumePage = null
@@ -147,6 +150,7 @@ fun MainPager(model: AppModel, onLogin: () -> Unit) {
     Box(Modifier.fillMaxSize().background(Bg)) {
         HorizontalPager(state = pager, modifier = Modifier.fillMaxSize()) { page ->
             when (ids.getOrNull(page)) {
+                "pair" -> PairScreen(model, onLogin, rememberScale())
                 "today" -> TodayPage(model)
                 "week" -> WeekPage(model)
                 "goals" -> GoalsPage(model)
@@ -165,11 +169,10 @@ fun MainPager(model: AppModel, onLogin: () -> Unit) {
 
 /** Ring that starts at the top and runs clockwise: thin track, thick gradient arc and a soft glow. */
 @Composable
-private fun GlowRing(progress: Float, light: Color, deep: Color, modifier: Modifier = Modifier, strokeDp: Dp = 6.5.dp, trackDp: Dp = 3.5.dp) {
+private fun GlowRing(progress: Float, light: Color, deep: Color, modifier: Modifier = Modifier, strokeDp: Dp = 5.dp, trackDp: Dp = 3.dp) {
     Canvas(modifier) {
         val sw = strokeDp.toPx()
-        val margin = 13.dp.toPx() // ring diameter as in the design (about 85 % of the screen), with room for the glow
-        val d = size.minDimension - margin * 2
+        val d = size.minDimension * 0.85f - sw // outer diameter = 85 % of the screen width, as in the design
         val topLeft = Offset((size.width - d) / 2, (size.height - d) / 2)
         val sz = Size(d, d)
         drawArc(Track, 0f, 360f, false, topLeft, sz, style = Stroke(trackDp.toPx()))
@@ -255,7 +258,7 @@ fun TodayPage(model: AppModel) {
         else progress.animateTo(p, tween(if (progress.value == 0f) 900 else 400, easing = EaseOutCubic))
     }
     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        GlowRing(progress.value, CoralSoft, CoralDeep, Modifier.fillMaxSize(), strokeDp = (6.5 * u).dp, trackDp = (3.5 * u).dp)
+        GlowRing(progress.value, CoralSoft, CoralDeep, Modifier.fillMaxSize(), strokeDp = (5 * u).dp, trackDp = (3 * u).dp)
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Label(stringResource(R.string.today_label), u)
             Txt(formatSteps(steps), Type.hero.copy(fontSize = (when { steps >= 100_000 -> 28; steps >= 10_000 -> 36 else -> 40 } * u).sp), maxLines = 1)
@@ -273,7 +276,7 @@ fun TodayPage(model: AppModel) {
 @Composable
 private fun GoalReachedScreen(steps: Int, done: Pair<Int, Int>, u: Float) {
     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        GlowRing(1f, Color(0xFFA6E58A), Color(0xFF6FB85A), Modifier.fillMaxSize(), strokeDp = (6.5 * u).dp, trackDp = (3.5 * u).dp)
+        GlowRing(1f, Color(0xFFA6E58A), Color(0xFF6FB85A), Modifier.fillMaxSize(), strokeDp = (5 * u).dp, trackDp = (3 * u).dp)
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Box(Modifier.size((32 * u).dp).clip(CircleShape).background(Color(0xFF1B2A1B)), contentAlignment = Alignment.Center) { Trophy(Color(0xFFA6E58A), Modifier.size((18 * u).dp)) }
             Spacer(Modifier.height((5 * u).dp))
@@ -556,16 +559,16 @@ private fun Modifier.border1(on: Boolean): Modifier =
 // ---- Parkoppla -----------------------------------------------------------------------------
 
 @Composable
-private fun PairScreen(model: AppModel, onLogin: () -> Unit, u: Float) {
-    Box(Modifier.fillMaxSize().padding(horizontal = (18 * u).dp), contentAlignment = Alignment.Center) {
+fun PairScreen(model: AppModel, onLogin: () -> Unit, u: Float) {
+    Box(Modifier.fillMaxSize().padding(horizontal = (10 * u).dp), contentAlignment = Alignment.Center) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Box(Modifier.size((44 * u).dp).clip(RoundedCornerShape((12 * u).dp)).background(Color(0xFF1B1A22)), contentAlignment = Alignment.Center) {
-                Image(painterResource(R.drawable.ic_launcher_foreground), null, Modifier.size((52 * u).dp))
+            Box(Modifier.size((54 * u).dp).clip(RoundedCornerShape((14 * u).dp)).background(Color(0xFF1B1A22)), contentAlignment = Alignment.Center) {
+                Image(painterResource(R.drawable.ic_launcher_foreground), null, Modifier.size((64 * u).dp))
             }
             Spacer(Modifier.height((6 * u).dp))
             Label(stringResource(R.string.pair_first), u)
             Txt(stringResource(R.string.pair_title), Type.title.copy(fontSize = (18 * u).sp, fontFamily = Outfit), maxLines = 1)
-            Txt(stringResource(R.string.pair_body), Type.caption.copy(fontSize = (10 * u).sp), maxLines = 4)
+            Txt(stringResource(R.string.pair_body), Type.caption.copy(fontSize = (9 * u).sp, lineHeight = (11 * u).sp), maxLines = 2)
             Spacer(Modifier.height((5 * u).dp))
             Box(Modifier.clip(RoundedCornerShape(50)).background(Color(0xFF24232D)).clickable(role = Role.Button, onClick = onLogin).padding(horizontal = (10 * u).dp, vertical = (4 * u).dp)) {
                 Txt(stringResource(R.string.pair_pill), Type.title.copy(fontSize = (10 * u).sp), color = Muted, maxLines = 1)
@@ -684,7 +687,7 @@ fun AmbientScreen(model: AppModel) {
     val goals = model.goals
     Box(Modifier.fillMaxSize().background(Color.Black), contentAlignment = Alignment.Center) {
         Canvas(Modifier.fillMaxSize()) {
-            drawCircle(Color(0xFF2A2931), size.minDimension / 2 * 0.83f, style = Stroke(2.5.dp.toPx()))
+            drawCircle(Color(0xFF1D1C23), size.minDimension / 2 * 0.83f, style = Stroke(2.5.dp.toPx()))
         }
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Txt(date, LabelStyle.copy(fontSize = (10 * u).sp), color = Muted, maxLines = 1)

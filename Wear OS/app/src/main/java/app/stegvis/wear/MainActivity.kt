@@ -11,7 +11,7 @@ import java.util.Locale
 class MainActivity : ComponentActivity() {
     /** Applies the language chosen in Settings; "system" keeps the watch language. */
     override fun attachBaseContext(newBase: Context) {
-        val lang = try { Services(newBase).vault.language } catch (e: Exception) { "system" }
+        val lang = try { Vault(sharedKv(newBase)).language } catch (e: Exception) { "system" }
         if (lang == "system") {
             super.attachBaseContext(newBase)
             return

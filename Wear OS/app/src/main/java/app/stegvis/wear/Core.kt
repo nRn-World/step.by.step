@@ -265,6 +265,11 @@ class Vault(private val kv: KeyValueStore) {
 
     /** Name shown under Account in Settings. */
     /** Vibrate when the daily goal is reached. */
+    /** The pairing page is the first page only the first time the app starts without a sign-in. */
+    var pairShown: Boolean
+        get() = kv.get("pairShown") == "1"
+        set(value) = kv.put("pairShown", if (value) "1" else "0")
+
     var haptics: Boolean
         get() = kv.get("haptics") != "0"
         set(value) = kv.put("haptics", if (value) "1" else "0")
