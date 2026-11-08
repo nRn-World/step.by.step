@@ -33,8 +33,11 @@ object Demo {
         fun meters(s: Int) = s * METERS_PER_STEP
         val mine = JSONObject().also { j -> perDay.forEach { (d, s) -> j.put(d, meters(s)) } }
         fun member(id: String, name: String, s: Int) =
-            JSONObject().put("id", id).put("name", name).put("likes", if (id == "m1") 4 else 0).put("distances", JSONObject().put(today, meters(s)))
+            JSONObject().put("id", id).put("name", name).put("likes", if (id == "m1") 4 else 0).put("active", id == "m1" || id == "m2" || id == "m3").put("distances", JSONObject().put(today, meters(s)))
         fun group(id: String, name: String, goals: Boolean, vararg members: JSONObject) = JSONObject().put("id", id).put("name", name)
+            .put("partners", JSONArray().also { a ->
+                if (id == "g1") a.put(JSONObject().put("id", "g2").put("name", "Kontorsgänget").put("steps", JSONObject().put("week", 40_940)).put("race", JSONObject().put("period", "week").put("target", 100_000)))
+            })
             .put("members", JSONArray().also { a -> members.forEach { a.put(it) } })
             .put("goals", JSONArray().also { a ->
                 if (goals) {
@@ -47,11 +50,12 @@ object Demo {
         val json = JSONObject()
             .put("me", JSONObject().put("id", "me").put("name", "robin").put("distances", mine))
             .put("groups", JSONArray()
-                .put(group("g1", "Lunchpromenaden", true, member("m1", "Morgonstjärnan", 8_214), meMember, member("m2", "Glada Gåsen", 6_118), member("m3", "Skogsmulle", 3_200)))
+                .put(group("g1", "Lunchpromenaden", true, member("m1", "Morgonstjärnan", 8_214), meMember, member("m2", "Glada Gåsen", 6_118), member("m3", "Skogsmulle", 7_287)))
                 .put(group("g2", "Kontorsgänget", false, member("k1", "Anna", 5_000), member("k2", "Bo", 4_000), member("k3", "Cia", 3_000), member("k4", "Dag", 2_000), member("k5", "Eli", 1_000), member("k6", "Fia", 900)))
                 .put(group("g3", "Söndagspromenaden", false, member("s1", "Greta", 2_000), member("s2", "Hugo", 1_500))))
             .toString()
         model.demoPage = cfg.page
+        model.demoGroupWeek = 42_180
         model.demoDate = date
         model.demoDone = if (reached) 4 to 4 else null
         model.steps = steps

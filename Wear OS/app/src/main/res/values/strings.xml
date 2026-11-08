@@ -98,4 +98,21 @@
     <string name="pair_pill">No sign-in here</string>
     <string name="steps_word">steps</string>
     <string name="pepp_n">%1$d likes</string>
+    <string name="pepp_before">"gave you a "</string>
+    <string name="pepp_heart">heart</string>
+    <string name="pepp_after">.</string>
+    <string name="pepp_back">Send one back</string>
+    <string name="pepp_today">%1$d likes today</string>
+    <string name="now_label">now</string>
+    <string name="close">Close</string>
+    <string name="live_title">Live · %1$s</string>
+    <string name="live_out">out walking now</string>
+    <string name="live_group_steps">%1$s steps in the group</string>
+    <string name="race_title">Week · shared goal</string>
+    <string name="race_ahead">steps ahead of</string>
+    <string name="race_behind">steps behind</string>
+    <string name="analysis_title">The week · two teams</string>
+    <string name="analysis_lead">You lead by %1$s</string>
+    <string name="analysis_behind">You trail by %1$s</string>
+    <string name="analysis_together">Together %1$s of %2$s</string>
 </resources>

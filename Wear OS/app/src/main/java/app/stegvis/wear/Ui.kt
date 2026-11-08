@@ -84,18 +84,20 @@ private val EaseOutCubic = CubicBezierEasing(0.215f, 0.61f, 0.355f, 1f)
 
 // Design values are written for a 192 dp wide watch (the 384 px round emulator) and scale with the screen width.
 @Composable
-private fun rememberScale(): Float = LocalConfiguration.current.screenWidthDp / 192f
+fun rememberScale(): Float = LocalConfiguration.current.screenWidthDp / 192f
 
 /** The language the screen is drawn in: what the activity applied (Settings choice or the watch language). */
 @Composable
-private fun uiLang(): String = LocalConfiguration.current.locales[0].language.let { if (it == "sv" || it == "da") it else "en" }
+fun uiLang(): String = LocalConfiguration.current.locales[0].language.let { if (it == "sv" || it == "da") it else "en" }
 
-private val LabelStyle get() = Type.caption.copy(fontFamily = Outfit, letterSpacing = 1.6.sp)
+val LabelStyle get() = Type.caption.copy(fontFamily = Outfit, letterSpacing = 1.6.sp)
 
 /** Small spaced-out capital label, e.g. "IDAG". */
 @Composable
-private fun Label(text: String, u: Float, color: Color = Muted) {
-    Txt(text.uppercase(), LabelStyle.copy(fontSize = (10 * u).sp), color = color, maxLines = 1)
+fun Label(text: String, u: Float, color: Color = Muted) {
+    // Long labels (e.g. "VECKA · GEMENSAMT MÅL") shrink a little so they stay inside the round screen.
+    val long = text.length > 18
+    Txt(text.uppercase(), LabelStyle.copy(fontSize = ((if (long) 8 else 10) * u).sp, letterSpacing = (if (long) 1.0 else 1.6).sp), color = color, maxLines = 1)
 }
 
 // ---- Root ----------------------------------------------------------------------------------
@@ -112,26 +114,48 @@ fun StegvisApp(demo: DemoConfig? = null) {
     }
 }
 
-private val demoPages = mapOf("today" to 0, "goal_reached" to 0, "week" to 1, "goals" to 2, "top" to 3, "pair" to 3, "group" to 4, "settings" to 5)
+private val demoPageIds = mapOf("goal_reached" to "today", "pepp" to "today", "pair" to "top")
+
+/** The pages in swipe order. Live, Race and the analysis only exist when the data does. */
+private fun pageIds(model: AppModel): List<String> = buildList {
+    add("today"); add("week"); add("goals"); add("top")
+    if (model.activeGroup != null) add("live")
+    if (model.activeGroup?.partners?.isNotEmpty() == true) { add("race"); add("analysis") }
+    add("group"); add("settings")
+}
 
 @Composable
 fun MainPager(model: AppModel, onLogin: () -> Unit) {
-    val start = remember { (model.vault.resumePage ?: demoPages[model.demoPage] ?: 0).coerceIn(0, 5).also { model.vault.resumePage = null } }
-    val pager = rememberPagerState(initialPage = start, pageCount = { 6 })
-    LaunchedEffect(pager.currentPage) { if (pager.currentPage in 1..4) model.load() }
+    val ids = pageIds(model)
+    val start = remember {
+        val resume = model.vault.resumePage
+        model.vault.resumePage = null
+        (resume ?: ids.indexOf(demoPageIds[model.demoPage] ?: model.demoPage).takeIf { it >= 0 } ?: 0).coerceIn(0, ids.lastIndex)
+    }
+    val pager = rememberPagerState(initialPage = start, pageCount = { ids.size })
+    LaunchedEffect(pager.currentPage) { if (ids.getOrNull(pager.currentPage) in setOf("week", "goals", "top", "live", "race", "analysis", "group")) model.load() }
+    var demoPepp by remember { mutableStateOf(model.demoPage == "pepp") }
     if (AmbientState.ambient || model.demoPage == "ambient") {
         AmbientScreen(model)
         return
     }
+    val pepp = model.pepp ?: if (demoPepp) PeppInfo("Morgonstjärnan", 8) else null
+    if (pepp != null) {
+        PeppCard(model, pepp) { model.pepp = null; demoPepp = false }
+        return
+    }
     Box(Modifier.fillMaxSize().background(Bg)) {
         HorizontalPager(state = pager, modifier = Modifier.fillMaxSize()) { page ->
-            when (page) {
-                0 -> TodayPage(model)
-                1 -> WeekPage(model)
-                2 -> GoalsPage(model)
-                3 -> TopPage(model, onLogin)
-                4 -> GroupPickPage(model, onLogin)
-                else -> SettingsPage(model)
+            when (ids.getOrNull(page)) {
+                "today" -> TodayPage(model)
+                "week" -> WeekPage(model)
+                "goals" -> GoalsPage(model)
+                "top" -> TopPage(model, onLogin)
+                "live" -> LivePage(model)
+                "race" -> RacePage(model)
+                "analysis" -> AnalysisPage(model)
+                "group" -> GroupPickPage(model, onLogin)
+                else -> SettingsPage(model, ids.lastIndex)
             }
         }
     }
@@ -144,7 +168,7 @@ fun MainPager(model: AppModel, onLogin: () -> Unit) {
 private fun GlowRing(progress: Float, light: Color, deep: Color, modifier: Modifier = Modifier, strokeDp: Dp = 6.5.dp, trackDp: Dp = 3.5.dp) {
     Canvas(modifier) {
         val sw = strokeDp.toPx()
-        val margin = 9.dp.toPx() // room for the glow inside the canvas
+        val margin = 13.dp.toPx() // ring diameter as in the design (about 85 % of the screen), with room for the glow
         val d = size.minDimension - margin * 2
         val topLeft = Offset((size.width - d) / 2, (size.height - d) / 2)
         val sz = Size(d, d)
@@ -152,7 +176,7 @@ private fun GlowRing(progress: Float, light: Color, deep: Color, modifier: Modif
         if (progress > 0.002f) {
             val sweep = 360f * progress.coerceIn(0f, 1f)
             rotateScope(-90f) {
-                for (i in 3 downTo 1) drawArc(deep.copy(alpha = 0.07f), 0f, sweep, false, topLeft, sz, style = Stroke(sw + i * 3.dp.toPx(), cap = StrokeCap.Round))
+                for (i in 5 downTo 1) drawArc(deep.copy(alpha = 0.045f * (6 - i) / 2f), 0f, sweep, false, topLeft, sz, style = Stroke(sw + i * 2.5.dp.toPx(), cap = StrokeCap.Round))
                 drawArc(Brush.sweepGradient(listOf(light, deep, light), center), 0f, sweep, false, topLeft, sz, style = Stroke(sw, cap = StrokeCap.Round))
             }
         }
@@ -555,7 +579,7 @@ private fun PairScreen(model: AppModel, onLogin: () -> Unit, u: Float) {
 private fun languageName(code: String) = when (code) { "sv" -> "Svenska"; "da" -> "Dansk"; else -> "English" }
 
 @Composable
-fun SettingsPage(model: AppModel) {
+fun SettingsPage(model: AppModel, settingsIndex: Int) {
     val u = rememberScale()
     val context = LocalContext.current
     var picking by remember { mutableStateOf(false) }
@@ -567,7 +591,7 @@ fun SettingsPage(model: AppModel) {
             picking = false
             if (code != current) {
                 model.vault.language = code
-                model.vault.resumePage = 5 // stay on Settings after the restart
+                model.vault.resumePage = settingsIndex // stay on Settings after the restart
                 context.findActivity()?.recreate()
             }
         }
@@ -660,7 +684,7 @@ fun AmbientScreen(model: AppModel) {
     val goals = model.goals
     Box(Modifier.fillMaxSize().background(Color.Black), contentAlignment = Alignment.Center) {
         Canvas(Modifier.fillMaxSize()) {
-            drawCircle(Color(0xFF1A1920), size.minDimension / 2 * 0.86f, style = Stroke(2.dp.toPx()))
+            drawCircle(Color(0xFF2A2931), size.minDimension / 2 * 0.83f, style = Stroke(2.5.dp.toPx()))
         }
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Txt(date, LabelStyle.copy(fontSize = (10 * u).sp), color = Muted, maxLines = 1)

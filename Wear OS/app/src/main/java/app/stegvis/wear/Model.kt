@@ -10,6 +10,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 /** UI state shared by all pages. Every call is safe: failures end up as states, never as crashes. */
+class PeppInfo(val from: String, val total: Int)
+
 class AppModel(val svc: Services, private val scope: CoroutineScope) {
     val vault get() = svc.vault
 
@@ -28,6 +30,16 @@ class AppModel(val svc: Services, private val scope: CoroutineScope) {
     val goals: PeriodGoals get() = computeGoals(state, activeGroup, today, steps, vault.goal)
     /** Debug demo only: "done of total" for the goal-reached screen. */
     var demoDone: Pair<Int, Int>? = null
+    /** Debug demo only: the group's week total from the image (the images do not add up from member data). */
+    var demoGroupWeek: Int? = null
+    var pepp by mutableStateOf<PeppInfo?>(null)
+    private var lastLikes = -1
+    fun race(): RaceState? {
+        val g = activeGroup ?: return null
+        val p = g.partners.firstOrNull() ?: return null
+        val mine = demoGroupWeek ?: groupWeekSteps(g, today)
+        return RaceState(p, mine, p.weekSteps, p.raceTarget ?: (DEFAULT_WEEK_GOAL * 2))
+    }
     var hasSensor by mutableStateOf(true)
 
     // Group data: null fetch = first load not done yet.
@@ -82,6 +94,9 @@ class AppModel(val svc: Services, private val scope: CoroutineScope) {
                     }
                     signedIn = true
                     vault.goal = clampGoal(goals.day.target)
+                    val likes = activeGroup?.members?.firstOrNull { it.isMe }?.likes ?: 0
+                    if (lastLikes in 0 until likes) pepp = PeppInfo(activeGroup?.name.orEmpty(), likes) // the server does not say who gave the heart
+                    lastLikes = likes
                     goal = vault.goal
                 }
                 Fetch.Offline -> {

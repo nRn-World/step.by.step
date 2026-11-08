@@ -98,4 +98,21 @@
     <string name="pair_pill">Ingen login her</string>
     <string name="steps_word">skridt</string>
     <string name="pepp_n">%1$d pepp</string>
+    <string name="pepp_before">pebbede dig med et</string>
+    <string name="pepp_heart">hjerte</string>
+    <string name="pepp_after">.</string>
+    <string name="pepp_back">Peppa tilbage</string>
+    <string name="pepp_today">%1$d pepp i dag</string>
+    <string name="now_label">nu</string>
+    <string name="close">Luk</string>
+    <string name="live_title">Live · %1$s</string>
+    <string name="live_out">ude og går nu</string>
+    <string name="live_group_steps">%1$s skridt i gruppen</string>
+    <string name="race_title">Uge · fælles mål</string>
+    <string name="race_ahead">skridt foran</string>
+    <string name="race_behind">skridt bagud for</string>
+    <string name="analysis_title">Ugen · to hold</string>
+    <string name="analysis_lead">I fører med %1$s</string>
+    <string name="analysis_behind">I ligger efter med %1$s</string>
+    <string name="analysis_together">Sammen %1$s af %2$s</string>
 </resources>

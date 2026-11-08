@@ -120,9 +120,10 @@ fun parseTokenResponse(body: String, now: Long): Session {
 
 // ---- /api/state (server.ts view()) ------------------------------------------------------
 
-data class Member(val id: String, val name: String, val meters: Double, val isMe: Boolean, val distances: Map<String, Double> = emptyMap(), val likes: Int = 0)
+data class Member(val id: String, val name: String, val meters: Double, val isMe: Boolean, val distances: Map<String, Double> = emptyMap(), val likes: Int = 0, val active: Boolean = false)
 data class GoalDef(val type: String, val target: Int, val together: Boolean)
-data class Group(val id: String, val name: String, val members: List<Member>, val goals: List<GoalDef> = emptyList())
+data class Partner(val id: String, val name: String, val weekSteps: Int, val raceTarget: Int?)
+data class Group(val id: String, val name: String, val members: List<Member>, val goals: List<GoalDef> = emptyList(), val partners: List<Partner> = emptyList())
 data class ServerState(
     val meId: String,
     val meName: String,
@@ -150,6 +151,7 @@ fun parseState(body: String, today: String): ServerState {
                 isMe = id == meId,
                 distances = m.optJSONObject("distances")?.let { metersMap(it) } ?: emptyMap(),
                 likes = m.optInt("likes", 0),
+                active = m.optBoolean("active", false),
             )
         }
         val goalsJson = g.optJSONArray("goals") ?: JSONArray()
@@ -158,7 +160,13 @@ fun parseState(body: String, today: String): ServerState {
             val target = o.optInt("target", 0)
             if (target <= 0) null else GoalDef(o.optString("type", ""), target, o.optString("scope", "each") == "together")
         }
-        Group(g.getString("id"), g.optString("name", ""), members, goals)
+        val partnersJson = g.optJSONArray("partners") ?: JSONArray()
+        val partners = (0 until partnersJson.length()).mapNotNull { k ->
+            val o = partnersJson.optJSONObject(k) ?: return@mapNotNull null
+            val race = o.optJSONObject("race")
+            Partner(o.optString("id", ""), o.optString("name", ""), o.optJSONObject("steps")?.optInt("week", 0) ?: 0, race?.optInt("target", 0)?.takeIf { it > 0 })
+        }
+        Group(g.getString("id"), g.optString("name", ""), members, goals, partners)
     }
     return ServerState(meId, me.optString("name", ""), weekMeters, groups)
 }
@@ -210,6 +218,18 @@ fun computeGoals(state: ServerState?, group: Group?, today: java.time.LocalDate,
         return GoalState(value, target)
     }
     return PeriodGoals(state("day", today, dayDefault), state("week", monday, DEFAULT_WEEK_GOAL), state("month", first, DEFAULT_MONTH_GOAL))
+}
+
+/** A group's steps in the current week (Monday to today), summed over its members. */
+fun groupWeekSteps(group: Group, today: java.time.LocalDate): Int {
+    val monday = today.minusDays(((today.dayOfWeek.value + 6) % 7).toLong())
+    return group.members.sumOf { sumSteps(it.distances, monday, today) }
+}
+
+/** Shared-goal race between this group and one partner group: week totals, the lead and the shared target. */
+class RaceState(val partner: Partner, val mine: Int, val theirs: Int, val target: Int) {
+    val lead get() = mine - theirs
+    val together get() = mine + theirs
 }
 
 // ---- Storage model -----------------------------------------------------------------------
