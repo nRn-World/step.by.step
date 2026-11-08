@@ -5,6 +5,7 @@ import android.content.res.Configuration
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.wear.ambient.AmbientLifecycleObserver
 import java.util.Locale
 
 class MainActivity : ComponentActivity() {
@@ -22,6 +23,12 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // Always-on: draw the quiet ambient screen and update it once a minute.
+        lifecycle.addObserver(AmbientLifecycleObserver(this, object : AmbientLifecycleObserver.AmbientLifecycleCallback {
+            override fun onEnterAmbient(ambientDetails: AmbientLifecycleObserver.AmbientDetails) { AmbientState.ambient = true; AmbientState.tick++ }
+            override fun onExitAmbient() { AmbientState.ambient = false }
+            override fun onUpdateAmbient() { AmbientState.tick++ }
+        }))
         SyncWorker.schedule(this)
         setContent { StegvisApp(Demo.config(intent)) }
     }

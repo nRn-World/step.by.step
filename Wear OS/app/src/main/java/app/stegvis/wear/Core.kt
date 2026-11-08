@@ -8,7 +8,9 @@ import java.time.ZoneId
 
 // Pure logic, no Android types, so it can be unit tested on the JVM. Mirrors src/stepSensor.ts, src/username.ts and server.ts.
 
-const val DEFAULT_GOAL = 10_000
+const val DEFAULT_GOAL = 8_000        // provisional: the design shows 8 000 a day
+const val DEFAULT_WEEK_GOAL = 50_000   // provisional
+const val DEFAULT_MONTH_GOAL = 120_000 // provisional
 const val MIN_GOAL = 1_000
 const val MAX_GOAL = 100_000
 const val MAX_STEPS = 100_000
@@ -61,11 +63,14 @@ fun formatSteps(n: Int): String = n.toString().reversed().chunked(3).joinToStrin
 /** "950", "8k", "12k": short form for chart labels. */
 fun compactSteps(n: Int): String = if (n < 1000) n.toString() else "${(n + 500) / 1000}k"
 
-/** Kilometres with two decimals; comma for sv/da, point for en. */
+/** Kilometres with one decimal; comma for sv/da, point for en. */
 fun formatKm(steps: Int, lang: String): String {
-    val s = String.format(java.util.Locale.US, "%.2f", metersFor(steps) / 1000.0)
+    val s = String.format(java.util.Locale.US, "%.1f", metersFor(steps) / 1000.0)
     return if (lang == "en") s else s.replace('.', ',')
 }
+
+/** Rounded percent, e.g. 6 842 of 8 000 = 86. */
+fun percent(value: Int, goal: Int): Int = Math.round(value * 100.0 / goal.coerceAtLeast(1)).toInt()
 
 // ---- Username (src/username.ts) ----------------------------------------------------------
 
@@ -115,8 +120,9 @@ fun parseTokenResponse(body: String, now: Long): Session {
 
 // ---- /api/state (server.ts view()) ------------------------------------------------------
 
-data class Member(val id: String, val name: String, val meters: Double, val isMe: Boolean)
-data class Group(val id: String, val name: String, val members: List<Member>)
+data class Member(val id: String, val name: String, val meters: Double, val isMe: Boolean, val distances: Map<String, Double> = emptyMap(), val likes: Int = 0)
+data class GoalDef(val type: String, val target: Int, val together: Boolean)
+data class Group(val id: String, val name: String, val members: List<Member>, val goals: List<GoalDef> = emptyList())
 data class ServerState(
     val meId: String,
     val meName: String,
@@ -142,9 +148,17 @@ fun parseState(body: String, today: String): ServerState {
                 name = m.optString("name", ""),
                 meters = m.optJSONObject("distances")?.optDouble(today, 0.0) ?: 0.0,
                 isMe = id == meId,
+                distances = m.optJSONObject("distances")?.let { metersMap(it) } ?: emptyMap(),
+                likes = m.optInt("likes", 0),
             )
         }
-        Group(g.getString("id"), g.optString("name", ""), members)
+        val goalsJson = g.optJSONArray("goals") ?: JSONArray()
+        val goals = (0 until goalsJson.length()).mapNotNull { k ->
+            val o = goalsJson.optJSONObject(k) ?: return@mapNotNull null
+            val target = o.optInt("target", 0)
+            if (target <= 0) null else GoalDef(o.optString("type", ""), target, o.optString("scope", "each") == "together")
+        }
+        Group(g.getString("id"), g.optString("name", ""), members, goals)
     }
     return ServerState(meId, me.optString("name", ""), weekMeters, groups)
 }
@@ -157,6 +171,45 @@ private fun metersMap(o: JSONObject): Map<String, Double> {
         out[k] = o.optDouble(k, 0.0)
     }
     return out
+}
+
+// ---- Goals (Målen) -----------------------------------------------------------------------
+
+data class GoalState(val value: Int, val target: Int) {
+    val pct get() = percent(value, target)
+    val done get() = value >= target
+}
+
+class PeriodGoals(val day: GoalState, val week: GoalState, val month: GoalState) {
+    val all get() = listOf(day, week, month)
+    val doneCount get() = all.count { it.done }
+}
+
+private fun sumSteps(distances: Map<String, Double>, from: java.time.LocalDate, to: java.time.LocalDate): Int {
+    var meters = 0.0
+    var d = from
+    while (!d.isAfter(to)) { meters += distances[d.toString()] ?: 0.0; d = d.plusDays(1) }
+    return stepsFromMeters(meters)
+}
+
+/**
+ * Day, week (Monday to today) and month progress. The day value is the watch's own count. A group goal of the same type
+ * sets the target; "together" goals add up every member. Without a group the defaults apply.
+ */
+fun computeGoals(state: ServerState?, group: Group?, today: java.time.LocalDate, localToday: Int, dayDefault: Int): PeriodGoals {
+    val monday = today.minusDays(((today.dayOfWeek.value + 6) % 7).toLong())
+    val first = today.withDayOfMonth(1)
+    val mine = state?.weekMeters.orEmpty()
+    fun state(type: String, from: java.time.LocalDate, default: Int): GoalState {
+        val def = group?.goals?.firstOrNull { it.type == type }
+        val target = def?.target ?: default
+        val own = if (type == "day") localToday else maxOf(sumSteps(mine, from, today) - stepsFromMeters(mine[today.toString()] ?: 0.0) + localToday, 0)
+        val value = if (def?.together == true && type != "day") group?.members.orEmpty().sumOf { sumSteps(it.distances, from, today) }.let { maxOf(it, own) }
+        else if (def?.together == true) group?.members.orEmpty().sumOf { stepsFromMeters(it.distances[today.toString()] ?: 0.0) }.let { maxOf(it, own) }
+        else own
+        return GoalState(value, target)
+    }
+    return PeriodGoals(state("day", today, dayDefault), state("week", monday, DEFAULT_WEEK_GOAL), state("month", first, DEFAULT_MONTH_GOAL))
 }
 
 // ---- Storage model -----------------------------------------------------------------------
@@ -191,6 +244,16 @@ class Vault(private val kv: KeyValueStore) {
         set(value) = kv.put("celebrated", value)
 
     /** Name shown under Account in Settings. */
+    /** Vibrate when the daily goal is reached. */
+    var haptics: Boolean
+        get() = kv.get("haptics") != "0"
+        set(value) = kv.put("haptics", if (value) "1" else "0")
+
+    /** "Ljust armband": saved, no function defined yet (open question to Robin). */
+    var lightBand: Boolean
+        get() = kv.get("lightBand") == "1"
+        set(value) = kv.put("lightBand", if (value) "1" else "0")
+
     var accountName: String?
         get() = kv.get("acct")
         set(value) = kv.put("acct", value)
@@ -281,3 +344,6 @@ class Vault(private val kv: KeyValueStore) {
         listOf("session", "groupCache", "group", "acct").forEach { kv.put(it, null) }
     }
 }
+
+/** Ellipsis after 14 characters. */
+fun shortName(name: String) = if (name.length > 14) name.take(13) + "…" else name

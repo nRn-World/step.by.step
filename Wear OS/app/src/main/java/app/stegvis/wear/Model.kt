@@ -21,6 +21,13 @@ class AppModel(val svc: Services, private val scope: CoroutineScope) {
     /** Set only by the debug demo mode: the page to show; all sensor, network and sign-in work is skipped. */
     var demoPage by mutableStateOf<String?>(null)
     val demo get() = demoPage != null
+    /** Date used by the views. Fixed only in the debug demo mode. */
+    var demoDate: java.time.LocalDate? = null
+    val today: java.time.LocalDate get() = demoDate ?: java.time.LocalDate.now(STOCKHOLM)
+    val activeGroup: Group? get() = state?.groups.orEmpty().let { gs -> gs.firstOrNull { it.id == selectedGroup } ?: gs.firstOrNull() }
+    val goals: PeriodGoals get() = computeGoals(state, activeGroup, today, steps, vault.goal)
+    /** Debug demo only: "done of total" for the goal-reached screen. */
+    var demoDone: Pair<Int, Int>? = null
     var hasSensor by mutableStateOf(true)
 
     // Group data: null fetch = first load not done yet.
@@ -74,6 +81,8 @@ class AppModel(val svc: Services, private val scope: CoroutineScope) {
                         accountName = result.state.meName
                     }
                     signedIn = true
+                    vault.goal = clampGoal(goals.day.target)
+                    goal = vault.goal
                 }
                 Fetch.Offline -> {
                     offline = true

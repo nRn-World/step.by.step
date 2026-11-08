@@ -34,19 +34,28 @@ import androidx.compose.ui.unit.sp
 import androidx.wear.compose.material.Text
 
 // Tokens from design/DESIGN.md.
-val Bg = Color(0xFF191925)
-val Surface = Color(0xFF252535)
-val Surface2 = Color(0xFF303042)
-val Ink = Color(0xFFF4F1F6)
-val Muted = Color(0xFFAAA8B9)
-val Coral = Color(0xFFFF745C)
-val CoralOn = Color(0xFF191925)
-val Green = Color(0xFF4ADE80)
+val Bg = Color(0xFF08070E)
+val Surface = Color(0xFF17161E)
+val Surface2 = Color(0xFF24232D)
+val Ink = Color(0xFFF5F1EA)
+val Muted = Color(0xFF9F9DB2)
+val Coral = Color(0xFFFF704F)
+val CoralOn = Color(0xFF08070E)
+val Green = Color(0xFF8BD36F)
 val Gold = Color(0xFFDDA63C)
 val Purple = Color(0xFF7C60BB)
 
 @OptIn(androidx.compose.ui.text.ExperimentalTextApi::class)
 val Outfit = FontFamily(Font(R.font.outfit, FontWeight.ExtraBold, variationSettings = FontVariation.Settings(FontVariation.weight(800))))
+
+@OptIn(androidx.compose.ui.text.ExperimentalTextApi::class)
+val CoralDeep = Color(0xFFEA6242)
+val CoralSoft = Color(0xFFFF9C82)
+val Sage = Color(0xFF7CAE5C)
+val Track = Color(0xFF26252F)
+
+@OptIn(androidx.compose.ui.text.ExperimentalTextApi::class)
+val OutfitLight = FontFamily(Font(R.font.outfit, FontWeight.Light, variationSettings = FontVariation.Settings(FontVariation.weight(300))))
 
 @OptIn(androidx.compose.ui.text.ExperimentalTextApi::class)
 val DmSans = FontFamily(
@@ -138,6 +147,7 @@ fun Context.reducedMotion(): Boolean =
 
 fun vibrateGoal(context: Context) {
     try {
+        if (!Vault(PrefsKv(context.applicationContext)).haptics) return
         val v = context.getSystemService(Vibrator::class.java) ?: return
         if (v.hasVibrator()) v.vibrate(VibrationEffect.createWaveform(longArrayOf(0, 60, 90, 60, 90, 120), -1))
     } catch (e: Exception) {

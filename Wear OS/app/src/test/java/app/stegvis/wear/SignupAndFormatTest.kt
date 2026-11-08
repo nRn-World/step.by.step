@@ -64,8 +64,8 @@ class SignupAndFormatTest {
         assertEquals("12 345", formatSteps(12_345))
         assertEquals("999", formatSteps(999))
         assertEquals("0", formatSteps(0))
-        assertEquals("3,75", formatKm(5000, "sv"))
-        assertEquals("3.75", formatKm(5000, "en"))
+        assertEquals("3,8", formatKm(5000, "sv"))
+        assertEquals("3.8", formatKm(5000, "en"))
     }
 
     @Test fun languageFollowsSystemOnlyForSvDa() {
